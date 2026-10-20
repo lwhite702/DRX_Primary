@@ -1,22 +1,13 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
+import { SkeletonRows } from "../src/components/LoadingSkeleton";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, FlatList, Modal, ScrollView, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { Stack } from "expo-router";
 import { useMutation, useQuery } from "convex/react";
 import { anyApi } from "convex/server";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { usePreventScreenCapture } from "expo-screen-capture";
+import { useReducedMotion } from "react-native-reanimated";
 import { useAuth } from "../src/contexts/AuthContext";
 import { useOffline } from "../src/contexts/OfflineContext";
 import {
@@ -130,6 +121,7 @@ const formatTime = (timestamp?: number) => {
 };
 
 export default function DeliveriesScreen() {
+  const reduceMotion = useReducedMotion();
   usePreventScreenCapture("drx-deliveries");
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -383,7 +375,7 @@ export default function DeliveriesScreen() {
       </View>
 
       {deliveries === undefined ? (
-        <ActivityIndicator style={styles.loading} color={COLORS.accent} />
+        <SkeletonRows style={styles.loading} />
       ) : (
         <FlatList
           data={sorted}
@@ -394,7 +386,7 @@ export default function DeliveriesScreen() {
           renderItem={({ item }) => {
             const overdue = item.status === "ready_for_dispatch" && Date.now() > item.dispatchDueAt;
             return (
-              <TouchableOpacity
+              <MotionTouchableOpacity
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel={`Delivery ${item.orderNumber}, status ${statusLabel[item.status]}, ${item.addressLabel}`}
@@ -426,13 +418,13 @@ export default function DeliveriesScreen() {
                         : ""}
                   </Text>
                 </View>
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
             );
           }}
         />
       )}
 
-      <Modal visible={selected !== null} transparent animationType="slide" onRequestClose={resetSelection}>
+      <Modal visible={selected !== null} transparent animationType={reduceMotion ? "none" : "slide"} onRequestClose={resetSelection}>
         <View style={styles.backdrop}>
           <ScrollView
             style={[styles.sheet, isTablet && styles.tabletSheet]}
@@ -490,7 +482,7 @@ export default function DeliveriesScreen() {
                     {revealedAddress ?? selected.addressLabel}
                   </Text>
                   {!revealedAddress ? (
-                    <TouchableOpacity
+                    <MotionTouchableOpacity
                       accessible={true}
                       accessibilityRole="button"
                       accessibilityLabel="Decrypt delivery address"
@@ -508,7 +500,7 @@ export default function DeliveriesScreen() {
                       }}
                     >
                       <Text style={styles.secondaryText}>VIEW DELIVERY ADDRESS</Text>
-                    </TouchableOpacity>
+                    </MotionTouchableOpacity>
                   ) : null}
                 </View>
 
@@ -517,7 +509,7 @@ export default function DeliveriesScreen() {
                 selected.status !== "canceled" &&
                 selected.assignedToUserId !== userId &&
                 (!selected.assignedToUserId || canReassign) ? (
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     accessible={true}
                     accessibilityRole="button"
                     accessibilityLabel="Assign delivery to current operator"
@@ -528,7 +520,7 @@ export default function DeliveriesScreen() {
                     <Text style={styles.secondaryText}>
                       {selected.assignedToUserId ? "TAKE OVER SHIFT" : "ASSIGN TO ME"}
                     </Text>
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 ) : null}
 
                 {/* Status Transitions */}
@@ -547,7 +539,7 @@ export default function DeliveriesScreen() {
                     />
                     <View style={styles.presets}>
                       {[5, 10, 15, 20, 30].map((minutes) => (
-                        <TouchableOpacity
+                        <MotionTouchableOpacity
                           key={minutes}
                           accessible={true}
                           accessibilityRole="button"
@@ -556,10 +548,10 @@ export default function DeliveriesScreen() {
                           onPress={() => setWaitMinutes(String(minutes))}
                         >
                           <Text style={styles.presetText}>{minutes}m</Text>
-                        </TouchableOpacity>
+                        </MotionTouchableOpacity>
                       ))}
                     </View>
-                    <TouchableOpacity
+                    <MotionTouchableOpacity
                       accessible={true}
                       accessibilityRole="button"
                       accessibilityLabel="Mark Uber ordered"
@@ -569,12 +561,12 @@ export default function DeliveriesScreen() {
                       onPress={() => void orderUber(selected)}
                     >
                       <Text style={styles.primaryText}>UBER ORDERED</Text>
-                    </TouchableOpacity>
+                    </MotionTouchableOpacity>
                   </View>
                 ) : null}
 
                 {selected.status === "uber_ordered" && selected.assignedToUserId === userId ? (
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     accessible={true}
                     accessibilityRole="button"
                     accessibilityLabel="Mark package handed off"
@@ -584,11 +576,11 @@ export default function DeliveriesScreen() {
                     onPress={() => void completeStatus(selected, markHandedOff)}
                   >
                     <Text style={styles.primaryText}>PACKAGE HANDED OFF</Text>
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 ) : null}
 
                 {selected.status === "handed_off" && selected.assignedToUserId === userId ? (
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     accessible={true}
                     accessibilityRole="button"
                     accessibilityLabel="Mark delivery completed"
@@ -598,7 +590,7 @@ export default function DeliveriesScreen() {
                     onPress={() => void completeStatus(selected, markDelivered)}
                   >
                     <Text style={styles.primaryText}>MARK DELIVERED</Text>
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 ) : null}
 
                 {/* Cancellation */}
@@ -615,7 +607,7 @@ export default function DeliveriesScreen() {
                       placeholderTextColor={COLORS.textMuted}
                       multiline
                     />
-                    <TouchableOpacity
+                    <MotionTouchableOpacity
                       accessible={true}
                       accessibilityRole="button"
                       accessibilityLabel="Confirm delivery cancellation"
@@ -635,7 +627,7 @@ export default function DeliveriesScreen() {
                       }
                     >
                       <Text style={styles.destructiveText}>CANCEL DELIVERY</Text>
-                    </TouchableOpacity>
+                    </MotionTouchableOpacity>
                   </View>
                 ) : null}
 
@@ -667,7 +659,7 @@ export default function DeliveriesScreen() {
                   <View style={styles.sectionHeadingRow}>
                     <Text style={styles.sectionHeading}>FINANCIAL ADJUSTMENTS</Text>
                     {canReassign || canCancel ? (
-                      <TouchableOpacity
+                      <MotionTouchableOpacity
                         accessible={true}
                         accessibilityRole="button"
                         accessibilityLabel="Toggle financial adjustment form"
@@ -676,7 +668,7 @@ export default function DeliveriesScreen() {
                         <Text style={styles.toggleText}>
                           {showAdjustmentForm ? "Cancel" : "+ Add Adjustment"}
                         </Text>
-                      </TouchableOpacity>
+                      </MotionTouchableOpacity>
                     ) : null}
                   </View>
 
@@ -692,7 +684,7 @@ export default function DeliveriesScreen() {
                             "delivery_tax_refund",
                           ] as DeliveryAdjustmentKind[]
                         ).map((kind) => (
-                          <TouchableOpacity
+                          <MotionTouchableOpacity
                             key={kind}
                             accessible={true}
                             accessibilityRole="button"
@@ -711,7 +703,7 @@ export default function DeliveriesScreen() {
                             >
                               {adjustmentLabel[kind]}
                             </Text>
-                          </TouchableOpacity>
+                          </MotionTouchableOpacity>
                         ))}
                       </View>
                       <TextInput
@@ -733,7 +725,7 @@ export default function DeliveriesScreen() {
                         placeholder="Reason for financial adjustment"
                         placeholderTextColor={COLORS.textMuted}
                       />
-                      <TouchableOpacity
+                      <MotionTouchableOpacity
                         accessible={true}
                         accessibilityRole="button"
                         accessibilityLabel="Submit financial adjustment"
@@ -742,7 +734,7 @@ export default function DeliveriesScreen() {
                         onPress={() => void submitFinancialAdjustment(selected)}
                       >
                         <Text style={styles.primaryText}>RECORD ADJUSTMENT</Text>
-                      </TouchableOpacity>
+                      </MotionTouchableOpacity>
                     </View>
                   ) : null}
 
@@ -767,7 +759,7 @@ export default function DeliveriesScreen() {
                 </View>
 
                 {/* Close Button */}
-                <TouchableOpacity
+                <MotionTouchableOpacity
                   accessible={true}
                   accessibilityRole="button"
                   accessibilityLabel="Close delivery details"
@@ -775,7 +767,7 @@ export default function DeliveriesScreen() {
                   onPress={resetSelection}
                 >
                   <Text style={styles.cancelText}>Close</Text>
-                </TouchableOpacity>
+                </MotionTouchableOpacity>
               </>
             ) : null}
           </ScrollView>

@@ -8,7 +8,7 @@ function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("rounded-md bg-muted motion-safe:animate-pulse", className)}
+      className={cn("skeleton-shimmer rounded-md bg-muted", className)}
       {...props}
     />
   );

@@ -202,25 +202,24 @@
   min-width: 0;
 }
 
-.route-content-transition {
-  animation: routeContentIn 220ms var(--ease-apple) both;
-  will-change: opacity, transform;
-}
-
 .apple-enter {
-  animation: appleFadeIn 280ms var(--ease-apple) both;
-  will-change: opacity, transform;
+  animation: appleFadeIn var(--drx-motion-deliberate, 280ms) var(--drx-ease-enter, var(--ease-apple)) both;
 }
 
-@keyframes routeContentIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px) scale(0.998);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.skeleton-shimmer {
+  background-image: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.075) 50%,
+    transparent 65%
+  );
+  background-size: 220% 100%;
+  animation: drxSkeletonShimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes drxSkeletonShimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -120% 0; }
 }
 
 @keyframes appleFadeIn {
@@ -251,11 +250,12 @@
   *,
   ::before,
   ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+    animation: none !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  .skeleton-shimmer { background-image: none; }
 }
 
 /* Neon Velocity - Global Visual Effects */

@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Customer continuity through checkout (WRE-166)**: Allow authorized operators to quick-create a privacy-scoped customer during payment without losing the sale, and link an anonymous completed sale to a customer from native transaction review. Customer attribution updates purchase and loyalty totals and linked delivery records atomically with an audit event; sale settlement, inventory, and credit entries remain unchanged. Credit-sale reassignment remains blocked.
 - **Release-integrity unique version enforcement (WRE-233)**: Hardened `scripts/release/integrity-check.mjs` to reject `Release impact: none` when runtime product files change, require `VERSION` and native `CURRENT_PROJECT_VERSION` build increments on product PRs and `main` pushes, allow changelog validation via either `[Unreleased]` or a newly cut release heading matching `VERSION`, and enforce `mintlify/CHANGELOG.mdx` parity.
 
+### Improved
+
+- **Cross-surface motion and feedback (WRE-218)**: Add consistent button press depth, stable loading transitions, and restrained screen and panel motion across web, Android, and iOS, with reduced-motion support.
+
 ### Fixed
 
 - **Dashboard and report parity (WRE-220)**: Use the business-local reporting day and shared completed-sale aggregate across web, Android, and iOS; reconcile cash tender and product figures, and avoid showing incomplete inventory, credit, or cost data as valid zero totals. Authenticated reporting end-to-end and real-device sign-off remain release gates.

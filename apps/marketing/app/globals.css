@@ -46,6 +46,25 @@
     scroll-behavior: smooth;
   }
 
+.drx-button-motion {
+  transition-property: transform, box-shadow, background-color, border-color, color;
+  transition-duration: var(--drx-motion-standard, 200ms);
+  transition-timing-function: var(--drx-ease-standard, cubic-bezier(0.2, 0.75, 0.25, 1));
+  transform: translateZ(0);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .drx-button-motion:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgb(0 0 0 / 0.28);
+  }
+}
+
+.drx-button-motion:active {
+  transform: translateY(1px) scale(0.985);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.22);
+}
+
   h1,
   h2,
   h3,
@@ -215,10 +234,14 @@
   *,
   ::before,
   ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+    animation: none !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .drx-button-motion,
+  .drx-button-motion:active {
+    transform: none !important;
   }
 }
 

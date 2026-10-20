@@ -6,6 +6,7 @@ import ClerkKit
 
 struct CustomersView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var customers: [DRXCustomer] = []
     @State private var isLoading = true
     @State private var error: String?
@@ -24,7 +25,9 @@ struct CustomersView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading customers…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                DRXLoadingPlaceholder(label: "Loading customers…", layout: .list)
+                    .padding(DRXSpacing.lg)
+                    .transition(.opacity)
             } else if let error {
                 ContentUnavailableView {
                     Label("Couldn’t load customers", systemImage: "exclamationmark.triangle.fill")
@@ -34,16 +37,20 @@ struct CustomersView: View {
                     Button(DRXContent.Actions.tryAgain) { Task { await load() } }
                         .buttonStyle(.drxPrimary)
                 }
+                .transition(.opacity)
             } else if filtered.isEmpty && !searchText.isEmpty {
-                ContentUnavailableView.search
+                ContentUnavailableView.search.transition(.opacity)
             } else if customers.isEmpty {
                 EmptyStateCard(symbol: "person.2.fill", message: "No customers registered yet.\nAdd your first customer.")
                     .padding(24)
+                    .transition(.opacity)
             } else {
-                customerList
+                customerList.transition(.opacity)
             }
         }
         .background(DRXPalette.canvas)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: isLoading)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: error != nil)
         .navigationTitle("Customers")
         .navigationBarTitleDisplayMode(.large)
         .navigationDestination(for: DRXCustomer.self) { customer in

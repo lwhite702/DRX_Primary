@@ -6,6 +6,7 @@ import ClerkKit
 
 struct InventoryView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var products: [DRXProduct] = []
     @State private var isLoading = true
     @State private var error: String?
@@ -24,7 +25,9 @@ struct InventoryView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView("Loading products…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                DRXLoadingPlaceholder(label: "Loading products…", layout: .list)
+                    .padding(DRXSpacing.lg)
+                    .transition(.opacity)
             } else if let error {
                 ContentUnavailableView {
                     Label("Couldn’t load products", systemImage: "exclamationmark.triangle.fill")
@@ -34,16 +37,20 @@ struct InventoryView: View {
                     Button(DRXContent.Actions.tryAgain) { Task { await load() } }
                         .buttonStyle(.drxPrimary)
                 }
+                .transition(.opacity)
             } else if filtered.isEmpty && !searchText.isEmpty {
-                ContentUnavailableView.search
+                ContentUnavailableView.search.transition(.opacity)
             } else if products.isEmpty {
                 EmptyStateCard(symbol: "shippingbox.fill", message: "No products yet.\nAdd your first product.")
                     .padding(24)
+                    .transition(.opacity)
             } else {
-                productList
+                productList.transition(.opacity)
             }
         }
         .background(DRXPalette.canvas)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: isLoading)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: error != nil)
         .navigationTitle(DRXContent.Navigation.products)
         .navigationBarTitleDisplayMode(.large)
         .navigationDestination(for: DRXProduct.self) { product in

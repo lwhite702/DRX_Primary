@@ -1,12 +1,6 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -39,9 +33,9 @@ export default function NoSale() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <MotionTouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
         <Text style={styles.title}>Open Drawer</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -54,7 +48,7 @@ export default function NoSale() {
           Use this action to record a &quot;No Sale&quot; event and open the cash drawer for change or cash drops.
         </Text>
 
-        <TouchableOpacity
+        <MotionTouchableOpacity
           style={styles.actionBtn}
           onPress={handleOpenDrawer}
           disabled={loading}
@@ -64,7 +58,7 @@ export default function NoSale() {
           ) : (
             <Text style={styles.actionBtnText}>Record No Sale</Text>
           )}
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </View>
     </View>
   );

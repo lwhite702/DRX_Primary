@@ -200,7 +200,7 @@ struct NativeOnboardingView: View {
                         .stroke(isPrimary ? Color.clear : DRXPalette.border, lineWidth: 1)
                 }
         }
-            .buttonStyle(.plain)
+            .buttonStyle(DRXQuietButtonStyle())
             .disabled(isDisabled)
             .opacity(isDisabled ? 0.48 : 1)
             .accessibilityIdentifier(identifier)

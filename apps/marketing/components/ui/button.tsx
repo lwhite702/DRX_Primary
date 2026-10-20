@@ -21,7 +21,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         className={classes(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:pointer-events-none disabled:opacity-50",
+          "drx-button-motion inline-flex items-center justify-center whitespace-nowrap rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:pointer-events-none disabled:opacity-50",
           variant === "default" && "bg-white text-black hover:bg-white/90",
           variant === "outline" && "border border-white/20 bg-transparent text-white hover:bg-white/5",
           size === "default" && "h-10 px-4 py-2 text-sm",

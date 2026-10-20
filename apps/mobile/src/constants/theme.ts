@@ -62,6 +62,20 @@ export const BORDER_RADIUS = {
   full: 999,
 };
 
+/** Shared DRX motion vocabulary, aligned with the web design tokens. */
+export const MOTION_DURATION = {
+  instant: 100,
+  fast: 140,
+  standard: 200,
+  deliberate: 280,
+} as const;
+
+export const MOTION_EASING = {
+  standard: [0.2, 0.75, 0.25, 1] as const,
+  enter: [0.16, 1, 0.3, 1] as const,
+  exit: [0.4, 0, 1, 1] as const,
+};
+
 // Bulk pricing tiers for cannabis
 export const WEIGHT_TIERS = [
   { label: "1g", grams: 1 },

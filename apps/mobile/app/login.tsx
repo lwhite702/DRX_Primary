@@ -1,15 +1,6 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  ActivityIndicator,
-  Alert,
-  Image,
-} from "react-native";
+import { View, Text, StyleSheet, TextInput, KeyboardAvoidingView, ActivityIndicator, Alert, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -114,7 +105,7 @@ export default function Login() {
               cursorColor={COLORS.accent}
               selectionColor={COLORS.accent}
             />
-            <TouchableOpacity
+            <MotionTouchableOpacity
               onPress={() => setShowPassword(!showPassword)}
               style={styles.eyeIcon}
               accessibilityRole="button"
@@ -125,10 +116,10 @@ export default function Login() {
                 size={20}
                 color={COLORS.textSecondary}
               />
-            </TouchableOpacity>
+            </MotionTouchableOpacity>
           </View>
 
-          <TouchableOpacity
+          <MotionTouchableOpacity
             style={[styles.loginButton, loading && styles.loginButtonDisabled]}
             onPress={handleLogin}
             disabled={loading}
@@ -148,14 +139,14 @@ export default function Login() {
                 />
               </>
             )}
-          </TouchableOpacity>
-          <TouchableOpacity
+          </MotionTouchableOpacity>
+          <MotionTouchableOpacity
             style={styles.signupLink}
             onPress={() => router.push("/signup")}
             accessibilityRole="link"
           >
             <Text style={styles.signupText}>Create an owner account</Text>
-          </TouchableOpacity>
+          </MotionTouchableOpacity>
         </View>
 
         <View style={styles.footer}>

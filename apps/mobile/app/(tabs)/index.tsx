@@ -1,18 +1,9 @@
+import MotionTouchableOpacity from "../../src/components/MotionTouchableOpacity";
+import { SkeletonRows } from "../../src/components/LoadingSkeleton";
 import { FormSheet } from "../../src/components/FormSheet";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
+  ActivityIndicator, Alert, FlatList, ScrollView, StyleSheet, Switch, Text, TextInput, useWindowDimensions, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { Ionicons } from "@expo/vector-icons";
 import { useConvex, useMutation, useQuery } from "convex/react";
@@ -665,7 +656,7 @@ export default function POSScreen() {
   if (!products || !customers || (isOnline && businessSettings === undefined))
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color={COLORS.accent} size="large" />
+        <SkeletonRows style={styles.loadingSkeleton} />
       </View>
     );
 
@@ -701,7 +692,7 @@ export default function POSScreen() {
             .filter((line) => line.product._id === item._id)
             .reduce((total, line) => total + line.quantityGrams, 0);
           return (
-            <TouchableOpacity
+            <MotionTouchableOpacity
               style={[styles.productCard, inCartQuantity > 0 && styles.productCardInCart]}
               onPress={() => addProduct(item)}
               accessible={true}
@@ -728,7 +719,7 @@ export default function POSScreen() {
               <Text style={styles.productPrice}>
                 {money(item.sellingPriceCents)}/{pricing(item).sellingUnit ?? "g"}
               </Text>
-            </TouchableOpacity>
+            </MotionTouchableOpacity>
           );
         }}
       />
@@ -740,7 +731,7 @@ export default function POSScreen() {
       <View style={styles.basketHeaderRow}>
         <Text style={styles.title}>Current sale</Text>
         {cart.length > 0 ? (
-          <TouchableOpacity
+          <MotionTouchableOpacity
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="Clear cart"
@@ -750,7 +741,7 @@ export default function POSScreen() {
           >
             <Ionicons name="trash-outline" size={14} color={COLORS.error} />
             <Text style={styles.clearCartText}>Clear</Text>
-          </TouchableOpacity>
+          </MotionTouchableOpacity>
         ) : null}
       </View>
       {feedback ? (
@@ -802,7 +793,7 @@ export default function POSScreen() {
                   <Text style={styles.quantitySummary}>
                     {formatQuantity(pricing(line.product), line.quantityGrams)}
                   </Text>
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     accessible={true}
                     accessibilityRole="button"
                     accessibilityLabel={`Remove ${line.product.productName} from cart`}
@@ -811,13 +802,13 @@ export default function POSScreen() {
                     onPress={() => removeProduct(line.id)}
                   >
                     <Ionicons name="trash-outline" size={16} color={COLORS.error} />
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 </View>
                 <View style={styles.entryRow}>
                   <View style={styles.entryField}>
                     <Text style={styles.entryLabel}>QUANTITY</Text>
                     <View style={styles.stepperContainer}>
-                      <TouchableOpacity
+                      <MotionTouchableOpacity
                         accessible={true}
                         accessibilityRole="button"
                         accessibilityLabel={`Decrease ${line.product.productName} quantity`}
@@ -825,7 +816,7 @@ export default function POSScreen() {
                         onPress={() => adjustLineQuantity(line.id, -1)}
                       >
                         <Ionicons name="remove" size={14} color={COLORS.text} />
-                      </TouchableOpacity>
+                      </MotionTouchableOpacity>
                       <TextInput
                         style={styles.stepperInput}
                         value={String(line.quantityGrams)}
@@ -833,7 +824,7 @@ export default function POSScreen() {
                         keyboardType="decimal-pad"
                         accessibilityLabel={`${line.product.productName} quantity in ${pricing(line.product).sellingUnit ?? "grams"}`}
                       />
-                      <TouchableOpacity
+                      <MotionTouchableOpacity
                         accessible={true}
                         accessibilityRole="button"
                         accessibilityLabel={`Increase ${line.product.productName} quantity`}
@@ -841,7 +832,7 @@ export default function POSScreen() {
                         onPress={() => adjustLineQuantity(line.id, 1)}
                       >
                         <Ionicons name="add" size={14} color={COLORS.text} />
-                      </TouchableOpacity>
+                      </MotionTouchableOpacity>
                     </View>
                   </View>
                   {line.product.allowFractionalWeight ? (
@@ -878,18 +869,18 @@ export default function POSScreen() {
                 {(pricing(line.product).suggestedQuantityPresets?.length ?? 0) > 0 ? (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetRow}>
                     {pricing(line.product).suggestedQuantityPresets?.map((quantity: number) => (
-                      <TouchableOpacity key={`q-${quantity}`} style={styles.preset} onPress={() => setQuantityPreset(line.id, quantity)}>
+                      <MotionTouchableOpacity key={`q-${quantity}`} style={styles.preset} onPress={() => setQuantityPreset(line.id, quantity)}>
                         <Text style={styles.presetText}>{formatQuantity(pricing(line.product), quantity)}</Text>
-                      </TouchableOpacity>
+                      </MotionTouchableOpacity>
                     ))}
                   </ScrollView>
                 ) : null}
                 {line.product.allowFractionalWeight && (pricing(line.product).suggestedDollarPresetsCents?.length ?? 0) > 0 ? (
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetRow}>
                     {pricing(line.product).suggestedDollarPresetsCents?.map((cents: number) => (
-                      <TouchableOpacity key={`d-${cents}`} style={styles.preset} onPress={() => setDollarPreset(line.id, cents)}>
+                      <MotionTouchableOpacity key={`d-${cents}`} style={styles.preset} onPress={() => setDollarPreset(line.id, cents)}>
                         <Text style={styles.presetText}>{money(cents)}</Text>
-                      </TouchableOpacity>
+                      </MotionTouchableOpacity>
                     ))}
                   </ScrollView>
                 ) : null}
@@ -898,7 +889,7 @@ export default function POSScreen() {
           ))
         )}
       </ScrollView>
-      <TouchableOpacity
+      <MotionTouchableOpacity
         style={styles.customerButton}
         onPress={() => setCheckoutOpen(true)}
       >
@@ -907,7 +898,7 @@ export default function POSScreen() {
             ? maskCustomerName(customer)
             : "Select customer or checkout"}
         </Text>
-      </TouchableOpacity>
+      </MotionTouchableOpacity>
       {discountAmountCents > 0 ? (
         <View style={styles.summaryRow}>
           <Text style={styles.summaryDiscountLabel}>Discount</Text>
@@ -919,22 +910,22 @@ export default function POSScreen() {
         <Text style={styles.total}>{money(displayedTotalCents)}</Text>
       </View>
       {quotePending ? <Text style={styles.quoteStatus}>Calculating server total…</Text> : null}
-      <TouchableOpacity
+      <MotionTouchableOpacity
         style={[styles.checkout, cart.length === 0 && styles.disabled]}
         disabled={cart.length === 0}
         onPress={() => setCheckoutOpen(true)}
       >
         <Text style={styles.checkoutText}>CHECKOUT</Text>
-      </TouchableOpacity>
+      </MotionTouchableOpacity>
       {isOnline && queue.pending > 0 ? (
-        <TouchableOpacity
+        <MotionTouchableOpacity
           style={styles.syncButton}
           onPress={() => void syncPending()}
         >
           <Text style={styles.syncText}>
             Sync {queue.pending.toFixed(1)} queued sale(s)
           </Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       ) : null}
     </View>
   );
@@ -967,14 +958,14 @@ export default function POSScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.chips}
             >
-              <TouchableOpacity
+              <MotionTouchableOpacity
                 style={[styles.chip, !customer && styles.chipActive]}
                 onPress={() => setCustomer(null)}
               >
                 <Text style={styles.chipText}>Walk-in</Text>
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
               {customers.map((item: Customer) => (
-                <TouchableOpacity
+                <MotionTouchableOpacity
                   key={item._id}
                   style={[
                     styles.chip,
@@ -983,7 +974,7 @@ export default function POSScreen() {
                   onPress={() => setCustomer(item)}
                 >
                   <Text style={styles.chipText}>{maskCustomerName(item)}</Text>
-                </TouchableOpacity>
+                </MotionTouchableOpacity>
               ))}
             </ScrollView>
             {createCustomerOpen ? (
@@ -1011,7 +1002,7 @@ export default function POSScreen() {
                   </Text>
                 ) : null}
                 <View style={styles.customerCreateActions}>
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     accessibilityRole="button"
                     accessibilityState={{ disabled: creatingCustomer, busy: creatingCustomer }}
                     style={[styles.customerCreateSave, (creatingCustomer || !newCustomerPhone.trim()) && styles.disabled]}
@@ -1019,8 +1010,8 @@ export default function POSScreen() {
                     disabled={creatingCustomer || !newCustomerPhone.trim()}
                   >
                     {creatingCustomer ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.customerCreateSaveText}>Save and select</Text>}
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </MotionTouchableOpacity>
+                  <MotionTouchableOpacity
                     accessibilityRole="button"
                     style={styles.customerCreateCancel}
                     onPress={() => {
@@ -1030,11 +1021,11 @@ export default function POSScreen() {
                     disabled={creatingCustomer}
                   >
                     <Text style={styles.customerCreateCancelText}>Cancel</Text>
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 </View>
               </View>
             ) : (
-              <TouchableOpacity
+              <MotionTouchableOpacity
                 accessibilityRole="button"
                 style={styles.customerCreateLink}
                 onPress={() => {
@@ -1043,25 +1034,25 @@ export default function POSScreen() {
                 }}
               >
                 <Text style={styles.customerCreateLinkText}>+ Create a customer here</Text>
-              </TouchableOpacity>
+              </MotionTouchableOpacity>
             )}
             <View style={styles.discountSection}>
               <View style={styles.discountHeaderRow}>
                 <Text style={styles.modalLabel}>Discount</Text>
                 {discountAmountCents > 0 ? (
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     onPress={() => {
                       setDiscountDollars("");
                       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     }}
                   >
                     <Text style={styles.clearDiscountText}>Remove</Text>
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 ) : null}
               </View>
               <View style={styles.discountPresets}>
                 {[5, 10, 15].map((amt) => (
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     key={amt}
                     style={[
                       styles.discountPresetBtn,
@@ -1073,11 +1064,11 @@ export default function POSScreen() {
                     }}
                   >
                     <Text style={styles.discountPresetText}>${amt}</Text>
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 ))}
                 {subtotalCents > 0 ? (
                   <>
-                    <TouchableOpacity
+                    <MotionTouchableOpacity
                       style={[
                         styles.discountPresetBtn,
                         discountDollars === (subtotalCents * 0.1 / 100).toFixed(2) &&
@@ -1089,8 +1080,8 @@ export default function POSScreen() {
                       }}
                     >
                       <Text style={styles.discountPresetText}>10%</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </MotionTouchableOpacity>
+                    <MotionTouchableOpacity
                       style={[
                         styles.discountPresetBtn,
                         discountDollars === (subtotalCents * 0.2 / 100).toFixed(2) &&
@@ -1102,7 +1093,7 @@ export default function POSScreen() {
                       }}
                     >
                       <Text style={styles.discountPresetText}>20%</Text>
-                    </TouchableOpacity>
+                    </MotionTouchableOpacity>
                   </>
                 ) : null}
               </View>
@@ -1165,18 +1156,18 @@ export default function POSScreen() {
                   keyboardType="decimal-pad"
                 />
                 <View style={styles.allocationRow}>
-                  <TouchableOpacity
+                  <MotionTouchableOpacity
                     style={[styles.allocationButton, chargeDeliveryToCustomer && styles.allocationActive]}
                     onPress={() => setChargeDeliveryToCustomer(true)}
                   >
                     <Text style={styles.allocationText}>CHARGE CUSTOMER</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </MotionTouchableOpacity>
+                  <MotionTouchableOpacity
                     style={[styles.allocationButton, !chargeDeliveryToCustomer && styles.allocationActive]}
                     onPress={() => setChargeDeliveryToCustomer(false)}
                   >
                     <Text style={styles.allocationText}>MERCHANT ABSORBS</Text>
-                  </TouchableOpacity>
+                  </MotionTouchableOpacity>
                 </View>
                 <Text style={styles.deliveryHint}>
                   {chargeDeliveryToCustomer
@@ -1187,7 +1178,7 @@ export default function POSScreen() {
             ) : null}
             <View style={styles.tenders}>
               {(["cash", "card", "credit"] as Tender[]).map((method) => (
-                <TouchableOpacity
+                <MotionTouchableOpacity
                   key={method}
                   style={[
                     styles.tender,
@@ -1198,7 +1189,7 @@ export default function POSScreen() {
                   onPress={() => setTender(method)}
                 >
                   <Text style={styles.tenderText}>{method.toUpperCase()}</Text>
-                </TouchableOpacity>
+                </MotionTouchableOpacity>
               ))}
             </View>
             {tender === "cash" ? (
@@ -1219,7 +1210,7 @@ export default function POSScreen() {
                 for reconciliation.
               </Text>
             ) : null}
-            <TouchableOpacity
+            <MotionTouchableOpacity
               style={[
                 styles.checkout,
                 (submitting || creatingCustomer || !deliveryDetailsValid || (isOnline && !checkoutQuote)) && styles.disabled,
@@ -1234,13 +1225,13 @@ export default function POSScreen() {
                   {isOnline ? "COMPLETE SALE" : "QUEUE OFFLINE SALE"}
                 </Text>
               )}
-            </TouchableOpacity>
-            <TouchableOpacity
+            </MotionTouchableOpacity>
+            <MotionTouchableOpacity
               style={styles.cancel}
               onPress={() => setCheckoutOpen(false)}
             >
               <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
+            </MotionTouchableOpacity>
       </FormSheet>
     </View>
   );
@@ -1254,6 +1245,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: COLORS.background,
   },
+  loadingSkeleton: { flex: 1, alignSelf: "stretch" },
   workspace: { flex: 1 },
   workspaceTablet: { flexDirection: "row" },
   catalog: { flex: 1, padding: SPACING.md },

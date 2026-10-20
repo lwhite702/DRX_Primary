@@ -1,14 +1,7 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
+import { SkeletonBlock } from "../src/components/LoadingSkeleton";
 import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  TextInput,
-} from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, Alert, ScrollView, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -79,21 +72,26 @@ export default function Shrinkage() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <MotionTouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
         <Text style={styles.title}>Record Shrinkage</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView style={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.label}>Item</Text>
-        {status === "LoadingFirstPage" && <ActivityIndicator color={COLORS.accent} />}
         {retryPending && <Text style={styles.label}>This attempt is awaiting confirmation. Retry the same removal.</Text>}
         <View style={styles.pickerContainer}>
            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-             {inventory.map(item => (
-                <TouchableOpacity
+             {status === "LoadingFirstPage" ? (
+               <View style={styles.loadingChips} accessibilityRole="progressbar" accessibilityLabel="Loading inventory items">
+                 <SkeletonBlock style={styles.loadingChip} />
+                 <SkeletonBlock style={styles.loadingChip} />
+                 <SkeletonBlock style={styles.loadingChipWide} />
+               </View>
+             ) : inventory.map(item => (
+                <MotionTouchableOpacity
                   key={item._id}
                   style={[
                     styles.chip,
@@ -106,7 +104,7 @@ export default function Shrinkage() {
                     styles.chipText,
                     selectedItemId === item._id && styles.chipTextSelected
                   ]}>{item.productName}</Text>
-                </TouchableOpacity>
+                </MotionTouchableOpacity>
              ))}
            </ScrollView>
         </View>
@@ -126,7 +124,7 @@ export default function Shrinkage() {
         <Text style={styles.label}>Reason</Text>
         <View style={styles.reasonRow}>
           {(["personal_use", "damage", "spillage"] as const).map(r => (
-            <TouchableOpacity
+            <MotionTouchableOpacity
               key={r}
               style={[styles.reasonBtn, reason === r && styles.reasonBtnSelected]}
               disabled={loading || retryPending}
@@ -135,7 +133,7 @@ export default function Shrinkage() {
               <Text style={[styles.reasonBtnText, reason === r && styles.reasonBtnTextSelected]}>
                 {r.replace("_", " ").toUpperCase()}
               </Text>
-            </TouchableOpacity>
+            </MotionTouchableOpacity>
           ))}
         </View>
 
@@ -151,7 +149,7 @@ export default function Shrinkage() {
           onChangeText={setNote}
         />
 
-        <TouchableOpacity
+        <MotionTouchableOpacity
           style={styles.actionBtn}
           onPress={handleSubmit}
           disabled={loading || !businessId || !userId || !selectedItemId || !quantity}
@@ -161,7 +159,7 @@ export default function Shrinkage() {
           ) : (
             <Text style={styles.actionBtnText}>{retryPending ? "Retry Event" : "Record Event"}</Text>
           )}
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -184,6 +182,9 @@ const styles = StyleSheet.create({
   label: { color: COLORS.textSecondary, fontSize: FONT_SIZES.sm, marginBottom: SPACING.xs, marginTop: SPACING.lg },
   selectedLabel: { color: COLORS.accent, fontSize: FONT_SIZES.sm, marginTop: SPACING.sm, fontWeight: "600" },
   pickerContainer: { flexDirection: "row", marginTop: SPACING.xs },
+  loadingChips: { flexDirection: "row", gap: SPACING.sm },
+  loadingChip: { width: 72, height: 40, borderRadius: BORDER_RADIUS.full },
+  loadingChipWide: { width: 118, height: 40, borderRadius: BORDER_RADIUS.full },
   chip: {
     backgroundColor: COLORS.surface,
     paddingHorizontal: SPACING.md,
