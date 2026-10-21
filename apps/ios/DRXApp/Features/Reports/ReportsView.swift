@@ -8,12 +8,14 @@ struct ReportsView: View {
     @State private var aggregate: DRXDailySalesAggregate?
     @State private var salesHistory: [DRXSale] = []
     @State private var selectedDate = Date()
+    @State private var reportingTimeZoneID = "America/New_York"
     @State private var isLoading = true
     @State private var error: String?
+    @State private var activeLoadID = UUID()
 
     // Default to Eastern Standard Time ("America/New_York") or system timezone if configured
     private var reportingTimeZone: TimeZone {
-        TimeZone(identifier: "America/New_York") ?? .current
+        TimeZone(identifier: reportingTimeZoneID) ?? .current
     }
 
     private var calendar: Calendar {
@@ -33,6 +35,13 @@ struct ReportsView: View {
         return formatter.string(from: selectedDate)
     }
 
+    private func dateKey(for date: Date, timeZone: TimeZone? = nil) -> String {
+        let formatter = DateFormatter()
+        formatter.timeZone = timeZone ?? reportingTimeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
     private var filteredSalesForSelectedDate: [DRXSale] {
         salesHistory.filter { sale in
             calendar.isDate(sale.createdDate, inSameDayAs: selectedDate)
@@ -40,18 +49,13 @@ struct ReportsView: View {
     }
 
     private var filteredAggregate: DRXDailySalesAggregate {
-        let daySales = filteredSalesForSelectedDate
-        let orderCount = daySales.count
-        let totalRevenue = daySales.reduce(0) { $0 + $1.totalAmountCents }
-        let totalSubtotal = daySales.reduce(0) { $0 + $1.subtotalCents }
-        let totalTax = daySales.reduce(0) { $0 + $1.taxAmountCents }
-        let avgOrder = orderCount > 0 ? (totalRevenue / orderCount) : 0
-        return DRXDailySalesAggregate(
-            orderCount: orderCount,
-            totalRevenueCents: totalRevenue,
-            totalTaxCents: totalTax,
-            totalSubtotalCents: totalSubtotal,
-            averageOrderValueCents: avgOrder
+        aggregate ?? DRXDailySalesAggregate(
+            orderCount: 0,
+            totalRevenueCents: 0,
+            cashSalesCents: 0,
+            totalTaxCents: 0,
+            totalSubtotalCents: 0,
+            averageOrderValueCents: 0
         )
     }
 
@@ -79,6 +83,7 @@ struct ReportsView: View {
                 Button {
                     if let previous = calendar.date(byAdding: .day, value: -1, to: selectedDate) {
                         selectedDate = previous
+                        Task { await load(selectedDate: previous) }
                     }
                 } label: {
                     HStack(spacing: 4) {
@@ -95,7 +100,7 @@ struct ReportsView: View {
                     Text(selectedDateFormatted)
                         .font(.headline)
                         .foregroundStyle(DRXPalette.ink)
-                    Text("Eastern Time (America/New_York)")
+                    Text(reportingTimeZoneID)
                         .font(.caption2)
                         .foregroundStyle(DRXPalette.muted)
                 }
@@ -105,6 +110,7 @@ struct ReportsView: View {
                 Button {
                     if let next = calendar.date(byAdding: .day, value: 1, to: selectedDate) {
                         selectedDate = next
+                        Task { await load(selectedDate: next) }
                     }
                 } label: {
                     HStack(spacing: 4) {
@@ -118,7 +124,9 @@ struct ReportsView: View {
 
             if !isTodaySelected {
                 Button {
-                    selectedDate = Date()
+                    let today = Date()
+                    selectedDate = today
+                    Task { await load(selectedDate: today) }
                 } label: {
                     Text("Jump to Today")
                         .font(.caption.weight(.semibold))
@@ -149,6 +157,8 @@ struct ReportsView: View {
                 VStack(spacing: 0) {
                     ReportSummaryRow(title: "Sales", value: agg.totalRevenueFormatted, highlight: true)
                     Divider()
+                    ReportSummaryRow(title: "Cash sales", value: agg.cashSalesFormatted)
+                    Divider()
                     ReportSummaryRow(title: "Subtotal", value: formatCents(agg.totalSubtotalCents))
                     Divider()
                     ReportSummaryRow(title: "Tax", value: agg.totalTaxFormatted)
@@ -165,12 +175,17 @@ struct ReportsView: View {
 
             let sales = filteredSalesForSelectedDate
             VStack(alignment: .leading, spacing: 12) {
-                Text("Sales for this day (\(sales.count))")
+                Text("Recent sales (\(agg.orderCount) total in selected day)")
                     .font(.headline)
                     .foregroundStyle(DRXPalette.ink)
 
                 if sales.isEmpty {
-                    EmptyStateCard(symbol: "chart.bar.doc.horizontal", message: "No sales on this day.")
+                    EmptyStateCard(
+                        symbol: "chart.bar.doc.horizontal",
+                        message: agg.orderCount == 0
+                            ? "No completed sales for this day."
+                            : "Recent sale details are unavailable for this day. Daily totals include all completed sales."
+                    )
                 } else {
                     LazyVStack(spacing: 0) {
                         ForEach(sales) { sale in
@@ -210,11 +225,13 @@ struct ReportsView: View {
         .padding(.top, 60)
     }
 
-    private func load() async {
+    private func load(selectedDate requestedDate: Date? = nil) async {
+        let requestID = UUID()
+        activeLoadID = requestID
         isLoading = true
         error = nil
-        async let aggTask: DRXDailySalesAggregate = ConvexClient.shared.query(
-            "reporting:getDailySalesAggregate",
+        async let settingsTask: BusinessSettingsResponse = ConvexClient.shared.query(
+            "settings:getBusinessSettings",
             args: EmptyConvexArgs()
         )
         async let salesTask: [DRXSale] = ConvexClient.shared.query(
@@ -222,13 +239,23 @@ struct ReportsView: View {
             args: EmptyConvexArgs()
         )
         do {
-            let (agg, sales) = try await (aggTask, salesTask)
-            aggregate = agg
+            let (settings, sales) = try await (settingsTask, salesTask)
+            guard activeLoadID == requestID else { return }
+            reportingTimeZoneID = settings.business.timezone
+            let aggregate: DRXDailySalesAggregate = try await ConvexClient.shared.query(
+                "reporting:getDailySalesAggregate",
+                args: DRXDailySalesAggregateArgs(
+                    dateKey: dateKey(for: requestedDate ?? selectedDate, timeZone: TimeZone(identifier: settings.business.timezone))
+                )
+            )
+            guard activeLoadID == requestID else { return }
+            self.aggregate = aggregate
             salesHistory = sales
         } catch {
+            guard activeLoadID == requestID else { return }
             self.error = error.localizedDescription
         }
-        isLoading = false
+        if activeLoadID == requestID { isLoading = false }
     }
 }
 

@@ -6,32 +6,29 @@ import { useBusiness } from "@/lib/hooks/use-business";
 
 import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
+}
+
 interface EventDeskMetrics {
-  totalSales: number;
-  salesCount: number;
-  averageSale: number;
-  inventoryAlerts: number;
-  pendingIntakes: number;
-  activeCustomers: number;
-  creditOutstanding: number;
-  recentIntakes: any[];
-  lowStockItems: any[];
+  totalSales: number | null;
+  salesCount: number | null;
+  averageSale: number | null;
+  inventoryAlerts: number | null;
+  lowStockItems: any[] | null;
 }
 
 export default function EventDeskPage() {
   const { business, loading: businessLoading } = useBusiness();
   const [metrics, setMetrics] = useState<EventDeskMetrics>({
-    totalSales: 0,
-    salesCount: 0,
-    averageSale: 0,
-    inventoryAlerts: 0,
-    pendingIntakes: 0,
-    activeCustomers: 0,
-    creditOutstanding: 0,
-    recentIntakes: [],
-    lowStockItems: [],
+    totalSales: null,
+    salesCount: null,
+    averageSale: null,
+    inventoryAlerts: null,
+    lowStockItems: null,
   });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (business?.id) {
@@ -44,35 +41,27 @@ export default function EventDeskPage() {
 
     try {
       setLoading(true);
-
-      // Fetch all event desk data concurrently
-      const [baselineResponse, inventoryResponse, customerResponse] = await Promise.all([
-        fetch("/api/reports/pos-baseline", { credentials: "same-origin" }),
-        fetch("/api/inventory?limit=200", { credentials: "same-origin" }),
-        fetch("/api/customers?limit=200", { credentials: "same-origin" }),
-      ]);
+      setLoadError(null);
+      setMetrics({ totalSales: null, salesCount: null, averageSale: null, inventoryAlerts: null, lowStockItems: null });
+      const baselineResponse = await fetch("/api/reports/pos-baseline", { credentials: "same-origin" });
+      if (!baselineResponse.ok) throw new Error("Could not load current reporting metrics.");
       const baseline = await baselineResponse.json();
-      const inventory = await inventoryResponse.json();
-      const customers = await customerResponse.json();
-      const totalSales = Number(baseline.today?.salesTotal ?? 0);
-      const salesCount = Number(baseline.today?.salesCount ?? 0);
-      const averageSale = salesCount > 0 ? totalSales / salesCount : 0;
+      const totalSales = typeof baseline.today?.salesTotal === "number" ? baseline.today.salesTotal : null;
+      const salesCount = typeof baseline.today?.salesCount === "number" ? baseline.today.salesCount : null;
+      const averageSale = typeof baseline.today?.averageOrderValue === "number" ? baseline.today.averageOrderValue : null;
       const lowStockItems = Array.isArray(baseline.lowStock?.items) ? baseline.lowStock.items : [];
-      const creditOutstanding = Number(baseline.credit?.outstandingBalance ?? 0);
 
+      const inventoryAlerts = typeof baseline.lowStock?.count === "number" ? baseline.lowStock.count : null;
       setMetrics({
         totalSales,
         salesCount,
         averageSale,
-        inventoryAlerts: lowStockItems.length,
-        pendingIntakes: 0,
-        activeCustomers: Array.isArray(customers.data) ? customers.data.length : 0,
-        creditOutstanding,
-        recentIntakes: [],
-        lowStockItems: lowStockItems.length ? lowStockItems : (Array.isArray(inventory.data) ? inventory.data.slice(0, 5) : []),
+        inventoryAlerts,
+        lowStockItems: inventoryAlerts === null ? null : lowStockItems,
       });
     } catch (error) {
       console.error("Failed to load insights data:", error);
+      setLoadError(error instanceof Error ? error.message : "Could not load current reporting metrics.");
     } finally {
       setLoading(false);
     }
@@ -95,9 +84,11 @@ export default function EventDeskPage() {
       <div>
         <h1 className="text-3xl font-bold">Operations Insights</h1>
         <p className="text-muted-foreground mt-2">
-          Real-time business metrics and alerts
+          Business-local sales totals and inventory alerts
         </p>
       </div>
+
+      {loadError ? <p role="alert" className="text-sm text-destructive">{loadError}</p> : null}
 
       {/* Key Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -106,10 +97,10 @@ export default function EventDeskPage() {
             Today's Sales
           </h3>
           <p className="text-3xl font-bold mt-2">
-            ${(metrics?.totalSales ?? 0).toFixed(2)}
+            {metrics.totalSales === null ? "—" : formatCurrency(metrics.totalSales)}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {metrics?.salesCount ?? 0} transactions
+            {metrics.salesCount === null ? "Transaction count unavailable" : `${metrics.salesCount} transactions`}
           </p>
         </Card>
         <Card className="p-6">
@@ -117,15 +108,15 @@ export default function EventDeskPage() {
             Average Sale
           </h3>
           <p className="text-3xl font-bold mt-2">
-            ${(metrics?.averageSale ?? 0).toFixed(2)}
+            {metrics.averageSale === null ? "—" : formatCurrency(metrics.averageSale)}
           </p>
         </Card>
         <Card className="p-6">
           <h3 className="text-sm font-medium text-muted-foreground">
             Inventory Alerts
           </h3>
-          <p className="text-3xl font-bold mt-2">{metrics.inventoryAlerts}</p>
-          {metrics.inventoryAlerts > 0 && (
+          <p className="text-3xl font-bold mt-2">{metrics.inventoryAlerts ?? "—"}</p>
+          {metrics.inventoryAlerts !== null && metrics.inventoryAlerts > 0 && (
             <p className="text-xs text-yellow-600 mt-1">
               Items need restocking
             </p>
@@ -135,10 +126,8 @@ export default function EventDeskPage() {
           <h3 className="text-sm font-medium text-muted-foreground">
             Pending Intakes
           </h3>
-          <p className="text-3xl font-bold mt-2">{metrics.pendingIntakes}</p>
-          {metrics.pendingIntakes > 0 && (
-            <p className="text-xs text-yellow-600 mt-1">Awaiting approval</p>
-          )}
+          <p className="text-3xl font-bold mt-2">—</p>
+          <p className="text-xs text-muted-foreground mt-1">Intake count unavailable</p>
         </Card>
       </div>
 
@@ -146,40 +135,14 @@ export default function EventDeskPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="p-6">
           <h2 className="text-xl font-bold">Recent Intakes</h2>
-          {metrics.recentIntakes.length === 0 ? (
-            <p className="text-muted-foreground mt-4">No recent intakes</p>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {metrics.recentIntakes.map((intake) => (
-                <div
-                  key={intake.id}
-                  className="flex justify-between items-center p-3 border rounded"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {intake.inventory?.product_name || "Unknown Product"}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(intake.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">
-                      ${(intake.total_cost || 0).toFixed(2)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {intake.total_weight_grams}g
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <p className="text-muted-foreground mt-4">Intake activity is unavailable.</p>
         </Card>
 
         <Card className="p-6">
           <h2 className="text-xl font-bold">Low Stock Alerts</h2>
-          {metrics.lowStockItems.length === 0 ? (
+          {metrics.lowStockItems === null ? (
+            <p className="text-muted-foreground mt-4">Inventory count is unavailable.</p>
+          ) : metrics.lowStockItems.length === 0 ? (
             <p className="text-muted-foreground mt-4">No low stock items</p>
           ) : (
             <div className="mt-4 space-y-3">
@@ -189,17 +152,17 @@ export default function EventDeskPage() {
                   className="flex justify-between items-center p-3 border rounded"
                 >
                   <div>
-                    <p className="font-medium">{item.product_name}</p>
+                    <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-muted-foreground">
                       SKU: {item.sku}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-red-600">
-                      {item.quantity_on_hand}g
+                      {item.quantityOnHand}g
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Reorder: {item.reorder_level}g
+                      Reorder: {item.lowStockThreshold}g
                     </p>
                   </div>
                 </div>

@@ -7,6 +7,7 @@ import {
   Package,
   AlertCircle,
   ArrowUpRight,
+  ArrowDownRight,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -88,8 +89,8 @@ export function OperatorSnapshot({
 
   const cashSharePercent = useMemo(() => {
     if (stats.salesToday <= 0) return 0;
-    return Math.round((stats.cashCollected / stats.salesToday) * 100);
-  }, [stats.cashCollected, stats.salesToday]);
+    return Math.round((stats.cashSales / stats.salesToday) * 100);
+  }, [stats.cashSales, stats.salesToday]);
 
   return (
     <section className="rounded-xl border border-accent/15 bg-accent/[0.03] p-4 md:p-5">
@@ -99,7 +100,7 @@ export function OperatorSnapshot({
             At a glance
           </div>
           <p className="mt-1 text-xs text-white/70">
-            Sales, balances due, and stock for today.
+            Today’s sales, cash tender, and verified stock or credit signals.
           </p>
         </div>
         <button
@@ -130,20 +131,20 @@ export function OperatorSnapshot({
         >
           <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
             <div className="text-[10px] uppercase tracking-widest text-white/60">Sales</div>
-            <div className="text-sm font-semibold text-white">${stats.salesToday.toLocaleString()}</div>
+            <div className="text-sm font-semibold text-white">{stats.salesToday.toLocaleString("en-US", { style: "currency", currency: "USD" })}</div>
           </div>
           <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
             <div className="text-[10px] uppercase tracking-widest text-white/60">Cash</div>
-            <div className="text-sm font-semibold text-white">${stats.cashCollected.toLocaleString()}</div>
+            <div className="text-sm font-semibold text-white">${stats.cashSales.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           </div>
-          <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+          {stats.lowStockCount !== null ? <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
             <div className="text-[10px] uppercase tracking-widest text-white/60">Low Stock</div>
             <div className="text-sm font-semibold text-white">{stats.lowStockCount}</div>
-          </div>
-          <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
-            <div className="text-[10px] uppercase tracking-widest text-white/60">Overdue</div>
-            <div className="text-sm font-semibold text-white">${stats.overdueBalance.toLocaleString()}</div>
-          </div>
+          </div> : null}
+          {stats.outstandingBalance !== null ? <div className="rounded-lg border border-white/10 bg-black/20 px-3 py-2">
+            <div className="text-[10px] uppercase tracking-widest text-white/60">Outstanding Credit</div>
+            <div className="text-sm font-semibold text-white">${stats.outstandingBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          </div> : null}
         </div>
       ) : (
         <div
@@ -157,15 +158,15 @@ export function OperatorSnapshot({
             title="Sales Today"
             value={
               <>
-                ${stats.salesToday.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                ${stats.salesToday.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </>
             }
             sublabel={
               <span className="flex items-center justify-between gap-2">
                 <span className="inline-flex items-center gap-1 font-semibold text-success">
-                  +{stats.salesGrowth}% <ArrowUpRight className="h-3 w-3" />
+                  {stats.salesGrowth > 0 ? "+" : ""}{stats.salesGrowth}% {stats.salesGrowth < 0 ? <ArrowDownRight className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
                 </span>
-                <span className="text-white/65">{stats.transactionsCount} transactions</span>
+                <span className="text-white/65">{stats.transactionsCount} transactions · vs prior 7 days</span>
               </span>
             }
             icon={<TrendingUp className="h-4 w-4" />}
@@ -174,15 +175,15 @@ export function OperatorSnapshot({
           />
 
           <SnapshotCard
-            title="Cash Collected"
+            title="Cash Sales"
             value={
               <>
-                ${stats.cashCollected.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                ${stats.cashSales.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </>
             }
             sublabel={
               <span>
-                {cashSharePercent}% of today&apos;s sales collected in cash
+                {cashSharePercent}% of today&apos;s sales used cash tender
               </span>
             }
             icon={<DollarSign className="h-4 w-4" />}
@@ -191,29 +192,54 @@ export function OperatorSnapshot({
           />
 
           <SnapshotCard
+            title="Average Sale"
+            value={stats.averageOrderValue.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+            sublabel={<span>Average completed sale today</span>}
+            icon={<TrendingUp className="h-4 w-4" />}
+            iconClassName="bg-accent/10 text-accent"
+          />
+
+          <SnapshotCard
+            title="Tax"
+            value={stats.totalTax.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+            sublabel={<span>Tax recorded on today’s sales</span>}
+            icon={<DollarSign className="h-4 w-4" />}
+            iconClassName="bg-warning/10 text-warning"
+          />
+
+          <SnapshotCard
+            title="Subtotal"
+            value={stats.subtotal.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+            sublabel={<span>Before sales tax</span>}
+            icon={<DollarSign className="h-4 w-4" />}
+            iconClassName="bg-accent/10 text-accent"
+          />
+
+          {stats.lowStockCount !== null ? <SnapshotCard
             title="Low Stock"
             value={stats.lowStockCount}
             sublabel={<span>Products below threshold</span>}
             icon={<Package className="h-4 w-4" />}
             iconClassName="bg-warning/10 text-warning"
             className={emphasizeInventory ? "border-warning/20 bg-warning/[0.04]" : undefined}
-          />
+          /> : null}
 
-          <SnapshotCard
-            title="Overdue Balance"
+          {stats.outstandingBalance !== null && stats.outstandingAccounts !== null ? <SnapshotCard
+            title="Outstanding Credit"
             value={
               <>
                 $
-                {stats.overdueBalance.toLocaleString("en-US", {
-                  maximumFractionDigits: 0,
+                {stats.outstandingBalance.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
                 })}
               </>
             }
-            sublabel={<span>{stats.overdueCount} customers with active balances</span>}
+            sublabel={<span>{stats.outstandingAccounts} customers with active balances</span>}
             icon={<AlertCircle className="h-4 w-4" />}
             iconClassName="bg-red-500/10 text-red-400"
             className={compact ? "md:col-span-2 lg:col-span-2" : undefined}
-          />
+          /> : null}
         </div>
       )}
     </section>

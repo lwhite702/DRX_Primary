@@ -18,7 +18,7 @@ The number one culprit behind "missing" sales is simply looking at the wrong dat
 
 ### On iPhone (Native iOS App)
 1. Check the store badge at the top of your screen. If you have multiple stores, tap the badge to ensure you're on the active location.
-2. Remember that native iOS summary cards display totals aligned with server time. If your shift started before midnight or crosses time boundaries, pull down on the **Dashboard** to refresh.
+2. Web, Android, and iOS summaries use the active business's timezone. Confirm the selected business and day before comparing totals, then pull down on the **Dashboard** to refresh.
 3. Tap **POS** and check the top right icon to confirm your register has a solid cloud connection.
 
 ### On Android & Mobile Web
@@ -30,8 +30,9 @@ The number one culprit behind "missing" sales is simply looking at the wrong dat
 Remember: **Total Sales**, **Cash Collected**, and **Gross Profit** are completely different numbers!
 
 - **Total Sales**: The retail value of everything rung up through checkout (including items bought on store credit tabs).
-- **Cash Collected**: The actual bills and coins placed into the cash drawer. If a customer bought a $50 item on store credit, your Total Sales goes up by $50, but your cash in drawer doesn't budge until they come back and pay off their tab!
-- **Gross Profit**: What you sold minus what you paid to stock those products (COGS). If you haven't entered unit costs for your products yet, your margin calculations will show as zero until costs are entered.
+- **Cash Sales**: Cash tenders recorded for completed sales. This is not a cash-drawer balance or reconciliation; store-credit sales do not count as cash sales.
+- **Gross Profit**: Revenue less cost of goods sold and applicable delivery costs. DRX shows profit only when underlying cost allocation is complete; otherwise the report marks it unavailable.
+- **Tax and subtotal**: The tax and pre-tax subtotal recorded for completed sales in the selected business-local day.
 
 ## 3. What if a report export fails to download?
 

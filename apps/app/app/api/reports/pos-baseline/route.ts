@@ -26,14 +26,9 @@ export async function GET(request: NextRequest) {
 
     const fromParam = request.nextUrl.searchParams.get("from");
     const toParam = request.nextUrl.searchParams.get("to");
-    const timezoneParam = request.nextUrl.searchParams.get("timezone") || undefined;
-    const from = fromParam ? new Date(fromParam) : undefined;
-    const to = toParam ? new Date(toParam) : undefined;
-
     const report = await getPosBaselineReport(businessId, {
-      from: from && !Number.isNaN(from.getTime()) ? from : undefined,
-      to: to && !Number.isNaN(to.getTime()) ? to : undefined,
-      timezone: timezoneParam,
+      from: fromParam || undefined,
+      to: toParam || undefined,
     });
     return NextResponse.json(report);
   } catch (error: unknown) {

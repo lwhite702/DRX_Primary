@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/table";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
-import { getPosReconciliationReport } from "@/lib/reports/pos-reconciliation";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ReportsTour } from "./_components/ReportsTour";
 import { CommerceDeliverySummary } from "./_components/commerce-delivery-summary";
@@ -42,21 +41,14 @@ export default async function ReportsPage({
     );
   }
 
-  const from = resolvedSearchParams?.from
-    ? new Date(resolvedSearchParams.from)
-    : undefined;
-  const to = resolvedSearchParams?.to
-    ? new Date(resolvedSearchParams.to)
-    : undefined;
+  const from = resolvedSearchParams?.from;
+  const to = resolvedSearchParams?.to;
   const range = {
-    from: from && !Number.isNaN(from.getTime()) ? from : undefined,
-    to: to && !Number.isNaN(to.getTime()) ? to : undefined,
+    from: from && (/^\d{4}-\d{2}-\d{2}$/.test(from) || !Number.isNaN(Date.parse(from))) ? from : undefined,
+    to: to && (/^\d{4}-\d{2}-\d{2}$/.test(to) || !Number.isNaN(Date.parse(to))) ? to : undefined,
   };
 
-  const [report, reconciliation] = await Promise.all([
-    getPosBaselineReport(businessId, range),
-    getPosReconciliationReport(businessId, range),
-  ]);
+  const report = await getPosBaselineReport(businessId, range);
 
   const timeZone = report.period.timezone || "America/New_York";
   const currentDateStr = (() => {
@@ -85,7 +77,7 @@ export default async function ReportsPage({
             Baseline sales, cost, and margin visibility from the stabilized POS ledger.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Window: {formatDateTime(report.period.from)} to {formatDateTime(report.period.to)} ({timeZone})
+            Window (end exclusive): {formatDateTime(report.period.from)} to {formatDateTime(report.period.to)} ({timeZone})
           </p>
           <Link
             href={`/api/reports/pos-reconciliation?from=${encodeURIComponent(report.period.from)}&to=${encodeURIComponent(report.period.to)}&format=csv`}
@@ -100,15 +92,13 @@ export default async function ReportsPage({
 
       <CommerceDeliverySummary
         from={report.period.from}
-        toExclusive={new Date(
-          new Date(report.period.to).getTime() + 1,
-        ).toISOString()}
+        toExclusive={report.period.to}
       />
 
       <div id="tour-reports-stats" className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Today Sales</CardTitle>
+            <CardTitle className="text-sm font-medium">{report.period.mode === "custom" ? "Sales in Selected Window" : "Sales Today"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
             <div className="text-2xl font-bold">{formatCurrency(report.today.salesTotal)}</div>
@@ -117,24 +107,29 @@ export default async function ReportsPage({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Today COGS</CardTitle>
+            <CardTitle className="text-sm font-medium">{report.period.mode === "custom" ? "COGS in Selected Window" : "Today COGS"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
-            <div className="text-2xl font-bold">{formatCurrency(report.today.costOfGoodsSold)}</div>
-            <p className="text-sm text-muted-foreground">
-              Cash collected: {formatCurrency(report.today.cashCollected)}
-            </p>
+            <div className="text-2xl font-bold">{report.today.costOfGoodsSold === null ? "Unavailable" : formatCurrency(report.today.costOfGoodsSold)}</div>
+            <p className="text-sm text-muted-foreground">{report.today.costOfGoodsSold === null ? "Cost allocation is incomplete" : "Complete allocated cost"}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-sm font-medium">Cash Sales</CardTitle></CardHeader>
+          <CardContent className="space-y-1">
+            <div className="text-2xl font-bold">{formatCurrency(report.today.cashSales)}</div>
+            <p className="text-sm text-muted-foreground">Cash tenders recorded on completed sales</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Week Gross Profit</CardTitle>
+            <CardTitle className="text-sm font-medium">{report.period.mode === "custom" ? "Gross Profit in Selected Window" : "Week Gross Profit"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
-            <div className="text-2xl font-bold">{formatCurrency(report.week.grossProfit)}</div>
+            <div className="text-2xl font-bold">{report.week.grossProfit === null ? "Unavailable" : formatCurrency(report.week.grossProfit)}</div>
             <p className="text-sm text-muted-foreground">
               Revenue {formatCurrency(report.week.salesTotal)} against COGS{" "}
-              {formatCurrency(report.week.costOfGoodsSold)}
+              {report.week.costOfGoodsSold === null ? "unavailable until costs reconcile" : formatCurrency(report.week.costOfGoodsSold)}
             </p>
           </CardContent>
         </Card>
@@ -144,10 +139,10 @@ export default async function ReportsPage({
           </CardHeader>
           <CardContent className="space-y-1">
             <div className="text-2xl font-bold">
-              {formatCurrency(report.credit.outstandingBalance)}
+              {report.credit.outstandingBalance === null ? "Needs reconciliation" : formatCurrency(report.credit.outstandingBalance)}
             </div>
             <p className="text-sm text-muted-foreground">
-              {report.credit.activeBalances} customers with balances
+              {report.credit.activeBalances === null ? "Credit totals are temporarily unavailable" : `${report.credit.activeBalances} customers with balances`}
             </p>
           </CardContent>
         </Card>
@@ -156,7 +151,7 @@ export default async function ReportsPage({
             <CardTitle className="text-sm font-medium">Unallocated Historical Sales</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1">
-            <div className="text-2xl font-bold">{report.unallocatedSalesCount}</div>
+            <div className="text-2xl font-bold">{report.unallocatedSalesCount ?? "Unavailable"}</div>
             <p className="text-sm text-muted-foreground">
               Sales without FIFO allocation lineage in selected period
             </p>
@@ -181,16 +176,16 @@ export default async function ReportsPage({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {report.recentSales.map((sale) => (
+                  {report.recentSales.length === 0 ? <TableRow>
+                    <TableCell colSpan={4} className="py-6 text-center text-muted-foreground">
+                      {report.today.salesCount === 0 ? "No completed sales in this window." : "Recent sale details are unavailable for this window."}
+                    </TableCell>
+                  </TableRow> : report.recentSales.map((sale) => (
                     <TableRow key={sale.id}>
                       <TableCell className="font-mono text-xs">{sale.id.slice(0, 8)}</TableCell>
                       <TableCell className="text-right">{formatCurrency(sale.total)}</TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(sale.costOfGoodsSold)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(sale.grossProfit)}
-                      </TableCell>
+                      <TableCell className="text-right">—</TableCell>
+                      <TableCell className="text-right">—</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -201,7 +196,7 @@ export default async function ReportsPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Top Products This Week</CardTitle>
+          <CardTitle>Top Products in Selected Window</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
@@ -209,7 +204,7 @@ export default async function ReportsPage({
                 <TableRow>
                   <TableHead>Product</TableHead>
                   <TableHead>SKU</TableHead>
-                  <TableHead className="text-right">Qty</TableHead>
+                  <TableHead className="text-right">Qty (g)</TableHead>
                   <TableHead className="text-right">Revenue</TableHead>
                 </TableRow>
               </TableHeader>
@@ -218,7 +213,7 @@ export default async function ReportsPage({
                   <TableRow key={product.id}>
                     <TableCell>{product.name}</TableCell>
                     <TableCell>{product.sku || "N/A"}</TableCell>
-                    <TableCell className="text-right">{product.quantitySold}</TableCell>
+                    <TableCell className="text-right">{product.quantitySoldGrams.toLocaleString("en-US", { maximumFractionDigits: 2 })}</TableCell>
                     <TableCell className="text-right">
                       {formatCurrency(product.revenue)}
                     </TableCell>
@@ -238,7 +233,7 @@ export default async function ReportsPage({
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                {report.lowStock.count} products are at or below reorder level.
+                {report.lowStock.count === null ? "Inventory count is temporarily unavailable." : `${report.lowStock.count} products are at or below reorder level.`}
               </p>
               <div className="space-y-2">
                 {report.lowStock.items.slice(0, MAX_LOW_STOCK_ITEMS_DISPLAY).map((item) => (
@@ -264,25 +259,25 @@ export default async function ReportsPage({
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <div className="flex items-center justify-between">
-              <span>This Week Revenue</span>
+              <span>{report.period.mode === "custom" ? "Selected Period Revenue" : "This Week Revenue"}</span>
               <span className="font-medium">{formatCurrency(report.week.salesTotal)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>This Week COGS</span>
-              <span className="font-medium">{formatCurrency(report.week.costOfGoodsSold)}</span>
+              <span>{report.period.mode === "custom" ? "Selected Period COGS" : "This Week COGS"}</span>
+              <span className="font-medium">{report.week.costOfGoodsSold === null ? "Unavailable" : formatCurrency(report.week.costOfGoodsSold)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>This Week Gross Profit</span>
-              <span className="font-medium">{formatCurrency(report.week.grossProfit)}</span>
+              <span>{report.period.mode === "custom" ? "Selected Period Gross Profit" : "This Week Gross Profit"}</span>
+              <span className="font-medium">{report.week.grossProfit === null ? "Unavailable" : formatCurrency(report.week.grossProfit)}</span>
             </div>
             <div className="flex items-center justify-between border-t pt-4">
-              <span>Previous Week Gross Profit</span>
+              <span>{report.period.mode === "custom" ? "Previous Period Gross Profit" : "Previous Week Gross Profit"}</span>
               <span className="font-medium">
-                {formatCurrency(report.previousWeek.grossProfit)}
+                {report.previousWeek.grossProfit === null ? "Unavailable" : formatCurrency(report.previousWeek.grossProfit)}
               </span>
             </div>
             <div className="text-xs text-muted-foreground pt-2">
-              Latest audit activity: {report.latestAuditAt ? formatDateTime(report.latestAuditAt) : "None"}
+            Latest audit activity: {report.latestAuditAt ? formatDateTime(report.latestAuditAt) : "Unavailable"}
             </div>
           </CardContent>
         </Card>
@@ -292,38 +287,7 @@ export default async function ReportsPage({
             <CardTitle>Reconciliation Health</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
-            <div className="flex items-center justify-between">
-              <span>Sales Checked</span>
-              <span className="font-medium">{reconciliation.summary.salesChecked}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Total Discrepancies</span>
-              <span className="font-medium">{reconciliation.summary.discrepancies}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Header vs Line Total Mismatch</span>
-              <span className="font-medium">
-                {reconciliation.summary.discrepancyByCode.SALE_TOTAL_MISMATCH}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Allocation Gaps</span>
-              <span className="font-medium">
-                {reconciliation.summary.discrepancyByCode.LINE_ALLOCATION_GAP}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Inventory Log Missing</span>
-              <span className="font-medium">
-                {reconciliation.summary.discrepancyByCode.INVENTORY_LOG_MISSING}
-              </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Inventory Log Qty Mismatch</span>
-              <span className="font-medium">
-                {reconciliation.summary.discrepancyByCode.INVENTORY_LOG_QUANTITY_MISMATCH}
-              </span>
-            </div>
+            <p className="text-muted-foreground">No verified reconciliation result is available for this window.</p>
           </CardContent>
         </Card>
       </div>

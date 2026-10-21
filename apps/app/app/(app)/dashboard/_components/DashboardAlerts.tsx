@@ -8,10 +8,10 @@ interface DashboardAlertsProps {
 }
 
 export function DashboardAlerts({ stats }: DashboardAlertsProps) {
-  const hasLowStock = stats.lowStockCount > 0;
-  const hasOverdue = stats.overdueCount > 0;
+  const hasLowStock = stats.lowStockCount !== null && stats.lowStockCount > 0;
+  const hasOutstanding = stats.outstandingAccounts !== null && stats.outstandingAccounts > 0;
 
-  if (!hasLowStock && !hasOverdue) return null;
+  if (!hasLowStock && !hasOutstanding) return null;
 
   return (
     <section className="space-y-4 rounded-xl border border-warning/15 bg-warning/[0.03] p-4 md:p-5">
@@ -46,19 +46,19 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
           </div>
         )}
 
-        {hasOverdue && (
+        {hasOutstanding && (
           <div className="flex items-start gap-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
             <div className="shrink-0 rounded-md bg-destructive/20 p-2 text-destructive">
               <AlertCircle className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-destructive">
-                Overdue Credit Balances
+                Outstanding Credit Balances
               </h3>
               <p className="mt-0.5 text-xs text-white/70">
-                {stats.overdueCount} customers have balances due past due date,
-                totaling ${stats.overdueBalance}. Collection action may be
-                required.
+                {stats.outstandingAccounts} customers have active balances,
+                totaling ${stats.outstandingBalance}. Review the accounts if
+                follow-up is needed.
               </p>
               <Link
                 href="/credit"

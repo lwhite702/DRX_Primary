@@ -3,13 +3,12 @@ import type { Id } from "./_generated/dataModel";
 import { query, type QueryCtx } from "./_generated/server";
 import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
-
-const DAY_MS = 24 * 60 * 60 * 1_000;
+import { businessDateKey, businessDayBounds } from "./helpers/businessTimezone";
 
 const aggregateRecord = v.object({
   periodStartAt: v.number(),
   periodEndAt: v.number(),
-  timezone: v.literal("UTC"),
+  timezone: v.string(),
   periodEndExclusive: v.literal(true),
   accountingBasis: v.literal("operational_event"),
   cashAccrualClassification: v.literal("not_gaap_cash_or_accrual"),
@@ -18,9 +17,18 @@ const aggregateRecord = v.object({
     "deliveryFinancialAdjustments.createdAt",
   ),
   orderNumbers: v.array(v.string()),
+  topProducts: v.array(v.object({
+    id: v.string(),
+    name: v.string(),
+    sku: v.string(),
+    quantitySoldGrams: v.number(),
+    revenueCents: v.number(),
+  })),
+  paymentMethodTotalsCents: v.record(v.string(), v.number()),
   orderCount: v.number(),
   totalRevenueCents: v.number(),
   grossCollectedCents: v.number(),
+  cashSalesCents: v.number(),
   netCashActivityCents: v.number(),
   netRevenueCents: v.number(),
   totalTaxCents: v.number(),
@@ -74,6 +82,7 @@ async function aggregatePeriod(
   businessId: Id<"businesses">,
   startAt: number,
   endAt: number,
+  timezone: string = "UTC",
 ) {
   validatePeriod(startAt, endAt);
   const [sales, adjustments] = await Promise.all([
@@ -99,6 +108,7 @@ async function aggregatePeriod(
   ]);
 
   let grossCollectedCents = 0;
+  let cashSalesCents = 0;
   let saleTaxCents = 0;
   let totalSubtotalCents = 0;
   let merchandiseRevenueCents = 0;
@@ -137,12 +147,49 @@ async function aggregatePeriod(
       ),
     ),
   ]);
+  const productIds = Array.from(new Set(allLineItems.flat().flatMap((line) => line.productId ? [line.productId] : [])));
+  const productRecords = await Promise.all(productIds.map((id) => ctx.db.get(id)));
+  const productsById = new Map(productRecords.filter((product) => product?.businessId === businessId).map((product) => [product!._id, product!]));
+  const topProductsById = new Map<string, { id: string; name: string; sku: string; quantitySoldGrams: number; revenueCents: number }>();
+  const paymentMethodTotalsCents = new Map<string, number>();
 
   for (let i = 0; i < sales.length; i++) {
     const sale = sales[i];
     const lineItems = allLineItems[i];
     const allocations = allAllocations[i];
+    for (const line of lineItems) {
+      if (!line.productId) continue;
+      const product = productsById.get(line.productId);
+      if (!product) continue;
+      const aggregate = topProductsById.get(product._id) ?? {
+        id: product._id,
+        name: product.productName,
+        sku: product.sku,
+        quantitySoldGrams: 0,
+        revenueCents: 0,
+      };
+      aggregate.quantitySoldGrams += line.quantityGrams;
+      aggregate.revenueCents += line.lineTotalCents;
+      topProductsById.set(product._id, aggregate);
+    }
     grossCollectedCents += sale.totalAmountCents;
+    const tenders = sale.paymentTenders?.length
+      ? sale.paymentTenders
+      : [{ method: sale.paymentMethod, amountCents: sale.totalAmountCents }];
+    for (const tender of tenders) {
+      paymentMethodTotalsCents.set(
+        tender.method,
+        (paymentMethodTotalsCents.get(tender.method) ?? 0) + tender.amountCents,
+      );
+    }
+    if (sale.paymentTenders?.length) {
+      cashSalesCents += sale.paymentTenders
+        .filter((tender) => tender.method === "cash")
+        .reduce((sum, tender) => sum + tender.amountCents, 0);
+    } else if (sale.paymentMethod === "cash") {
+      // Do not use amountPaidCents: it can include change returned to the buyer.
+      cashSalesCents += sale.totalAmountCents;
+    }
     saleTaxCents += sale.taxAmountCents;
     totalSubtotalCents += sale.subtotalCents;
     feeRevenueCents += sale.feeRevenueCents ?? 0;
@@ -242,7 +289,7 @@ async function aggregatePeriod(
   return {
     periodStartAt: startAt,
     periodEndAt: endAt,
-    timezone: "UTC" as const,
+    timezone,
     periodEndExclusive: true as const,
     accountingBasis: "operational_event" as const,
     cashAccrualClassification: "not_gaap_cash_or_accrual" as const,
@@ -250,9 +297,14 @@ async function aggregatePeriod(
     adjustmentRecognitionField:
       "deliveryFinancialAdjustments.createdAt" as const,
     orderNumbers: sales.map((sale) => sale.orderNumber),
+    topProducts: Array.from(topProductsById.values())
+      .sort((left, right) => right.revenueCents - left.revenueCents)
+      .slice(0, 5),
+    paymentMethodTotalsCents: Object.fromEntries(paymentMethodTotalsCents),
     orderCount,
     totalRevenueCents: grossCollectedCents,
     grossCollectedCents,
+    cashSalesCents,
     netCashActivityCents,
     netRevenueCents,
     totalTaxCents: saleTaxCents - deliveryTaxRefundCents,
@@ -296,30 +348,27 @@ export const getSalesAggregate = query({
   args: {
     startAt: v.number(),
     endAt: v.number(),
-    timezone: v.literal("UTC"),
+    timezone: v.string(),
   },
   returns: aggregateRecord,
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "VIEW_FINANCIALS");
-    return aggregatePeriod(ctx, auth.businessId, args.startAt, args.endAt);
+    return aggregatePeriod(ctx, auth.businessId, args.startAt, args.endAt, args.timezone);
   },
 });
 
-// Backward-compatible daily view: the current UTC calendar day, [start, end).
+// Dashboard day follows the active business calendar, with a half-open UTC interval.
 export const getDailySalesAggregate = query({
-  args: {},
+  args: { dateKey: v.optional(v.string()) },
   returns: aggregateRecord,
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "VIEW_FINANCIALS");
-    const now = new Date();
-    const startAt = Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate(),
-    );
-    return aggregatePeriod(ctx, auth.businessId, startAt, startAt + DAY_MS);
+    const timezone = auth.businessRecord.timezone || "America/New_York";
+    const dateKey = args.dateKey ?? businessDateKey(new Date(), timezone);
+    const { startAt, endAt } = businessDayBounds(dateKey, timezone);
+    return aggregatePeriod(ctx, auth.businessId, startAt, endAt, timezone);
   },
 });
 
