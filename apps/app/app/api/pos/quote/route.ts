@@ -4,10 +4,13 @@ import { fullCheckoutPayloadSchema, quickPosQuotePayloadSchema } from "@/lib/pos
 import { quoteCanonicalCommerce } from "@/app/api/pos/_lib/convex-commerce";
 import { fullCommerceInput, checkoutFailure } from "@/app/api/pos/_lib/full-checkout";
 import { isAuthBypassEnabledServer } from "@/lib/auth/bypass";
+import { hasClerkServerEnv } from "@/lib/adapters/auth/server";
 export async function POST(request: NextRequest) {
   try {
     const { userId, businessId } = await resolveAuthContext(request);
     if (!userId || !businessId) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    const isPreviewBypass =
+      process.env.VERCEL_ENV === "preview" && !hasClerkServerEnv();
     const body = await request.json();
     if (body?.mode === "full") {
       const payload = fullCheckoutPayloadSchema.omit({ idempotencyKey: true }).parse(body);
@@ -15,7 +18,7 @@ export async function POST(request: NextRequest) {
       try {
         quote = await quoteCanonicalCommerce(fullCommerceInput(payload, businessId));
       } catch (err) {
-        if (isAuthBypassEnabledServer()) {
+        if (isAuthBypassEnabledServer() || isPreviewBypass) {
           const subtotal = payload.items.reduce((sum, item) => sum + (item.unitPrice * (item.qty ?? 1)), 0);
           quote = { subtotal, taxAmount: 0, total: subtotal, discountAmount: payload.discountAmountCents ? payload.discountAmountCents / 100 : 0 };
         } else {
@@ -38,7 +41,7 @@ export async function POST(request: NextRequest) {
         discountReason: parsed.data.discountReason,
       });
     } catch (err) {
-      if (isAuthBypassEnabledServer()) {
+      if (isAuthBypassEnabledServer() || isPreviewBypass) {
         const subtotal = parsed.data.items.reduce((sum, item) => sum + (item.unitPrice * (item.qty ?? 1)), 0);
         quote = { subtotal, taxAmount: 0, total: subtotal, discountAmount: parsed.data.discountAmountCents ? parsed.data.discountAmountCents / 100 : 0 };
       } else {
