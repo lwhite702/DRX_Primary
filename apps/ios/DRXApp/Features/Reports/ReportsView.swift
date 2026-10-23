@@ -8,6 +8,7 @@ struct ReportsView: View {
     @State private var aggregate: DRXDailySalesAggregate?
     @State private var salesHistory: [DRXSale] = []
     @State private var selectedDate = Date()
+    @State private var pendingDate: Date?
     @State private var reportingTimeZoneID = "America/New_York"
     @State private var isLoading = true
     @State private var error: String?
@@ -63,11 +64,16 @@ struct ReportsView: View {
 
     var body: some View {
         ScrollView {
-            if isLoading {
+            if aggregate == nil && isLoading {
                 loadingView
-            } else if let error {
+            } else if aggregate == nil, let error {
                 errorView(message: error)
             } else {
+                if isLoading {
+                    updatingView
+                } else if let error {
+                    inlineErrorView(message: error)
+                }
                 content
             }
         }
@@ -83,8 +89,7 @@ struct ReportsView: View {
         VStack(spacing: 8) {
             HStack {
                 Button {
-                    if let previous = calendar.date(byAdding: .day, value: -1, to: selectedDate) {
-                        selectedDate = previous
+                    if let previous = calendar.date(byAdding: .day, value: -1, to: pendingDate ?? selectedDate) {
                         Task { await load(selectedDate: previous) }
                     }
                 } label: {
@@ -110,8 +115,7 @@ struct ReportsView: View {
                 Spacer()
 
                 Button {
-                    if let next = calendar.date(byAdding: .day, value: 1, to: selectedDate) {
-                        selectedDate = next
+                    if let next = calendar.date(byAdding: .day, value: 1, to: pendingDate ?? selectedDate) {
                         Task { await load(selectedDate: next) }
                     }
                 } label: {
@@ -127,7 +131,6 @@ struct ReportsView: View {
             if !isTodaySelected {
                 Button {
                     let today = Date()
-                    selectedDate = today
                     Task { await load(selectedDate: today) }
                 } label: {
                     Text("Jump to Today")
@@ -215,6 +218,37 @@ struct ReportsView: View {
         .frame(maxWidth: .infinity, minHeight: 300)
     }
 
+    private var updatingView: some View {
+        HStack(spacing: 8) {
+            ProgressView().controlSize(.small).tint(DRXPalette.accent)
+            Text("Updating report…")
+                .font(.caption)
+                .foregroundStyle(DRXPalette.muted)
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.horizontal)
+        .padding(.top, 8)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Updating report")
+    }
+
+    private func inlineErrorView(message: String) -> some View {
+        HStack(spacing: 8) {
+            Text("Couldn’t update this date. Your previous report is still shown.")
+                .font(.caption)
+                .foregroundStyle(DRXPalette.muted)
+            Spacer(minLength: 4)
+            Button(DRXContent.Actions.tryAgain) {
+                Task { await load(selectedDate: pendingDate) }
+            }
+            .font(.caption.weight(.semibold))
+            .buttonStyle(.borderless)
+            .accessibilityHint(message)
+        }
+        .padding(.horizontal)
+        .padding(.top, 8)
+    }
+
     private func errorView(message: String) -> some View {
         ContentUnavailableView {
             Label("Couldn’t load reports", systemImage: "exclamationmark.triangle.fill")
@@ -230,6 +264,8 @@ struct ReportsView: View {
     private func load(selectedDate requestedDate: Date? = nil) async {
         let requestID = UUID()
         activeLoadID = requestID
+        let targetDate = requestedDate ?? selectedDate
+        pendingDate = targetDate
         isLoading = true
         error = nil
         async let settingsTask: BusinessSettingsResponse = ConvexClient.shared.query(
@@ -247,12 +283,15 @@ struct ReportsView: View {
             let aggregate: DRXDailySalesAggregate = try await ConvexClient.shared.query(
                 "reporting:getDailySalesAggregate",
                 args: DRXDailySalesAggregateArgs(
-                    dateKey: dateKey(for: requestedDate ?? selectedDate, timeZone: TimeZone(identifier: settings.business.timezone))
+                    dateKey: dateKey(for: targetDate, timeZone: TimeZone(identifier: settings.business.timezone))
                 )
             )
             guard activeLoadID == requestID else { return }
             self.aggregate = aggregate
             salesHistory = sales
+            reportingTimeZoneID = settings.business.timezone
+            selectedDate = targetDate
+            pendingDate = nil
         } catch {
             guard activeLoadID == requestID else { return }
             self.error = error.localizedDescription
