@@ -73,7 +73,7 @@ describe("getPosBaselineReport", () => {
         },
       ])
       .mockResolvedValueOnce([])
-      .mockResolvedValueOnce({ page: [], isDone: true, continueCursor: "" });
+      .mockResolvedValueOnce({ page: [], isDone: false, continueCursor: "more" });
 
     const report = await getPosBaselineReport("biz_1");
 
@@ -91,7 +91,7 @@ describe("getPosBaselineReport", () => {
     expect(report.previousWeek.salesTotal).toBe(50);
     expect(report.period.timezone).toBe("America/New_York");
     expect(report.lowStock.count).toBe(0);
-    expect(report.credit.outstandingBalance).toBe(0);
+    expect(report.credit).toEqual({ outstandingBalance: null, activeBalances: null });
     expect(report.recentSales[0].id).toBe("sale_today");
     const aggregateArguments = mocks.query.mock.calls.slice(1, 4).map(([, args]) => args);
     expect(aggregateArguments.map((args) => args.timezone)).toEqual([
