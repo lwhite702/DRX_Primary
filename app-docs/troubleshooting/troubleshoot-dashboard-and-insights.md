@@ -25,9 +25,9 @@ The number one culprit behind "missing" sales is simply looking at the wrong dat
 1. If you were ringing up customers with spotty Wi-Fi, your register may have stored transactions locally. Check your connection indicator.
 2. Once your device re-establishes internet access, the register automatically syncs pending sales to the cloud, and your daily totals will update immediately.
 
-## 2. Comparing sales vs. actual cash collected
+## 2. Comparing sales and cash sales
 
-Remember: **Total Sales**, **Cash Collected**, and **Gross Profit** are completely different numbers!
+Remember: **Total Sales**, **Cash Sales**, and **Gross Profit** are different numbers.
 
 - **Total Sales**: The retail value of everything rung up through checkout (including items bought on store credit tabs).
 - **Cash Sales**: Cash tenders recorded for completed sales. This is not a cash-drawer balance or reconciliation; store-credit sales do not count as cash sales.

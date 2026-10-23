@@ -61,7 +61,7 @@ export function TopMovers({ movers, totalRevenue, compact = false }: TopMoversPr
             </div>
             <div className="text-right">
               <div className="text-sm font-bold text-white">
-                {mover.quantitySold.toLocaleString("en-US", { maximumFractionDigits: 2 })} g sold
+                {mover.quantitySoldGrams.toLocaleString("en-US", { maximumFractionDigits: 2 })} g sold
               </div>
               <div className="text-[10px] text-white/70">
                 {mover.revenue.toLocaleString("en-US", { style: "currency", currency: "USD" })}

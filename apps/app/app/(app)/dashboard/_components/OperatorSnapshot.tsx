@@ -163,7 +163,7 @@ export function OperatorSnapshot({
             }
             sublabel={
               <span className="flex items-center justify-between gap-2">
-                <span className="inline-flex items-center gap-1 font-semibold text-success">
+                <span className={cn("inline-flex items-center gap-1 font-semibold", stats.salesGrowth < 0 ? "text-red-400" : "text-success")}>
                   {stats.salesGrowth > 0 ? "+" : ""}{stats.salesGrowth}% {stats.salesGrowth < 0 ? <ArrowDownRight className="h-3 w-3" /> : <ArrowUpRight className="h-3 w-3" />}
                 </span>
                 <span className="text-white/65">{stats.transactionsCount} transactions · vs prior 7 days</span>
@@ -193,8 +193,8 @@ export function OperatorSnapshot({
 
           <SnapshotCard
             title="Average Sale"
-            value={stats.averageOrderValue.toLocaleString("en-US", { style: "currency", currency: "USD" })}
-            sublabel={<span>Average completed sale today</span>}
+            value={stats.transactionsCount === 0 ? "—" : stats.averageOrderValue.toLocaleString("en-US", { style: "currency", currency: "USD" })}
+            sublabel={<span>{stats.transactionsCount === 0 ? "No completed sales today" : "Average completed sale today"}</span>}
             icon={<TrendingUp className="h-4 w-4" />}
             iconClassName="bg-accent/10 text-accent"
           />
@@ -215,19 +215,19 @@ export function OperatorSnapshot({
             iconClassName="bg-accent/10 text-accent"
           />
 
-          {stats.lowStockCount !== null ? <SnapshotCard
+          <SnapshotCard
             title="Low Stock"
-            value={stats.lowStockCount}
-            sublabel={<span>Products below threshold</span>}
+            value={stats.lowStockCount === null ? "Unavailable" : stats.lowStockCount}
+            sublabel={<span>{stats.lowStockCount === null ? "Inventory count could not be verified" : "Products below threshold"}</span>}
             icon={<Package className="h-4 w-4" />}
             iconClassName="bg-warning/10 text-warning"
             className={emphasizeInventory ? "border-warning/20 bg-warning/[0.04]" : undefined}
-          /> : null}
+          />
 
-          {stats.outstandingBalance !== null && stats.outstandingAccounts !== null ? <SnapshotCard
+          <SnapshotCard
             title="Outstanding Credit"
             value={
-              <>
+              stats.outstandingBalance === null || stats.outstandingAccounts === null ? "Unavailable" : <>
                 $
                 {stats.outstandingBalance.toLocaleString("en-US", {
                   minimumFractionDigits: 2,
@@ -239,7 +239,7 @@ export function OperatorSnapshot({
             icon={<AlertCircle className="h-4 w-4" />}
             iconClassName="bg-red-500/10 text-red-400"
             className={compact ? "md:col-span-2 lg:col-span-2" : undefined}
-          /> : null}
+          />
         </div>
       )}
     </section>

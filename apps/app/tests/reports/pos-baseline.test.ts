@@ -99,5 +99,13 @@ describe("getPosBaselineReport", () => {
       "America/New_York",
       "America/New_York",
     ]);
+    const previousPeriodArgs = aggregateArguments[2];
+    expect(previousPeriodArgs.endAt).toBe(aggregateArguments[1].startAt);
+    expect(previousPeriodArgs.endAt - previousPeriodArgs.startAt).toBe(7 * 24 * 60 * 60 * 1_000);
+    expect(mocks.query.mock.calls[4][1]).toMatchObject({
+      startAt: aggregateArguments[0].startAt,
+      endAt: aggregateArguments[0].endAt,
+    });
+    expect(mocks.query.mock.calls[6][1].paginationOpts).toEqual({ cursor: null, numItems: 100 });
   });
 });

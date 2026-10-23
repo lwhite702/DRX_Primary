@@ -3,6 +3,7 @@ import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { getPosBaselineReport } from "@/lib/reports/pos-baseline";
 import { ensureServerFlag } from "@/lib/posthog/server-flags";
 import { errorResponse } from "@/lib/api/response";
+import { isValidDateKey } from "@/convex/helpers/businessTimezone";
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,6 +27,12 @@ export async function GET(request: NextRequest) {
 
     const fromParam = request.nextUrl.searchParams.get("from");
     const toParam = request.nextUrl.searchParams.get("to");
+    if ((fromParam && !isValidDateKey(fromParam)) || (toParam && !isValidDateKey(toParam))) {
+      return NextResponse.json({ error: "Report dates must be valid YYYY-MM-DD calendar dates" }, { status: 400 });
+    }
+    if (fromParam && toParam && fromParam > toParam) {
+      return NextResponse.json({ error: "Report start date must not be after its end date" }, { status: 400 });
+    }
     const report = await getPosBaselineReport(businessId, {
       from: fromParam || undefined,
       to: toParam || undefined,

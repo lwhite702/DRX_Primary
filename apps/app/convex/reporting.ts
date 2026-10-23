@@ -3,7 +3,7 @@ import type { Id } from "./_generated/dataModel";
 import { query, type QueryCtx } from "./_generated/server";
 import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
-import { businessDateKey, businessDayBounds } from "./helpers/businessTimezone";
+import { businessDateKey, businessDayBounds, isValidTimeZone } from "./helpers/businessTimezone";
 
 const aggregateRecord = v.object({
   periodStartAt: v.number(),
@@ -157,7 +157,21 @@ async function aggregatePeriod(
     const sale = sales[i];
     const lineItems = allLineItems[i];
     const allocations = allAllocations[i];
+    const merchandiseLineTotal = lineItems.reduce(
+      (sum, line) => sum + line.lineTotalCents,
+      0,
+    );
+    let discountRemaining = Math.min(
+      sale.discountAmountCents ?? 0,
+      merchandiseLineTotal,
+    );
+    let lineTotalRemaining = merchandiseLineTotal;
     for (const line of lineItems) {
+      const lineDiscount = lineTotalRemaining > 0
+        ? Math.min(line.lineTotalCents, Math.round(discountRemaining * line.lineTotalCents / lineTotalRemaining))
+        : 0;
+      discountRemaining -= lineDiscount;
+      lineTotalRemaining -= line.lineTotalCents;
       if (!line.productId) continue;
       const product = productsById.get(line.productId);
       if (!product) continue;
@@ -169,13 +183,18 @@ async function aggregatePeriod(
         revenueCents: 0,
       };
       aggregate.quantitySoldGrams += line.quantityGrams;
-      aggregate.revenueCents += line.lineTotalCents;
+      aggregate.revenueCents += line.lineTotalCents - lineDiscount;
       topProductsById.set(product._id, aggregate);
     }
     grossCollectedCents += sale.totalAmountCents;
     const tenders = sale.paymentTenders?.length
       ? sale.paymentTenders
-      : [{ method: sale.paymentMethod, amountCents: sale.totalAmountCents }];
+      : sale.paymentMethod === "mixed"
+        ? [
+            { method: "cash", amountCents: Math.min(sale.totalAmountCents, sale.amountPaidCents) },
+            { method: "credit", amountCents: sale.creditAmountCents ?? Math.max(0, sale.totalAmountCents - sale.amountPaidCents) },
+          ].filter((tender) => tender.amountCents > 0)
+        : [{ method: sale.paymentMethod, amountCents: sale.totalAmountCents }];
     for (const tender of tenders) {
       paymentMethodTotalsCents.set(
         tender.method,
@@ -186,6 +205,10 @@ async function aggregatePeriod(
       cashSalesCents += sale.paymentTenders
         .filter((tender) => tender.method === "cash")
         .reduce((sum, tender) => sum + tender.amountCents, 0);
+    } else if (sale.paymentMethod === "mixed") {
+      // Legacy mixed sales store the actually collected portion in amountPaidCents;
+      // the remaining balance is tracked as customer credit.
+      cashSalesCents += Math.min(sale.totalAmountCents, sale.amountPaidCents);
     } else if (sale.paymentMethod === "cash") {
       // Do not use amountPaidCents: it can include change returned to the buyer.
       cashSalesCents += sale.totalAmountCents;
@@ -365,7 +388,10 @@ export const getDailySalesAggregate = query({
   handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "VIEW_FINANCIALS");
-    const timezone = auth.businessRecord.timezone || "America/New_York";
+    const storedTimezone = auth.businessRecord.timezone;
+    const timezone = storedTimezone && isValidTimeZone(storedTimezone)
+      ? storedTimezone
+      : "America/New_York";
     const dateKey = args.dateKey ?? businessDateKey(new Date(), timezone);
     const { startAt, endAt } = businessDayBounds(dateKey, timezone);
     return aggregatePeriod(ctx, auth.businessId, startAt, endAt, timezone);

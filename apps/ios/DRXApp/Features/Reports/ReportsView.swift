@@ -37,6 +37,8 @@ struct ReportsView: View {
 
     private func dateKey(for date: Date, timeZone: TimeZone? = nil) -> String {
         let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
         formatter.timeZone = timeZone ?? reportingTimeZone
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: date)
@@ -44,7 +46,7 @@ struct ReportsView: View {
 
     private var filteredSalesForSelectedDate: [DRXSale] {
         salesHistory.filter { sale in
-            calendar.isDate(sale.createdDate, inSameDayAs: selectedDate)
+            sale.orderStatus == "completed" && calendar.isDate(sale.createdDate, inSameDayAs: selectedDate)
         }
     }
 
@@ -163,7 +165,7 @@ struct ReportsView: View {
                     Divider()
                     ReportSummaryRow(title: "Tax", value: agg.totalTaxFormatted)
                     Divider()
-                    ReportSummaryRow(title: "Average sale", value: agg.averageOrderFormatted)
+                    ReportSummaryRow(title: "Average sale", value: agg.orderCount == 0 ? "—" : agg.averageOrderFormatted)
                     Divider()
                     ReportSummaryRow(title: "Orders", value: "\(agg.orderCount)")
                 }

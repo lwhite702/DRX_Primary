@@ -19,7 +19,7 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
         Needs attention
       </div>
       <p className="text-xs text-white/70">
-        Real exceptions that need action now. Nothing decorative.
+        Inventory thresholds and open customer credit balances for this business.
       </p>
 
       <div className="space-y-3">
@@ -57,7 +57,7 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
               </h3>
               <p className="mt-0.5 text-xs text-white/70">
                 {stats.outstandingAccounts} customers have active balances,
-                totaling ${stats.outstandingBalance}. Review the accounts if
+                totaling ${stats.outstandingBalance?.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? "unavailable"}. Review the accounts if
                 follow-up is needed.
               </p>
               <Link

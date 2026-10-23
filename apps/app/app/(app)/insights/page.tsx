@@ -3,19 +3,18 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useBusiness } from "@/lib/hooks/use-business";
+import { formatCurrency } from "@/lib/utils";
 
 import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
-}
+interface LowStockItem { id: string; name: string; sku: string; quantityOnHand: number; lowStockThreshold: number }
 
 interface EventDeskMetrics {
   totalSales: number | null;
   salesCount: number | null;
   averageSale: number | null;
   inventoryAlerts: number | null;
-  lowStockItems: any[] | null;
+  lowStockItems: LowStockItem[] | null;
 }
 
 export default function EventDeskPage() {
@@ -48,7 +47,7 @@ export default function EventDeskPage() {
       const baseline = await baselineResponse.json();
       const totalSales = typeof baseline.today?.salesTotal === "number" ? baseline.today.salesTotal : null;
       const salesCount = typeof baseline.today?.salesCount === "number" ? baseline.today.salesCount : null;
-      const averageSale = typeof baseline.today?.averageOrderValue === "number" ? baseline.today.averageOrderValue : null;
+      const averageSale = salesCount === 0 ? null : typeof baseline.today?.averageOrderValue === "number" ? baseline.today.averageOrderValue : null;
       const lowStockItems = Array.isArray(baseline.lowStock?.items) ? baseline.lowStock.items : [];
 
       const inventoryAlerts = typeof baseline.lowStock?.count === "number" ? baseline.lowStock.count : null;
@@ -61,7 +60,7 @@ export default function EventDeskPage() {
       });
     } catch (error) {
       console.error("Failed to load insights data:", error);
-      setLoadError(error instanceof Error ? error.message : "Could not load current reporting metrics.");
+      setLoadError("Could not load current reporting metrics. Try again.");
     } finally {
       setLoading(false);
     }

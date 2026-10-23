@@ -26,7 +26,8 @@ export default function DailySummary() {
   const [summary, setSummary] = useState<any>(null);
   const [currentDateStr, setCurrentDateStr] = useState<string | null>(null);
   const [todayDateStr, setTodayDateStr] = useState<string | null>(null);
-  const skipNextDateFetch = useRef(false);
+  const skipDateFetchFor = useRef<string | null>(null);
+  const requestSequence = useRef(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +40,7 @@ export default function DailySummary() {
   const isToday = currentDateStr !== null && currentDateStr === todayDateStr;
 
   const fetchSummary = useCallback(async (dateStr?: string) => {
+    const requestId = ++requestSequence.current;
     if (!businessId) {
       setLoading(false);
       setSummary(null);
@@ -50,22 +52,24 @@ export default function DailySummary() {
       setError(null);
       const token = await getToken();
       const data = await getDailySummary(token, dateStr, dateStr);
+      if (requestId !== requestSequence.current) return;
       setSummary(data);
       setTodayDateStr(data.period.todayDateKey);
       if (!dateStr) {
-        skipNextDateFetch.current = true;
+        skipDateFetchFor.current = data.period.dateKey;
         setCurrentDateStr(data.period.dateKey);
       }
     } catch {
+      if (requestId !== requestSequence.current) return;
       setError("Couldn’t load the sales summary. Check your connection and try again.");
     } finally {
-      setLoading(false);
+      if (requestId === requestSequence.current) setLoading(false);
     }
   }, [businessId, getToken]);
 
   useEffect(() => {
-    if (skipNextDateFetch.current) {
-      skipNextDateFetch.current = false;
+    if (currentDateStr && skipDateFetchFor.current === currentDateStr) {
+      skipDateFetchFor.current = null;
       return;
     }
     if (currentDateStr) fetchSummary(currentDateStr);
@@ -121,7 +125,7 @@ export default function DailySummary() {
       {!isToday && (
         <TouchableOpacity
           style={styles.todayBtn}
-          onPress={() => fetchSummary()}
+          onPress={() => setCurrentDateStr(null)}
           accessibilityRole="button"
           accessibilityLabel="Jump to today"
         >
@@ -155,22 +159,22 @@ export default function DailySummary() {
             </Card>
             <Card style={[styles.summaryCard, { flex: 1 }]}>
               <Text style={styles.cardTitle}>Cash sales</Text>
-              <Text style={styles.cardValue}>{formatCurrency(summary.today?.cashSales ?? 0)}</Text>
+              <Text style={styles.cardValue}>{formatCurrency(summary.today?.cashSales)}</Text>
             </Card>
             <Card style={[styles.summaryCard, { flex: 1 }]}>
               <Text style={styles.cardTitle}>Average sale</Text>
-              <Text style={styles.cardValue}>{formatCurrency(summary.today?.averageOrderValue ?? 0)}</Text>
+              <Text style={styles.cardValue}>{summary.today?.salesCount === 0 ? "—" : formatCurrency(summary.today?.averageOrderValue)}</Text>
             </Card>
           </View>
 
           <View style={[styles.row, stackMetrics && { flexDirection: "column" }]}>
             <Card style={[styles.summaryCard, { flex: 1 }]}>
               <Text style={styles.cardTitle}>Subtotal</Text>
-              <Text style={styles.cardValue}>{formatCurrency(summary.today?.subtotal ?? 0)}</Text>
+              <Text style={styles.cardValue}>{formatCurrency(summary.today?.subtotal)}</Text>
             </Card>
             <Card style={[styles.summaryCard, { flex: 1 }]}>
               <Text style={styles.cardTitle}>Tax</Text>
-              <Text style={styles.cardValue}>{formatCurrency(summary.today?.totalTax ?? 0)}</Text>
+              <Text style={styles.cardValue}>{formatCurrency(summary.today?.totalTax)}</Text>
             </Card>
           </View>
 

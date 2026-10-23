@@ -14,6 +14,7 @@ import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { ReportsTour } from "./_components/ReportsTour";
 import { CommerceDeliverySummary } from "./_components/commerce-delivery-summary";
 import { DayNavigator } from "./_components/day-navigator";
+import { isValidDateKey } from "@/convex/helpers/businessTimezone";
 
 export const dynamic = "force-dynamic";
 
@@ -43,9 +44,17 @@ export default async function ReportsPage({
 
   const from = resolvedSearchParams?.from;
   const to = resolvedSearchParams?.to;
+  if ((from && !isValidDateKey(from)) || (to && !isValidDateKey(to))) {
+    return (
+      <div className="p-4 md:p-8 space-y-6">
+        <h1 className="text-3xl font-bold">Reports</h1>
+        <p className="text-muted-foreground" role="alert">Choose valid calendar dates for this report.</p>
+      </div>
+    );
+  }
   const range = {
-    from: from && (/^\d{4}-\d{2}-\d{2}$/.test(from) || !Number.isNaN(Date.parse(from))) ? from : undefined,
-    to: to && (/^\d{4}-\d{2}-\d{2}$/.test(to) || !Number.isNaN(Date.parse(to))) ? to : undefined,
+    from: from || undefined,
+    to: to || undefined,
   };
 
   const report = await getPosBaselineReport(businessId, range);
@@ -80,7 +89,7 @@ export default async function ReportsPage({
             Window (end exclusive): {formatDateTime(report.period.from)} to {formatDateTime(report.period.to)} ({timeZone})
           </p>
           <Link
-            href={`/api/reports/pos-reconciliation?from=${encodeURIComponent(report.period.from)}&to=${encodeURIComponent(report.period.to)}&format=csv`}
+            href={`/api/reports/pos-reconciliation?from=${encodeURIComponent(report.period.from)}&to=${encodeURIComponent(report.period.to)}&toExclusive=true&format=csv`}
             className="text-xs text-primary underline underline-offset-4"
           >
             Export reconciliation CSV
@@ -115,10 +124,30 @@ export default async function ReportsPage({
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-sm font-medium">Cash Sales</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm font-medium">{report.period.mode === "custom" ? "Cash Sales in Selected Window" : "Cash Sales Today"}</CardTitle></CardHeader>
           <CardContent className="space-y-1">
             <div className="text-2xl font-bold">{formatCurrency(report.today.cashSales)}</div>
             <p className="text-sm text-muted-foreground">Cash tenders recorded on completed sales</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-sm font-medium">{report.period.mode === "custom" ? "Tax in Selected Window" : "Tax Today"}</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{formatCurrency(report.today.totalTax)}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-sm font-medium">{report.period.mode === "custom" ? "Subtotal in Selected Window" : "Subtotal Today"}</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{formatCurrency(report.today.subtotal)}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-sm font-medium">Average Sale</CardTitle></CardHeader>
+          <CardContent><div className="text-2xl font-bold">{report.today.salesCount === 0 ? "—" : formatCurrency(report.today.averageOrderValue)}</div></CardContent>
+        </Card>
+        <Card>
+          <CardHeader><CardTitle className="text-sm font-medium">Payment Methods</CardTitle></CardHeader>
+          <CardContent className="space-y-2">
+            {Object.entries(report.paymentMethodTotals).length === 0 ? <p className="text-sm text-muted-foreground">No completed sale tenders in this window.</p> : Object.entries(report.paymentMethodTotals).map(([method, amount]) => (
+              <div key={method} className="flex items-center justify-between text-sm"><span className="capitalize">{method.replaceAll("_", " ")}</span><span className="font-medium">{formatCurrency(amount)}</span></div>
+            ))}
           </CardContent>
         </Card>
         <Card>
@@ -196,7 +225,7 @@ export default async function ReportsPage({
 
         <Card>
           <CardHeader>
-          <CardTitle>Top Products in Selected Window</CardTitle>
+          <CardTitle>{report.period.mode === "custom" ? "Top Products in Selected Window" : "Top Products This Week"}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>

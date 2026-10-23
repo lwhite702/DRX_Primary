@@ -41,6 +41,24 @@ export function businessDateKey(at: Date, timeZone: string) {
   return dateKeyFromParts(partsMap(at, formatter(timeZone)));
 }
 
+export function isValidTimeZone(timeZone: string): boolean {
+  try {
+    formatter(timeZone);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function isValidDateKey(dateKey: string): boolean {
+  try {
+    validateDateKey(dateKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function shiftDateKey(dateKey: string, days: number) {
   validateDateKey(dateKey);
   const [year, month, day] = dateKey.split("-").map(Number);
@@ -54,30 +72,23 @@ function zonedMidnight(dateKey: string, timeZone: string) {
   const [year, month, day] = dateKey.split("-").map(Number);
   const utcGuess = Date.UTC(year, month - 1, day);
   const zonedFormatter = formatter(timeZone, true);
-  let candidate = utcGuess;
-
-  // Re-evaluate the zone offset after each adjustment so midnight remains
-  // correct when the local offset changes at a daylight-saving boundary.
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    const local = partsMap(new Date(candidate), zonedFormatter);
-    const representedAsUtc = Date.UTC(
-      Number(local.year),
-      Number(local.month) - 1,
-      Number(local.day),
-      Number(local.hour),
-      Number(local.minute),
-      Number(local.second),
-    );
-    const nextCandidate = utcGuess - (representedAsUtc - candidate);
-    if (nextCandidate === candidate) return candidate;
-    candidate = nextCandidate;
+  // Find the first instant whose local date is this key. This also resolves
+  // zones that advance clocks at midnight: their day starts at the first
+  // valid instant (for example, 01:00 local), not at a nonexistent 00:00.
+  let low = utcGuess - 36 * 60 * 60 * 1_000;
+  let high = utcGuess + 36 * 60 * 60 * 1_000;
+  while (high - low > 1) {
+    const middle = Math.floor((low + high) / 2);
+    if (dateKeyFromParts(partsMap(new Date(middle), zonedFormatter)) >= dateKey) {
+      high = middle;
+    } else {
+      low = middle;
+    }
   }
-
-  const finalLocal = partsMap(new Date(candidate), zonedFormatter);
-  if (dateKeyFromParts(finalLocal) !== dateKey) {
+  if (dateKeyFromParts(partsMap(new Date(high), zonedFormatter)) !== dateKey) {
     throw new Error("INVALID_ARGUMENT: Could not resolve business-local day");
   }
-  return candidate;
+  return high;
 }
 
 export function businessDayBounds(dateKey: string, timeZone: string) {

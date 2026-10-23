@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
 
     const fromParam = request.nextUrl.searchParams.get("from");
     const toParam = request.nextUrl.searchParams.get("to");
+    const toExclusive = request.nextUrl.searchParams.get("toExclusive") === "true";
 
     const from = fromParam ? new Date(fromParam) : undefined;
     const to = toParam ? new Date(toParam) : undefined;
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
     const report = await getPosReconciliationReport(businessId, {
       from: from && !Number.isNaN(from.getTime()) ? from : undefined,
       to: to && !Number.isNaN(to.getTime()) ? to : undefined,
+      toExclusive,
     });
 
     const format = request.nextUrl.searchParams.get("format");

@@ -1,7 +1,7 @@
 import "server-only";
 import { api } from "@/convex/_generated/api";
 import { businessClient } from "@/lib/business/convex-server";
-import { businessDateKey, businessDayBounds, shiftDateKey } from "@/convex/helpers/businessTimezone";
+import { businessDateKey, businessDayBounds, isValidTimeZone, shiftDateKey } from "@/convex/helpers/businessTimezone";
 
 export interface PosBaselineReport {
   period: { from: string; to: string; dateKey: string; todayDateKey: string; mode: "default" | "custom"; timezone: string };
@@ -27,38 +27,39 @@ export function getZonedDayBounds(date: Date | string, timeZone: string = "Ameri
 function money(cents: number) { return Number((cents / 100).toFixed(2)); }
 
 async function summarizeCredit(client: Awaited<ReturnType<typeof businessClient>>["client"], businessId: string, expectedUserId: string) {
-  let cursor: string | null = null;
-  let isDone = false;
+  // Bound the dashboard work. Large tenants need a maintained aggregate before
+  // we can claim a complete balance; never walk every customer on page load.
+  try {
+  const result: {
+    page: Array<{ allocationStatus: string; isActive: boolean; balanceCents: number }>;
+    isDone: boolean;
+    continueCursor: string;
+  } = await client.query(api.creditDashboard.accountsPage, {
+    businessId,
+    expectedUserId,
+    paginationOpts: { cursor: null, numItems: 100 },
+  });
+  if (!result.isDone) return { outstandingBalance: null, activeBalances: null };
+
   let balanceCents = 0;
   let activeBalances = 0;
   let consistent = true;
-
-  while (!isDone) {
-    const result: {
-      page: Array<{ allocationStatus: string; isActive: boolean; balanceCents: number }>;
-      isDone: boolean;
-      continueCursor: string;
-    } = await client.query(api.creditDashboard.accountsPage, {
-      businessId,
-      expectedUserId,
-      paginationOpts: { cursor, numItems: 100 },
-    });
-    for (const account of result.page) {
-      if (account.allocationStatus === "pending" || account.allocationStatus === "unreconciled") {
-        consistent = false;
-        continue;
-      }
-      if (!account.isActive || account.balanceCents <= 0) continue;
-      balanceCents += account.balanceCents;
-      activeBalances += 1;
+  for (const account of result.page) {
+    if (account.allocationStatus === "pending" || account.allocationStatus === "unreconciled") {
+      consistent = false;
+      continue;
     }
-    isDone = result.isDone;
-    cursor = result.continueCursor;
+    if (!account.isActive || account.balanceCents <= 0) continue;
+    balanceCents += account.balanceCents;
+    activeBalances += 1;
   }
 
   return consistent
     ? { outstandingBalance: money(balanceCents), activeBalances }
     : { outstandingBalance: null, activeBalances: null };
+  } catch {
+    return { outstandingBalance: null, activeBalances: null };
+  }
 }
 
 export async function getPosBaselineReport(businessId: string, range?: { from?: Date | string; to?: Date | string }): Promise<PosBaselineReport> {
@@ -68,7 +69,9 @@ export async function getPosBaselineReport(businessId: string, range?: { from?: 
     businessId: clientContext.businessId,
     expectedUserId: clientContext.expectedUserId,
   });
-  const timeZone = profile.timezone || "America/New_York";
+  const timeZone = profile.timezone && isValidTimeZone(profile.timezone)
+    ? profile.timezone
+    : "America/New_York";
 
   const now = new Date();
   const custom = Boolean(range?.from || range?.to);
@@ -85,7 +88,7 @@ export async function getPosBaselineReport(businessId: string, range?: { from?: 
     (Date.parse(`${toBounds.dateStr}T00:00:00Z`) - Date.parse(`${fromBounds.dateStr}T00:00:00Z`)) / 86_400_000,
   ) + 1;
   const previousStart = businessDayBounds(
-    shiftDateKey(custom ? fromBounds.dateStr : todayDateKey, custom ? -selectedWindowDays : -7),
+    shiftDateKey(custom ? fromBounds.dateStr : todayDateKey, custom ? -selectedWindowDays : -13),
     timeZone,
   ).startAt;
   const previousEnd = custom ? start : weekStart;
@@ -94,7 +97,7 @@ export async function getPosBaselineReport(businessId: string, range?: { from?: 
     client.query(api.reporting.getSalesAggregate, { startAt: start, endAt: end, timezone: timeZone }),
     client.query(api.reporting.getSalesAggregate, { startAt: weekStart, endAt: end, timezone: timeZone }),
     client.query(api.reporting.getSalesAggregate, { startAt: previousStart, endAt: previousEnd, timezone: timeZone }),
-    client.query(api.checkout.getSalesHistory, {}),
+    client.query(api.checkout.getSalesHistory, { startAt: start, endAt: end }),
   ]);
   const [products, credit] = await Promise.all([
     client.query(api.products.listProducts, {}),

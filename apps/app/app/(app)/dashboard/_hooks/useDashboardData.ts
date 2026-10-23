@@ -28,7 +28,7 @@ export interface TopMover {
   id: string;
   name: string;
   category: string;
-  quantitySold: number;
+  quantitySoldGrams: number;
   revenue: number;
 }
 
@@ -156,7 +156,7 @@ export function useDashboardData(businessId: string | undefined) {
         id: product.id,
         name: product.name,
         category: product.sku ? `SKU ${product.sku}` : "POS Product",
-        quantitySold: product.quantitySoldGrams,
+        quantitySoldGrams: product.quantitySoldGrams,
         revenue: product.revenue,
       }));
 
