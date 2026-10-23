@@ -57,7 +57,9 @@ export function DashboardAlerts({ stats }: DashboardAlertsProps) {
               </h3>
               <p className="mt-0.5 text-xs text-white/70">
                 {stats.outstandingAccounts} customers have active balances,
-                totaling ${stats.outstandingBalance?.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) ?? "unavailable"}. Review the accounts if
+                totaling {stats.outstandingBalance === null
+                  ? "unavailable"
+                  : `$${stats.outstandingBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}. Review the accounts if
                 follow-up is needed.
               </p>
               <Link

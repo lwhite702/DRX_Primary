@@ -57,7 +57,20 @@ export default async function ReportsPage({
     to: to || undefined,
   };
 
-  const report = await getPosBaselineReport(businessId, range);
+  let report: Awaited<ReturnType<typeof getPosBaselineReport>>;
+  try {
+    report = await getPosBaselineReport(businessId, range);
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("INVALID_ARGUMENT:")) {
+      return (
+        <div className="p-4 md:p-8 space-y-6">
+          <h1 className="text-3xl font-bold">Reports</h1>
+          <p className="text-muted-foreground" role="alert">Choose a report end date that is on or after its start date.</p>
+        </div>
+      );
+    }
+    throw error;
+  }
 
   const timeZone = report.period.timezone || "America/New_York";
   const currentDateStr = (() => {

@@ -58,6 +58,7 @@ async function summarizeCredit(client: Awaited<ReturnType<typeof businessClient>
     ? { outstandingBalance: money(balanceCents), activeBalances }
     : { outstandingBalance: null, activeBalances: null };
   } catch {
+    console.warn("Credit dashboard summary unavailable because the query failed");
     return { outstandingBalance: null, activeBalances: null };
   }
 }
@@ -81,6 +82,9 @@ export async function getPosBaselineReport(businessId: string, range?: { from?: 
 
   const start = fromBounds.startAt;
   const end = toBounds.endAt;
+  if (fromBounds.dateStr > toBounds.dateStr) {
+    throw new Error("INVALID_ARGUMENT: Report start date must not be after its end date");
+  }
   const weekStart = custom
     ? start
     : businessDayBounds(shiftDateKey(todayDateKey, -6), timeZone).startAt;

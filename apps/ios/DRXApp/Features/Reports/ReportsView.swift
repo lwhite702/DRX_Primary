@@ -14,9 +14,9 @@ struct ReportsView: View {
     @State private var error: String?
     @State private var activeLoadID = UUID()
 
-    // Default to Eastern Standard Time ("America/New_York") or system timezone if configured
+    // Match the reporting aggregate's New York fallback if the stored zone is invalid.
     private var reportingTimeZone: TimeZone {
-        TimeZone(identifier: reportingTimeZoneID) ?? .current
+        TimeZone(identifier: reportingTimeZoneID) ?? TimeZone(identifier: "America/New_York")!
     }
 
     private var calendar: Calendar {
@@ -268,28 +268,39 @@ struct ReportsView: View {
         pendingDate = targetDate
         isLoading = true
         error = nil
-        async let settingsTask: BusinessSettingsResponse = ConvexClient.shared.query(
-            "settings:getBusinessSettings",
-            args: EmptyConvexArgs()
-        )
-        async let salesTask: [DRXSale] = ConvexClient.shared.query(
-            "checkout:getSalesHistory",
-            args: EmptyConvexArgs()
-        )
         do {
-            let (settings, sales) = try await (settingsTask, salesTask)
+            let settings: BusinessSettingsResponse = try await ConvexClient.shared.query(
+                "settings:getBusinessSettings",
+                args: EmptyConvexArgs()
+            )
             guard activeLoadID == requestID else { return }
-            reportingTimeZoneID = settings.business.timezone
-            let aggregate: DRXDailySalesAggregate = try await ConvexClient.shared.query(
-                "reporting:getDailySalesAggregate",
-                args: DRXDailySalesAggregateArgs(
-                    dateKey: dateKey(for: targetDate, timeZone: TimeZone(identifier: settings.business.timezone))
+            let targetTimeZone = TimeZone(identifier: settings.business.timezone)
+                ?? TimeZone(identifier: "America/New_York")!
+            var targetCalendar = Calendar(identifier: .gregorian)
+            targetCalendar.timeZone = targetTimeZone
+            let dayStart = targetCalendar.startOfDay(for: targetDate)
+            guard let dayEnd = targetCalendar.date(byAdding: .day, value: 1, to: dayStart) else {
+                throw NSError(domain: "ReportsView", code: 1)
+            }
+
+            async let salesTask: [DRXSale] = ConvexClient.shared.query(
+                "checkout:getSalesHistory",
+                args: DRXSalesHistoryRangeArgs(
+                    startAt: (dayStart.timeIntervalSince1970 * 1_000).rounded(),
+                    endAt: (dayEnd.timeIntervalSince1970 * 1_000).rounded()
                 )
             )
+            async let aggregateTask: DRXDailySalesAggregate = ConvexClient.shared.query(
+                "reporting:getDailySalesAggregate",
+                args: DRXDailySalesAggregateArgs(
+                    dateKey: dateKey(for: targetDate, timeZone: targetTimeZone)
+                )
+            )
+            let (sales, aggregate) = try await (salesTask, aggregateTask)
             guard activeLoadID == requestID else { return }
             self.aggregate = aggregate
             salesHistory = sales
-            reportingTimeZoneID = settings.business.timezone
+            reportingTimeZoneID = targetTimeZone.identifier
             selectedDate = targetDate
             pendingDate = nil
         } catch {

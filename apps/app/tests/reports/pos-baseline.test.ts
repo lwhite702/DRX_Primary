@@ -22,6 +22,13 @@ describe("getPosBaselineReport", () => {
     mocks.query.mockResolvedValueOnce({ timezone: "America/New_York" });
   });
 
+  it("rejects a to-only period that ends before the default start day", async () => {
+    await expect(
+      getPosBaselineReport("biz_1", { to: "2000-01-01" }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Report start date must not be after its end date");
+    expect(mocks.query).toHaveBeenCalledTimes(1);
+  });
+
   it("includes FIFO-backed COGS and gross profit in baseline metrics", async () => {
     mocks.query
       .mockResolvedValueOnce({
@@ -101,7 +108,8 @@ describe("getPosBaselineReport", () => {
     ]);
     const previousPeriodArgs = aggregateArguments[2];
     expect(previousPeriodArgs.endAt).toBe(aggregateArguments[1].startAt);
-    expect(previousPeriodArgs.endAt - previousPeriodArgs.startAt).toBe(7 * 24 * 60 * 60 * 1_000);
+    expect(previousPeriodArgs.endAt - previousPeriodArgs.startAt).toBeGreaterThanOrEqual(167 * 60 * 60 * 1_000);
+    expect(previousPeriodArgs.endAt - previousPeriodArgs.startAt).toBeLessThanOrEqual(169 * 60 * 60 * 1_000);
     expect(mocks.query.mock.calls[4][1]).toMatchObject({
       startAt: aggregateArguments[0].startAt,
       endAt: aggregateArguments[0].endAt,

@@ -367,6 +367,11 @@ struct DRXDailySalesAggregateArgs: Encodable, Sendable {
     let dateKey: String
 }
 
+struct DRXSalesHistoryRangeArgs: Encodable, Sendable {
+    let startAt: Double
+    let endAt: Double
+}
+
 // MARK: - Checkout Args/Response
 
 struct CheckoutArgs: Encodable, Sendable {

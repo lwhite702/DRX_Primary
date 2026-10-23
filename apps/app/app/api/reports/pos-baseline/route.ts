@@ -39,6 +39,9 @@ export async function GET(request: NextRequest) {
     });
     return NextResponse.json(report);
   } catch (error: unknown) {
+    if (error instanceof Error && error.message.startsWith("INVALID_ARGUMENT:")) {
+      return NextResponse.json({ error: error.message.replace("INVALID_ARGUMENT: ", "") }, { status: 400 });
+    }
     console.error("POS baseline report error:", error);
     return errorResponse(
       "INTERNAL_ERROR",
