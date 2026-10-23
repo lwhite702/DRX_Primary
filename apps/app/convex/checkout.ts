@@ -967,10 +967,10 @@ export const processCheckout = mutation({
     const baseSubtotalCents =
       pricing.merchandiseTotalCents + manualMerchandiseTotalCents;
 
-    let subtotalCents = baseSubtotalCents;
-    let merchandiseSubtotalCents = baseMerchandiseSubtotalCents;
-    let discountCents = baseDiscountCents + (args.discountAmountCents ?? 0);
-    let deliveryRevenueCents =
+    const subtotalCents = baseSubtotalCents;
+    const merchandiseSubtotalCents = baseMerchandiseSubtotalCents;
+    const discountCents = baseDiscountCents + (args.discountAmountCents ?? 0);
+    const deliveryRevenueCents =
       args.delivery?.customerFeeCents ??
       (args.delivery?.chargeCustomer ? args.delivery.vendorFeeCents : 0) +
         (args.deliveryFeeCents ?? 0);
@@ -1307,11 +1307,29 @@ export const processCheckout = mutation({
 });
 
 export const getSalesHistory = query({
-  args: {},
+  args: { startAt: v.optional(v.number()), endAt: v.optional(v.number()) },
   returns: v.array(saleRecord),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
     const auth = await requireUserAndBusiness(ctx);
     requirePermission(auth.userRecord, "VIEW_FINANCIALS");
+    if ((args.startAt === undefined) !== (args.endAt === undefined)) {
+      throw new Error("INVALID_ARGUMENT: Provide both report period boundaries");
+    }
+    if (args.startAt !== undefined && args.endAt !== undefined) {
+      if (!Number.isSafeInteger(args.startAt) || !Number.isSafeInteger(args.endAt) || args.endAt <= args.startAt) {
+        throw new Error("INVALID_ARGUMENT: Report period boundaries are invalid");
+      }
+      return await ctx.db
+        .query("sales")
+        .withIndex("by_businessId_and_orderStatus_and_createdAt", (q) =>
+          q.eq("businessId", auth.businessId)
+            .eq("orderStatus", "completed")
+            .gte("createdAt", args.startAt!)
+            .lt("createdAt", args.endAt!),
+        )
+        .order("desc")
+        .take(50);
+    }
     return await ctx.db
       .query("sales")
       .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))

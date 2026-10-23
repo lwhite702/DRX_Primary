@@ -65,7 +65,8 @@ struct DashboardView: View {
 
                 LazyVGrid(columns: dynamicTypeSize.isAccessibilitySize ? [GridItem(.flexible())] : [GridItem(.flexible()), GridItem(.flexible())], spacing: DRXSpacing.md) {
                     KPICard(title: DRXContent.Navigation.sales, value: "\(agg.orderCount)", symbol: "cart.fill", color: DRXPalette.info)
-                    KPICard(title: "Average sale", value: agg.averageOrderFormatted, symbol: "chart.line.uptrend.xyaxis", color: DRXPalette.success)
+                    KPICard(title: "Cash sales", value: agg.cashSalesFormatted, symbol: "banknote.fill", color: DRXPalette.success)
+                    KPICard(title: "Average sale", value: agg.orderCount == 0 ? "—" : agg.averageOrderFormatted, symbol: "chart.line.uptrend.xyaxis", color: DRXPalette.success)
                     KPICard(title: "Tax", value: agg.totalTaxFormatted, symbol: "percent", color: DRXPalette.warning)
                     KPICard(title: "Subtotal", value: agg.totalSubtotalFormatted, symbol: "sum", color: DRXPalette.accent)
                 }

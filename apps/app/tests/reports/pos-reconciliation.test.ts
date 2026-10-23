@@ -59,4 +59,19 @@ describe("getPosReconciliationReport", () => {
     expect(report.summary.salesChecked).toBe(1);
     expect(report.summary.discrepancies).toBe(0);
   });
+
+  it("treats an exclusive end boundary as belonging only to the next period", async () => {
+    mocks.query.mockResolvedValue([
+      { _id: "sale_inside", createdAt: new Date("2026-03-27T00:00:00.000Z").getTime() - 1 },
+      { _id: "sale_at_end", createdAt: new Date("2026-03-27T00:00:00.000Z").getTime() },
+    ]);
+
+    const report = await getPosReconciliationReport("business_123", {
+      from: new Date("2026-03-26T00:00:00.000Z"),
+      to: new Date("2026-03-27T00:00:00.000Z"),
+      toExclusive: true,
+    });
+
+    expect(report.summary.salesChecked).toBe(1);
+  });
 });

@@ -16,11 +16,11 @@ export function TopMovers({ movers, totalRevenue, compact = false }: TopMoversPr
     <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.02] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.15)] md:p-5">
       <div className="flex justify-between items-end">
         <div className="text-[10px] font-bold uppercase tracking-widest text-white/75">
-          TOP MOVERS TODAY
+          TOP PRODUCTS TODAY
         </div>
         <div className="text-right">
           <div className="text-[10px] font-bold uppercase tracking-widest text-white/65">
-            Gross Revenue (24h)
+            Sales Today
           </div>
           <div className="text-xl font-bold text-white">
             $
@@ -61,10 +61,10 @@ export function TopMovers({ movers, totalRevenue, compact = false }: TopMoversPr
             </div>
             <div className="text-right">
               <div className="text-sm font-bold text-white">
-                {mover.quantitySold} sold
+                {mover.quantitySoldGrams.toLocaleString("en-US", { maximumFractionDigits: 2 })} g sold
               </div>
               <div className="text-[10px] text-white/70">
-                ${mover.revenue}
+                {mover.revenue.toLocaleString("en-US", { style: "currency", currency: "USD" })}
               </div>
             </div>
           </div>

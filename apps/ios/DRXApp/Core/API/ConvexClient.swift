@@ -213,6 +213,7 @@ enum MockConvexFixture {
             {
                 "orderCount": 42,
                 "totalRevenueCents": 384050,
+                "cashSalesCents": 124050,
                 "totalTaxCents": 30724,
                 "totalSubtotalCents": 353326,
                 "averageOrderValueCents": 9144

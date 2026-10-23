@@ -68,8 +68,8 @@ export const getSalesHistory = async (businessId: string, token: string | null) 
 export const getDailySummary = async (token: string | null, from?: string, to?: string) => {
   let url = "/api/reports/pos-baseline";
   const params = new URLSearchParams();
-  if (from) params.append("from", from);
-  if (to) params.append("to", to);
+  if (from) params.set("from", from);
+  if (to) params.set("to", to);
   if (params.toString()) url += `?${params.toString()}`;
   return fetchWithAuth(url, token);
 };
