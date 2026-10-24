@@ -504,11 +504,14 @@ export const markUberOrdered = mutation({
     let trimmedTrackingUrl: string | undefined = undefined;
     if (args.uberTrackingUrl !== undefined) {
       trimmedTrackingUrl = args.uberTrackingUrl.trim();
-      if (
-        trimmedTrackingUrl.length === 0 ||
-        trimmedTrackingUrl.length > 2000 ||
-        !trimmedTrackingUrl.startsWith("https://")
-      ) {
+      let isValidUrl = false;
+      try {
+        const parsed = new URL(trimmedTrackingUrl);
+        isValidUrl = parsed.protocol === "https:" && Boolean(parsed.hostname);
+      } catch {
+        isValidUrl = false;
+      }
+      if (!isValidUrl || trimmedTrackingUrl.length > 2000) {
         throw new Error("INVALID_ARGUMENT: Invalid Uber tracking URL");
       }
     }
@@ -530,7 +533,9 @@ export const markUberOrdered = mutation({
       patch: {
         estimatedArrivalAt,
         ...(trimmedTrackingUrl ? { uberTrackingUrl: trimmedTrackingUrl } : {}),
-        ...(args.vendorFeeCents !== undefined ? { vendorFeeCents: args.vendorFeeCents } : {}),
+        ...(args.vendorFeeCents !== undefined
+          ? { vendorFeeCents: args.vendorFeeCents, vendorExpenseKnown: true }
+          : {}),
         estimatedArrivalMinutes: args.waitMinutes,
       },
       metadata: {
@@ -541,12 +546,14 @@ export const markUberOrdered = mutation({
     });
     if (args.vendorFeeCents !== undefined) {
       const sale = await ctx.db.get(delivery.saleId);
-      if (sale && sale.businessId === auth.businessId) {
-        await ctx.db.patch(sale._id, {
-          vendorDeliveryExpenseCents: args.vendorFeeCents,
-          updatedAt: Date.now(),
-        });
+      if (!sale || sale.businessId !== auth.businessId) {
+        throw new Error("INVALID_STATE: Linked sale not found");
       }
+      await ctx.db.patch(sale._id, {
+        vendorDeliveryExpenseCents: args.vendorFeeCents,
+        vendorDeliveryExpenseKnown: true,
+        updatedAt: Date.now(),
+      });
     }
     const warningAt = Math.max(now, estimatedArrivalAt - 2 * 60_000);
     const reminders: Array<{
@@ -639,13 +646,43 @@ export const updateDeliveryDetails = mutation({
     if (args.uberTrackingUrl !== undefined) {
       if (args.uberTrackingUrl !== null) {
         const trimmed = args.uberTrackingUrl.trim();
-        if (trimmed.length === 0 || trimmed.length > 2000 || !trimmed.startsWith("https://")) {
+        let isValidUrl = false;
+        try {
+          const parsed = new URL(trimmed);
+          isValidUrl = parsed.protocol === "https:" && Boolean(parsed.hostname);
+        } catch {
+          isValidUrl = false;
+        }
+        if (!isValidUrl || trimmed.length > 2000) {
           throw new Error("INVALID_ARGUMENT: Invalid Uber tracking URL");
         }
         patch.uberTrackingUrl = trimmed;
       } else {
         patch.uberTrackingUrl = undefined;
       }
+    }
+    if (args.vendorFeeCents !== undefined) {
+      if (delivery.status === "delivered" || delivery.status === "canceled") {
+        throw new Error("INVALID_STATE: Cannot update vendor fee on completed or canceled delivery");
+      }
+      if (
+        !Number.isSafeInteger(args.vendorFeeCents) ||
+        args.vendorFeeCents < 0 ||
+        args.vendorFeeCents > 500000
+      ) {
+        throw new Error("INVALID_ARGUMENT: Invalid vendor fee cents");
+      }
+      patch.vendorFeeCents = args.vendorFeeCents;
+      patch.vendorExpenseKnown = true;
+      const sale = await ctx.db.get(delivery.saleId);
+      if (!sale || sale.businessId !== auth.businessId) {
+        throw new Error("INVALID_STATE: Linked sale not found");
+      }
+      await ctx.db.patch(sale._id, {
+        vendorDeliveryExpenseCents: args.vendorFeeCents,
+        vendorDeliveryExpenseKnown: true,
+        updatedAt: Date.now(),
+      });
     }
     if (args.address !== undefined) {
       const encrypted = await encryptDeliveryAddress(args.address, {
@@ -657,15 +694,6 @@ export const updateDeliveryDetails = mutation({
       patch.addressEncryptionVersion = encrypted.version;
     }
     await ctx.db.patch(delivery._id, patch);
-    if (args.vendorFeeCents !== undefined) {
-      const sale = await ctx.db.get(delivery.saleId);
-      if (sale && sale.businessId === auth.businessId) {
-        await ctx.db.patch(sale._id, {
-          vendorDeliveryExpenseCents: args.vendorFeeCents,
-          updatedAt: Date.now(),
-        });
-      }
-    }
     return { success: true as const };
   },
 });

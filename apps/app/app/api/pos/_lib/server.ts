@@ -6,7 +6,27 @@ import {
   getBypassAuthUserId,
   getBypassAuthOrgId,
 } from "@/lib/auth/bypass";
-import { hasClerkServerEnv } from "@/lib/adapters/auth/server";
+import { isNoClerkPreviewEnvironment } from "@/lib/adapters/auth/server";
+
+function isAuthorizedPreviewTestSession(request?: Request | string): boolean {
+  if (!isNoClerkPreviewEnvironment()) return false;
+  if (isAuthBypassEnabledServer()) return true;
+
+  if (typeof request === "object" && request && "headers" in request) {
+    const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
+    const bypassHeader = request.headers.get("x-vercel-protection-bypass")?.trim();
+    if (vercelBypassSecret && bypassHeader === vercelBypassSecret) {
+      return true;
+    }
+    const previewSecret = process.env.PREVIEW_TEST_SECRET?.trim();
+    const previewHeader = request.headers.get("x-preview-test-token")?.trim();
+    if (previewSecret && previewHeader === previewSecret) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 async function businessContext(selectedBusinessId?: string) {
   const token = await getConvexAuthToken();
@@ -26,7 +46,11 @@ async function businessContext(selectedBusinessId?: string) {
 
 export async function assertBusinessAccess(userId: string, businessId: string): Promise<boolean> {
   if (isAuthBypassEnabledServer()) return true;
-  if (process.env.VERCEL_ENV === "preview" && !hasClerkServerEnv()) return true;
+  if (isNoClerkPreviewEnvironment()) {
+    const allowedOrg = process.env.BYPASS_AUTH_ORG_ID || "preview_org";
+    const allowedUser = process.env.BYPASS_AUTH_USER_ID || "preview_tester";
+    return userId === allowedUser && businessId === allowedOrg;
+  }
   const context = await businessContext(businessId);
   return context?.userId === userId;
 }
@@ -44,10 +68,10 @@ export async function resolveAuthContext(request?: Request | string) {
       businessId: selectedBusinessId || getBypassAuthOrgId(),
     };
   }
-  if (process.env.VERCEL_ENV === "preview" && !hasClerkServerEnv()) {
+  if (isAuthorizedPreviewTestSession(request)) {
     return {
       userId: process.env.BYPASS_AUTH_USER_ID || "preview_tester",
-      businessId: selectedBusinessId || process.env.BYPASS_AUTH_ORG_ID || "preview_org",
+      businessId: process.env.BYPASS_AUTH_ORG_ID || "preview_org",
     };
   }
   const context = await businessContext(selectedBusinessId);

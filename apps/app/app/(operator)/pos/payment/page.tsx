@@ -257,7 +257,7 @@ export default function QuickPosPaymentPage() {
     }
 
     try {
-      const isCardOrP2P = method === "card" || method.startsWith("p2p_");
+      const isCardOrP2P = method === "card" || isP2PPaymentMethod(method);
       const trimmedRef =
         isCardOrP2P && state.payment.paymentRef?.trim()
           ? state.payment.paymentRef.trim()
@@ -515,7 +515,7 @@ export default function QuickPosPaymentPage() {
             return;
           }
           setPaymentMethod(method);
-          if (method !== "card" && !method.startsWith("p2p_")) {
+          if (method !== "card" && !isP2PPaymentMethod(method)) {
             setPaymentDetails({ paymentRef: "" });
           }
           setError(null);

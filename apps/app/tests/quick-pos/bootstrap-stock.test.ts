@@ -112,3 +112,24 @@ it("returns a valid bootstrap response when auth bypass is enabled", async () =>
   expect(data).toHaveProperty("creditPolicy");
   expect(data).toHaveProperty("deliveryPolicy");
 });
+
+it("returns a preview fallback when query fails in preview without Clerk", async () => {
+  vi.stubEnv("VERCEL_ENV", "preview");
+  vi.stubEnv("CLERK_SECRET_KEY", "");
+  vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "");
+  mocks.query.mockRejectedValue(new Error("UNAUTHORIZED: Auth required"));
+  const response = await GET();
+  expect(response.status).toBe(200);
+  const data = await response.json();
+  expect(data.creditPolicy).toEqual({ enabled: false });
+  expect(data.deliveryPolicy).toEqual({ feeTaxable: false, dispatchSlaMinutes: 5 });
+});
+
+it("propagates error when Clerk is configured in preview", async () => {
+  vi.stubEnv("VERCEL_ENV", "preview");
+  vi.stubEnv("CLERK_SECRET_KEY", "sk_test_123");
+  vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "pk_test_123");
+  mocks.query.mockRejectedValue(new Error("Convex query failed"));
+  const response = await GET();
+  expect(response.status).toBe(503);
+});

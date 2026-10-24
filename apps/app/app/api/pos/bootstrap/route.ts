@@ -6,7 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { getConvexAuthToken } from "@/lib/auth/convex-token";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { isAuthBypassEnabledServer } from "@/lib/auth/bypass";
-import { hasClerkServerEnv } from "@/lib/adapters/auth/server";
+import { isNoClerkPreviewEnvironment } from "@/lib/adapters/auth/server";
 import { QUICK_POS_FAVORITES_LIMIT, QUICK_POS_RECENT_LIMIT } from "@/lib/quick-pos/constants";
 import { posCatalogItem } from "@/lib/pos/catalog-item";
 
@@ -22,10 +22,7 @@ export async function GET(request?: NextRequest) {
     try {
       policies = await client.query(api.posBootstrap.policies, { businessId });
     } catch (err) {
-      if (
-        isAuthBypassEnabledServer() ||
-        (process.env.VERCEL_ENV === "preview" && !hasClerkServerEnv())
-      ) {
+      if (isAuthBypassEnabledServer()) {
         return NextResponse.json({
           favorites: [],
           recentlySold: [],
@@ -33,6 +30,25 @@ export async function GET(request?: NextRequest) {
           creditPolicy: { enabled: true },
           deliveryPolicy: { feeTaxable: false, dispatchSlaMinutes: 30 },
         }, { headers: { "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate" } });
+      }
+      if (isNoClerkPreviewEnvironment()) {
+        const message = err instanceof Error ? err.message : "";
+        const isAuthError =
+          ["FORBIDDEN:", "UNAUTHORIZED:", "UNAUTHENTICATED:", "NOT_FOUND:"].some((c) =>
+            message.includes(c),
+          ) ||
+          message.toLowerCase().includes("auth") ||
+          message.toLowerCase().includes("token");
+        if (isAuthError) {
+          console.warn("[bootstrap] Preview fallback activated due to auth failure:", message);
+          return NextResponse.json({
+            favorites: [],
+            recentlySold: [],
+            data: { favorites: [], recentlySold: [] },
+            creditPolicy: { enabled: false },
+            deliveryPolicy: { feeTaxable: false, dispatchSlaMinutes: 5 },
+          }, { headers: { "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate" } });
+        }
       }
       throw err;
     }

@@ -1467,6 +1467,16 @@ describe("Convex commerce and delivery workflow", () => {
       saleId,
     });
     expect(updatedSaleDetail.sale.vendorDeliveryExpenseCents).toBe(750);
+    expect(updatedSaleDetail.sale.vendorDeliveryExpenseKnown).toBe(true);
+
+    // Reject malformed tracking URL
+    await expect(
+      owner.mutation(api.deliveries.markUberOrdered, {
+        deliveryId,
+        waitMinutes: 15,
+        uberTrackingUrl: "https://",
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Invalid Uber tracking URL");
 
     // Mark Uber ordered with updated vendor fee
     await owner.mutation(api.deliveries.markUberOrdered, {
@@ -1480,6 +1490,17 @@ describe("Convex commerce and delivery workflow", () => {
       saleId,
     });
     expect(afterUberSaleDetail.sale.vendorDeliveryExpenseCents).toBe(850);
+    expect(afterUberSaleDetail.sale.vendorDeliveryExpenseKnown).toBe(true);
+
+    // Reject vendor-fee changes after delivery is completed
+    await owner.mutation(api.deliveries.markHandedOff, { deliveryId });
+    await owner.mutation(api.deliveries.markDelivered, { deliveryId });
+    await expect(
+      owner.mutation(api.deliveries.updateDeliveryDetails, {
+        deliveryId,
+        vendorFeeCents: 999,
+      }),
+    ).rejects.toThrow("INVALID_STATE: Cannot update vendor fee on completed or canceled delivery");
   });
 
   it("validates paymentTenders in updateSale and requires breakdown to match total for split sales", async () => {
@@ -1561,7 +1582,7 @@ describe("Convex commerce and delivery workflow", () => {
   });
 
   it("retrieves tenant-scoped recent customer favorites through getCustomerRecentFavorites", async () => {
-    const { owner, productId } = await setupCommerceStore();
+    const { t, owner, productId } = await setupCommerceStore();
 
     // Create a customer
     const customerId = await owner.mutation(api.customers.createCustomer, {
@@ -1589,6 +1610,24 @@ describe("Convex commerce and delivery workflow", () => {
     expect(favorites[0].name).toBe("Fractional Commerce Product");
     expect(favorites[0].orderCount).toBe(1);
     expect(favorites[0].lastQuantityGrams).toBe(2);
+
+    // Second business customer returns empty favorites across tenant boundary
+    const otherOwner = t.withIdentity({
+      subject: "other_owner",
+      email: "other@example.test",
+    });
+    await otherOwner.mutation(api.onboarding.createBusinessOnboarding, {
+      businessName: "Other Business",
+    });
+    const otherCustomerId = await otherOwner.mutation(api.customers.createCustomer, {
+      firstName: "Other",
+      lastName: "Shopper",
+      phoneNumber: "+15559876543",
+    });
+    const crossTenantFavorites = await owner.query(api.checkout.getCustomerRecentFavorites, {
+      customerId: otherCustomerId,
+    });
+    expect(crossTenantFavorites).toEqual([]);
 
     // Unrelated customer returns empty favorites
     const emptyFavorites = await owner.query(api.checkout.getCustomerRecentFavorites, {

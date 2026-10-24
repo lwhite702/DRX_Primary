@@ -24,7 +24,7 @@ import {
 import { normalizeProductCommerceConfig } from "./helpers/productCommerce";
 import { normalizeManualLineName } from "./helpers/manualLinePolicy";
 
-import { checkoutFee, normalizeFees, totalFees, normalizePaymentReference, calculateSettlement, type CheckoutFee, type CheckoutPaymentMethod } from "./helpers/checkoutSettlement";
+import { checkoutFee, normalizeFees, totalFees, normalizePaymentReference, calculateSettlement, ALLOWED_SPLIT_TENDER_METHODS, type CheckoutFee, type CheckoutPaymentMethod } from "./helpers/checkoutSettlement";
 
 import { priceOverride, normalizeOverrides, deliveryTerms, validateDeliveryTerms, type PriceOverride, type DeliveryTerms } from "./helpers/checkoutTerms";
 
@@ -1331,7 +1331,9 @@ export const getCustomerRecentFavorites = query({
       if (
         sale.businessId !== auth.businessId ||
         sale.orderStatus === "cancelled" ||
-        sale.orderStatus === "voided"
+        sale.orderStatus === "canceled" ||
+        sale.orderStatus === "voided" ||
+        sale.orderStatus === "refunded"
       ) {
         continue;
       }
@@ -1357,15 +1359,14 @@ export const getCustomerRecentFavorites = query({
       }
     }
 
-    const sorted = Array.from(productStats.entries())
-      .sort(
-        (a, b) =>
-          b[1].orderCount - a[1].orderCount || b[1].lastSeenAt - a[1].lastSeenAt,
-      )
-      .slice(0, 5);
+    const sorted = Array.from(productStats.entries()).sort(
+      (a, b) =>
+        b[1].orderCount - a[1].orderCount || b[1].lastSeenAt - a[1].lastSeenAt,
+    );
 
     const results = [];
     for (const [productIdStr, stats] of sorted) {
+      if (results.length >= 5) break;
       const product = await ctx.db.get(productIdStr as Id<"products">);
       if (product && product.businessId === auth.businessId && product.isActive) {
         results.push({
@@ -1475,21 +1476,10 @@ export const updateSale = mutation({
       "p2p_venmo",
       "p2p_other",
     ]);
-    const allowedTenderMethods = new Set([
-      "cash",
-      "card",
-      "zelle",
-      "p2p_cashapp",
-      "p2p_paypal",
-      "p2p_zelle",
-      "p2p_onepay",
-      "p2p_chime",
-      "p2p_venmo",
-      "p2p_other",
-    ]);
+    const hasCreditBalance = sale.creditAmountCents !== undefined && sale.creditAmountCents > 0;
 
     if (args.paymentMethod !== undefined) {
-      if (sale.paymentMethod === "credit" || args.paymentMethod === "credit") {
+      if (sale.paymentMethod === "credit" || args.paymentMethod === "credit" || hasCreditBalance) {
         throw new Error("INVALID_STATE: Credit payment changes require reconciliation");
       }
       if (!validPaymentMethods.has(args.paymentMethod)) {
@@ -1499,26 +1489,30 @@ export const updateSale = mutation({
     }
     if (args.paymentReference !== undefined) patch.paymentReference = args.paymentReference ?? undefined;
     if (args.paymentTenders !== undefined) {
-      if (args.paymentTenders.some((t) => t.method === "credit")) {
+      if (
+        sale.paymentMethod === "credit" ||
+        hasCreditBalance ||
+        args.paymentTenders.some((t) => t.method === "credit")
+      ) {
         throw new Error("INVALID_STATE: Credit payment changes require reconciliation");
       }
       for (const tender of args.paymentTenders) {
-        if (!allowedTenderMethods.has(tender.method)) {
+        if (!ALLOWED_SPLIT_TENDER_METHODS.has(tender.method) || tender.method === "credit") {
           throw new Error("INVALID_ARGUMENT: Invalid payment tender method");
         }
         if (!Number.isSafeInteger(tender.amountCents) || tender.amountCents <= 0) {
           throw new Error("INVALID_ARGUMENT: Payment tender amount must be a positive integer");
         }
       }
-      const effectiveMethod = args.paymentMethod ?? sale.paymentMethod;
-      if (effectiveMethod === "split") {
-        if (args.paymentTenders.length === 0) {
-          throw new Error("INVALID_ARGUMENT: Split payment requires tender breakdown");
-        }
+      if (args.paymentTenders.length > 0) {
         const tendersSum = args.paymentTenders.reduce((sum, t) => sum + t.amountCents, 0);
         if (tendersSum !== sale.totalAmountCents) {
           throw new Error("INVALID_ARGUMENT: Payment tenders sum does not match sale total");
         }
+      }
+      const effectiveMethod = args.paymentMethod ?? sale.paymentMethod;
+      if (effectiveMethod === "split" && args.paymentTenders.length === 0) {
+        throw new Error("INVALID_ARGUMENT: Split payment requires tender breakdown");
       }
       patch.paymentTenders = args.paymentTenders;
     } else if (args.paymentMethod === "split") {

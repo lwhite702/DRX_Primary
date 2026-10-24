@@ -70,7 +70,7 @@ describe("server auth adapter", () => {
 
   it("treats NODE_ENV=production with VERCEL_ENV unset as true production", () => {
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("VERCEL_ENV", "");
+    delete process.env.VERCEL_ENV;
 
     expect(isTrueProductionEnvironment()).toBe(true);
   });

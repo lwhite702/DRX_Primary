@@ -1,10 +1,7 @@
-import { auth, hasClerkServerEnv } from "@/lib/adapters/auth/server";
+import { auth } from "@/lib/adapters/auth/server";
 
 /** Match the Clerk/Convex client integration without depending on a legacy template. */
 export async function getConvexAuthToken(): Promise<string | null> {
-  if (process.env.VERCEL_ENV === "preview" && !hasClerkServerEnv()) {
-    return "preview-token";
-  }
   try {
     const { userId, sessionClaims, getToken } = await auth();
     if (!userId) return null;
