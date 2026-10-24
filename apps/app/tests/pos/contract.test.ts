@@ -2,11 +2,33 @@ import { describe, expect, it } from "vitest";
 import {
   posCheckoutSchema,
   posProductSchema,
+  quickCheckoutPayloadSchema,
   receiptOutputSchema,
   stockAdjustmentSchema,
 } from "@/lib/pos/contract";
 
 describe("POS contract", () => {
+  it("rejects requested fixed amounts on manual checkout lines", () => {
+    const result = quickCheckoutPayloadSchema.safeParse({
+      mode: "quick",
+      idempotencyKey: "33333333-3333-4333-8333-333333333333",
+      payment: { method: "cash", receipt: "none", creditConfirmed: false },
+      items: [{
+        id: "manual-1",
+        inventoryId: null,
+        name: "Manual item",
+        unitPrice: 25,
+        qty: 1,
+        source: "manual",
+        requestedAmountCents: 2_500,
+      }],
+    });
+    expect(result.success).toBe(false);
+    expect(!result.success && result.error.issues.some((issue) =>
+      issue.path.join(".") === "items.0.requestedAmountCents",
+    )).toBe(true);
+  });
+
   it("validates product shape with optional sku/barcode", () => {
     const parsed = posProductSchema.parse({
       id: "11111111-1111-4111-8111-111111111111",

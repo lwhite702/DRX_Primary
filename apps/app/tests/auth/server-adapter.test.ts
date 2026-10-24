@@ -74,7 +74,6 @@ describe("server auth adapter", () => {
 
     expect(isTrueProductionEnvironment()).toBe(true);
   });
-
   it("throws in true production environment when Clerk keys are missing", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL_ENV", "production");

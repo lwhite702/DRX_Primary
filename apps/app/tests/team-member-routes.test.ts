@@ -7,9 +7,9 @@ import { api } from "../convex/_generated/api";
 import * as team from "../convex/teamManagement";
 import * as onboarding from "../convex/onboarding";
 import * as generatedApi from "../convex/_generated/api";
-const mocks = vi.hoisted(() => ({ client: vi.fn(), send: vi.fn() }));
+const mocks = vi.hoisted(() => ({ client: vi.fn(), send: vi.fn(), getUser: vi.fn() }));
 vi.mock("@/lib/business/convex-server", () => ({ businessClient: mocks.client }));
-vi.mock("@/lib/adapters/auth/server", () => ({ clerkClient: async () => ({ invitations: { createInvitation: mocks.send } }) }));
+vi.mock("@/lib/adapters/auth/server", () => ({ clerkClient: async () => ({ invitations: { createInvitation: mocks.send }, users: { getUser: mocks.getUser } }) }));
 import { POST } from "../app/api/team/members/route";
 import { GET as LIST } from "../app/api/team/route";
 import { GET, DELETE } from "../app/api/team/members/[id]/route";
@@ -48,3 +48,30 @@ it("records before-and-after roles for updates", async () => { expect((await PUT
 it("rejects owner, platform and unknown assignable roles", async () => { for (const role of ["owner", "super_admin", "unknown"]) expect((await PUT(request({ role }), params())).status).toBe(400); });
 it("blocks managers from assigning administrators", async () => { actor("manager"); expect((await PUT(request({ role: "admin" }), params())).status).toBe(403); });
 it("blocks managers from demoting administrators", async () => { actor("manager"); expect((await PUT(request({ role: "cashier" }), params("admin"))).status).toBe(403); });
+it("enriches missing team member email and name from Clerk", async () => {
+  await t.run(async (ctx) => {
+    const ownerRecord = await ctx.db.query("users").withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", "owner")).unique();
+    if (ownerRecord) {
+      await ctx.db.patch(ownerRecord._id, { email: "" });
+    }
+  });
+  mocks.getUser.mockImplementation(async (userId: string) => {
+    if (userId === "owner") {
+      return {
+        id: "owner",
+        firstName: "Lee",
+        lastName: null,
+        emailAddresses: [{ id: "email-1", emailAddress: "lee@wrelik.com" }],
+        primaryEmailAddressId: "email-1",
+      };
+    }
+    return null;
+  });
+  const response = await LIST(request());
+  const body = await response.json();
+  expect(response.status).toBe(200);
+  const ownerMember = body.data.find((m: { user_id: string }) => m.user_id === "owner");
+  expect(ownerMember).toBeDefined();
+  expect(ownerMember.email).toBe("lee@wrelik.com");
+  expect(ownerMember.name).toBe("Lee");
+});

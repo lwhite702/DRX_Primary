@@ -389,7 +389,6 @@ export default function QuickPosSalePage() {
                 totalPurchases: rich.totalPurchases,
               });
               setSuccess(`Attached ${customer.alias || customer.phone || "customer"}`);
-
               // Automatically trigger alert modal if outstanding balance or active alerts exist
               if ((rich.totalCreditUsed ?? 0) > 0) {
                 setShowAlertModal(true);

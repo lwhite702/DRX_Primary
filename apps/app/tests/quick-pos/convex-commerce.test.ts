@@ -23,6 +23,37 @@ it("uses the canonical idempotency key and paid amount without a legacy sale loo
   expect(await checkoutCanonicalCommerce({ ...input, idempotencyKey: "key", paymentMethod: "cash", amountPaid: 20 })).toMatchObject({ total: 12.15, changeAmount: 7.85 });
   expect(mocks.mutation).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ orderNumber: "WEB-key", amountPaidCents: 2000 }));
 });
+it("preserves the exact requested cents from the web cart through quote and checkout", async () => {
+  mocks.query.mockResolvedValueOnce({ productIds: ["canonical-product"] }).mockResolvedValueOnce(quote);
+  mocks.mutation.mockResolvedValue({ saleId: "sale", orderNumber: "WEB-dollar", totalAmountCents: 2750, changeAmountCents: 0 });
+  const dollarEntry = {
+    ...input,
+    items: [{ ...input.items[0], unitPrice: 25, weightGrams: 0.7, requestedAmountCents: 2500 }],
+  };
+  await checkoutCanonicalCommerce({ ...dollarEntry, idempotencyKey: "dollar", paymentMethod: "card" });
+  const canonicalItem = { productId: "canonical-product", quantityGrams: 0.7, requestedAmountCents: 2500 };
+  expect(mocks.query).toHaveBeenNthCalledWith(2, expect.anything(), expect.objectContaining({ items: [canonicalItem] }));
+  expect(mocks.mutation).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ items: [canonicalItem] }));
+});
+it("shows the requested dollar amount as the checkout subtotal instead of the normal price basis", async () => {
+  mocks.query.mockResolvedValueOnce({ productIds: ["canonical-product"] }).mockResolvedValueOnce({
+    ...quote,
+    merchandiseSubtotalCents: 1250,
+    priceAdjustmentCents: 1250,
+    subtotalCents: 2500,
+    totalAmountCents: 2500,
+    lines: [{ productId: "canonical-product", quantity: 0.5, requestedAmountCents: 2500, lineSubtotalCents: 2500 }],
+  });
+
+  const fixedAmountQuote = await quoteCanonicalCommerce({
+    ...input,
+    items: [{ ...input.items[0], unitPrice: 25, weightGrams: 0.5, requestedAmountCents: 2500 }],
+  });
+
+  expect(fixedAmountQuote.subtotal).toBe(25);
+  expect(fixedAmountQuote.subtotalAfterDiscount).toBe(25);
+  expect(fixedAmountQuote.total).toBe(25);
+});
 it("fails closed on foreign identities and does not attempt a sale", async () => {
   mocks.query.mockRejectedValue(new Error("FORBIDDEN: Wrong tenant"));
   await expect(checkoutCanonicalCommerce({ ...input, idempotencyKey: "key", paymentMethod: "cash" })).rejects.toThrow(/FORBIDDEN/);

@@ -50,6 +50,37 @@ export const removeTeamMember = mutation({
   },
 });
 
+export const reconcileTeamMemberProfile = mutation({
+  args: {
+    businessId: v.string(),
+    expectedUserId: v.string(),
+    clerkUserId: v.string(),
+    email: v.optional(v.string()),
+    name: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const auth = await requireSelectedBusiness(ctx, args.businessId, args.expectedUserId);
+    requirePermission(auth.userRecord, "MANAGE_MEMBERS");
+    const user = await ctx.db.query("users")
+      .withIndex("by_clerkUserId_and_businessId", q => q.eq("clerkUserId", args.clerkUserId).eq("businessId", auth.businessId))
+      .first();
+    if (user) {
+      const updates: { email?: string; name?: string; updatedAt: number } = { updatedAt: Date.now() };
+      if (args.email && (!user.email || !user.email.trim())) {
+        updates.email = args.email.trim().toLowerCase();
+      }
+      if (args.name && !user.name) {
+        updates.name = args.name.trim();
+      }
+      if (Object.keys(updates).length > 1) {
+        await ctx.db.patch(user._id, updates);
+      }
+    }
+    return null;
+  },
+});
+
 // Keep historical events readable for removed memberships, with separate audit authorization.
 export const listTeamMemberAudit = query({
   args: { ...context, paginationOpts: paginationOptsValidator },

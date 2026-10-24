@@ -16,7 +16,7 @@ export function fullCommerceInput(payload: Omit<FullPayload, "idempotencyKey">, 
     businessId, customerId: payload.customerId, fees: payload.fees, usePriceOverrides: true,
     discountAmountCents: payload.discountAmountCents,
     discountReason: payload.discountReason,
-    items: payload.items,
+    items: payload.items.map(item => ({ ...item, unitPrice: item.overrideReason && item.weightGrams ? Math.round(item.unitPrice * 100 / item.weightGrams) / 100 : item.unitPrice })),
     delivery: payload.delivery?.enabled ? payload.delivery : undefined,
     fullDelivery: hasDelivery && !payload.delivery?.enabled ? { profileId: payload.deliveryManagementId ?? undefined, address: resolvedAddress, customerFeeCents: fee } : undefined,
   };

@@ -190,6 +190,7 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
                 originalPrice: item.originalPrice ?? item.unitPrice,
                 unitPrice: action.payload.unitPrice,
                 overrideReason: action.payload.overrideReason,
+                requestedAmountCents: undefined,
               }
             : item,
         ),

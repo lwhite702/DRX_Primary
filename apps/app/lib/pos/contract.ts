@@ -98,12 +98,23 @@ export const cartLineItemSchema = z.object({
   qty: z.number().int().positive(),
   source: posCartItemSourceSchema,
   weightGrams: z.number().positive().optional(),
+  requestedAmountCents: z.number().int().positive().optional(),
   pricePerGram: z.number().positive().optional(),
   bulkTierApplied: z.string().min(1).optional(),
   loyaltyDiscountApplied: z.number().nonnegative().optional(),
   originalPrice: z.number().nonnegative().optional(),
   overrideReason: z.string().min(1).optional(),
   commerceConfig: quickPosCommerceConfigSchema.optional(),
+});
+
+const quickPosCartLineItemSchema = cartLineItemSchema.superRefine((item, context) => {
+  if (item.source === "manual" && item.requestedAmountCents !== undefined) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["requestedAmountCents"],
+      message: "Requested dollar amounts are only supported for inventory lines",
+    });
+  }
 });
 
 export const posFeeSchema = z.object({
@@ -155,7 +166,7 @@ export const quickCheckoutPayloadSchema = z.object({
   delivery: quickPosDeliverySchema.optional(),
   discountAmountCents: z.number().int().nonnegative().optional(),
   discountReason: z.string().min(1).max(100).optional(),
-  items: z.array(cartLineItemSchema).min(1),
+  items: z.array(quickPosCartLineItemSchema).min(1),
 });
 
 export const quickPosQuotePayloadSchema = quickCheckoutPayloadSchema.pick({
