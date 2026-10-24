@@ -1,24 +1,75 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowUp, PenLine, ScrollText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { drxCopy } from "@/lib/copy/drx";
+import { useBusiness } from "@/lib/hooks/use-business";
 
 interface InventoryHeaderProps {
   onIntake: () => void;
   onAdjustment: () => void;
   onAudit: () => void;
+  pendingApprovalsCount?: number;
 }
 
 export function InventoryHeader({
   onAdjustment,
   onAudit,
+  pendingApprovalsCount: propPendingCount,
 }: InventoryHeaderProps) {
+  const { business } = useBusiness();
+  const [fetchedPendingCount, setFetchedPendingCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (propPendingCount !== undefined || !business?.id) return;
+    let cancelled = false;
+    fetch("/api/inventory/intake?status=pending", {
+      headers: { "x-business-id": business.id },
+      cache: "no-store",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled && data.items && Array.isArray(data.items)) {
+          setFetchedPendingCount(data.items.length);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [business?.id, propPendingCount]);
+
+  const effectivePendingCount = propPendingCount ?? fetchedPendingCount;
+
   return (
     <div className="space-y-4">
-      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pl-1">
-        {drxCopy.inventory.operationsLabel}
-      </p>
+      <div className="flex items-center justify-between pl-1">
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+          {drxCopy.inventory.operationsLabel}
+        </p>
+        <Link
+          href="/inventory/approvals"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-white transition-colors group"
+        >
+          <span>Approval Inbox</span>
+          {effectivePendingCount !== null && effectivePendingCount > 0 ? (
+            <Badge
+              variant="secondary"
+              className="bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[11px] font-mono px-2 py-0.5 rounded-full"
+            >
+              {effectivePendingCount} pending
+            </Badge>
+          ) : (
+            <Badge
+              variant="outline"
+              className="border-white/10 text-muted-foreground text-[10px] px-1.5 py-0 rounded"
+            >
+              0
+            </Badge>
+          )}
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link href="/inventory/intake" className="block group">

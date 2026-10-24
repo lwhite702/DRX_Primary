@@ -8,6 +8,7 @@ import {
   Droplets,
   Zap,
   Box,
+  Layers,
 } from "lucide-react";
 import { type Inventory } from "@/lib/validations/schemas";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ interface InventoryListProps {
   onAddItem: () => void;
   onArchive?: (item: Inventory) => void;
   onReactivate?: (item: Inventory) => void;
+  onViewBatches?: (item: Inventory) => void;
   viewStatus?: "active" | "archived";
   searchTerm: string;
   onSearchChange: (value: string) => void;
@@ -49,6 +51,7 @@ export function InventoryList({
   onAddItem,
   onArchive,
   onReactivate,
+  onViewBatches,
   viewStatus = "active",
   searchTerm,
   onSearchChange,
@@ -145,6 +148,20 @@ export function InventoryList({
                   </button>
 
                   <div className="flex items-center gap-2">
+                    {onViewBatches && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewBatches(item);
+                        }}
+                        className="p-1.5 text-muted-foreground/60 hover:text-blue-400 hover:bg-white/5 rounded transition-colors"
+                        title="View FIFO Batches"
+                        aria-label="View FIFO Batches"
+                      >
+                        <Layers className="w-4 h-4" />
+                      </button>
+                    )}
                     {item.is_active === false ? (
                       onReactivate && (
                         <button

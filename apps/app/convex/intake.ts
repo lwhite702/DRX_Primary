@@ -271,11 +271,23 @@ export const listIntakes = query({
     const page = await Promise.all(result.page.map(async row => {
       const product = await ctx.db.get(row.productId);
       const owned = product?.businessId === auth.businessId ? product : null;
+      let creatorEmail = "Business staff";
+      if (row.createdBy) {
+        const creator = await ctx.db
+          .query("users")
+          .withIndex("by_clerkUserId_and_businessId", q =>
+            q.eq("clerkUserId", row.createdBy).eq("businessId", auth.businessId)
+          )
+          .first();
+        if (creator?.email) {
+          creatorEmail = creator.email;
+        }
+      }
       return { id: row._id, inventory_id: row.productId, product_name: owned?.productName ?? "Unavailable product", sku: owned?.sku ?? "",
         unit_of_measure: owned?.sellingUnit ?? "g", total_cost: row.totalCostCents / 100, total_weight_grams: row.totalWeightGrams,
         calculated_cost_per_gram: row.calculatedCostPerGramCents / 100, delivery_cost: row.deliveryCostCents / 100,
         supplier: row.supplier ?? "", lotNumber: row.lotNumber, expirationDate: row.expirationDate, location: row.location,
-        created_at: new Date(row.createdAt).toISOString(), created_by_email: "Business staff", status: row.status };
+        created_at: new Date(row.createdAt).toISOString(), created_by_email: creatorEmail, status: row.status };
     }));
     return { page, continueCursor: result.continueCursor, isDone: result.isDone };
   },

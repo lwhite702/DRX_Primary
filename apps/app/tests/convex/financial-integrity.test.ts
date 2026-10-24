@@ -4,6 +4,7 @@ import schema from "../../convex/schema";
 import { api } from "../../convex/_generated/api";
 
 import * as checkout from "../../convex/checkout";
+import * as credit from "../../convex/credit";
 import * as customers from "../../convex/customers";
 import * as intake from "../../convex/intake";
 import * as inventoryAdjustments from "../../convex/inventoryAdjustments";
@@ -16,6 +17,7 @@ import * as generatedApi from "../../convex/_generated/api";
 const modules = {
   "_generated/api.js": async () => generatedApi,
   "checkout.ts": async () => checkout,
+  "credit.ts": async () => credit,
   "customers.ts": async () => customers,
   "intake.ts": async () => intake,
   "inventoryAdjustments.ts": async () => inventoryAdjustments,
@@ -335,6 +337,14 @@ describe("financial and inventory integrity contracts", () => {
       totalPurchasesCents: 0,
       purchaseCount: 0,
     });
+    // Verify credit ledger is not desynchronized and subsequent credit actions succeed
+    await owner.mutation(api.credit.issueCustomerCredit, {
+      customerId,
+      amountCents: 500,
+    });
+    expect(
+      (await owner.query(api.customers.listCustomers, {}))[0].totalCreditUsedCents,
+    ).toBe(500);
 
     const voidSale = await owner.mutation(api.checkout.processCheckout, {
       orderNumber: "VOID-CASH",

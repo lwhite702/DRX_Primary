@@ -117,12 +117,13 @@ export function ApprovalsClient() {
     fetchIntakes();
   }, [businessId]);
 
-  const handleApprove = async (withEdits = false) => {
-    if (!selectedIntake || !businessId) return;
+  const handleApprove = async (targetIntake?: IntakeRequest, withEdits = false) => {
+    const intake = targetIntake || selectedIntake;
+    if (!intake || !businessId) return;
 
     try {
       const payload: any = {
-        intake_id: selectedIntake.id,
+        intake_id: intake.id,
         action: "approve",
       };
 
@@ -189,6 +190,12 @@ export function ApprovalsClient() {
       supplier: intake.supplier || "",
     });
     setEditOpen(true);
+  };
+
+  const openRejectModal = (intake: IntakeRequest) => {
+    setSelectedIntake(intake);
+    setRejectionReason("");
+    setRejectOpen(true);
   };
 
   if (loadedBusinessId !== businessId) {
@@ -299,10 +306,7 @@ export function ApprovalsClient() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => {
-                        setSelectedIntake(intake);
-                        setRejectOpen(true);
-                      }}
+                      onClick={() => openRejectModal(intake)}
                     >
                       Reject
                     </Button>
@@ -317,7 +321,7 @@ export function ApprovalsClient() {
                       size="sm"
                       onClick={() => {
                         setSelectedIntake(intake);
-                        handleApprove(false); // Direct approve
+                        handleApprove(intake, false);
                       }}
                     >
                       Approve
@@ -468,7 +472,7 @@ export function ApprovalsClient() {
             <Button variant="outline" onClick={() => setEditOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={() => handleApprove(true)}>
+            <Button onClick={() => handleApprove(selectedIntake || undefined, true)}>
               Confirm Approval
             </Button>
           </DialogFooter>

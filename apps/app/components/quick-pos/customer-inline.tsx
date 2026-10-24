@@ -7,17 +7,25 @@ import {
   shouldMaskFromProtocol,
 } from "@/lib/privacy/masking";
 import type { QuickPosCustomer, QuickPosCustomerFavoriteItem } from "@/lib/quick-pos/types";
+import { toTitleCase } from "@/lib/utils/format-text";
 
 interface CustomerItem {
   id: string;
   phone: string;
   alias: string;
   remainingCredit: number;
+  totalCreditUsed?: number;
+  creditLimit?: number;
   firstName?: string;
   lastName?: string;
   loyaltyTier?: string;
   discountRateBps?: number | null;
   fixedPricePerGram?: number | null;
+  customProductPrices?: Array<{
+    productId: string;
+    productName: string;
+    pricePerUnit: number;
+  }>;
   purchaseCount?: number;
   totalPurchases?: number;
   recentFavorites?: QuickPosCustomerFavoriteItem[];
@@ -211,7 +219,8 @@ export function CustomerInline({
 
     const isPrimaryPhone = looksLikePhoneInput(primary);
     const phone = isPrimaryPhone ? primary : secondary;
-    const alias = isPrimaryPhone ? secondary : primary;
+    const rawAlias = isPrimaryPhone ? secondary : primary;
+    const alias = rawAlias ? toTitleCase(rawAlias) : rawAlias;
 
     const generation = ++requestGeneration.current;
     setLoading(true);

@@ -2,21 +2,37 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
 import {
   Archive,
+  ArrowDownLeft,
   ArrowLeft,
+  ArrowUpRight,
+  Clock,
+  CreditCard,
+  DollarSign,
   Mail,
   MapPin,
   Phone,
+  PlusCircle,
   ReceiptText,
   RotateCcw,
   Sparkles,
+  ShieldAlert,
 } from "lucide-react";
 import { AICreditPanel } from "@/components/credit/AICreditPanel";
+import { CustomerAlertModal } from "@/components/customers/CustomerAlertModal";
+import { ExtendCreditModal } from "@/components/customers/ExtendCreditModal";
+import { RecordCreditPaymentModal } from "@/components/customers/RecordCreditPaymentModal";
 import { toast } from "sonner";
 import { CustomerDetailSkeleton } from "@/components/skeletons/customer-detail-skeleton";
 import {
@@ -75,7 +91,7 @@ interface CreditMetrics {
   credit_issued_30d: number;
   credit_issued_90d: number;
   current_credit_balance: number;
-  on_time_repayment_ratio: number;
+  on_time_repayment_ratio: number | null;
   late_payment_count: number;
 }
 
@@ -92,9 +108,16 @@ export default function CustomerDetailPage() {
   const [customerScope, setCustomerScope] = useState<string | null>(null);
   const scope = JSON.stringify([business?.id, customerId]);
   const [metrics, setMetrics] = useState<CreditMetrics | null>(null);
+  const [creditHistory, setCreditHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const privacy = usePrivacyContext();
   const [lifecyclePending, setLifecyclePending] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [showExtendCreditModal, setShowExtendCreditModal] = useState(false);
+  const [showRecordPaymentModal, setShowRecordPaymentModal] = useState(false);
+  const [refreshCount, setRefreshCount] = useState(0);
+
+  const refreshCustomer = () => setRefreshCount((c) => c + 1);
 
   useEffect(() => {
     let cancelled = false;
@@ -110,6 +133,23 @@ export default function CustomerDetailPage() {
 
         if (cancelled) return;
         setCustomer(data); setCustomerScope(scope);
+
+        if (Array.isArray(data.credit_history)) {
+          setCreditHistory(data.credit_history);
+        }
+
+        if (Number(data.total_credit_used || 0) > 0) {
+          setShowAlertModal(true);
+        } else {
+          fetch(`/api/customers/${customerId}/notes`)
+            .then((r) => r.json())
+            .then((noteData) => {
+              if (noteData.alerts?.length > 0 || noteData.hasOutstandingBalance) {
+                setShowAlertModal(true);
+              }
+            })
+            .catch(() => {});
+        }
 
         if (data.metrics) {
           setMetrics({
@@ -139,7 +179,7 @@ export default function CustomerDetailPage() {
 
     fetchData();
     return () => { cancelled = true; };
-  }, [business?.id, customerId, scope]);
+  }, [business?.id, customerId, scope, refreshCount]);
 
   const can_apply_changes =
     !permissionLoading && hasPermission("customers.manage");
@@ -250,6 +290,14 @@ export default function CustomerDetailPage() {
             </SheetContent>
           </Sheet>
         </div>
+        <Button
+          variant="outline"
+          onClick={() => setShowAlertModal(true)}
+          className="border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
+        >
+          <ShieldAlert className="h-4 w-4 mr-2 text-amber-400" />
+          Alerts & Notes
+        </Button>
         {!permissionLoading && hasPermission("customers.manage") ? (
           <Button
             variant="outline"
@@ -407,6 +455,182 @@ export default function CustomerDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Store Credit Account Management */}
+          <Card>
+            <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pb-4">
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-emerald-400" />
+                  Store Credit Account
+                </CardTitle>
+                <CardDescription>
+                  {customer.creditEnabled === false || customer.credit_enabled === false
+                    ? "Store credit is currently disabled for this customer."
+                    : (customer.creditLimit === 0 || customer.credit_limit === 0)
+                      ? "Unlimited store credit account."
+                      : `Configured credit limit: $${Number(customer.creditLimit || customer.credit_limit || 0).toFixed(2)}`}
+                </CardDescription>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowExtendCreditModal(true)}
+                  className="border-white/10 hover:bg-white/5"
+                >
+                  <PlusCircle className="h-4 w-4 mr-1.5 text-blue-400" />
+                  Adjust Limit
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setShowRecordPaymentModal(true)}
+                  disabled={Number(customer.total_credit_used || customer.totalCreditUsed || 0) <= 0}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white"
+                >
+                  <DollarSign className="h-4 w-4 mr-1.5" />
+                  Record Payment
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Account Status
+                  </p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        customer.creditEnabled === false || customer.credit_enabled === false
+                          ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                          : (customer.creditLimit === 0 || customer.credit_limit === 0)
+                            ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                            : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      }`}
+                    >
+                      {customer.creditEnabled === false || customer.credit_enabled === false
+                        ? "Disabled"
+                        : (customer.creditLimit === 0 || customer.credit_limit === 0)
+                          ? "Unlimited"
+                          : "Active"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Outstanding Balance
+                  </p>
+                  <p className="text-xl font-bold font-mono text-amber-400 mt-1">
+                    ${Number(customer.total_credit_used || customer.totalCreditUsed || 0).toFixed(2)}
+                  </p>
+                </div>
+
+                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Available Credit
+                  </p>
+                  <p className="text-xl font-bold font-mono text-white mt-1">
+                    {customer.creditEnabled === false || customer.credit_enabled === false
+                      ? "$0.00"
+                      : (customer.creditLimit === 0 || customer.credit_limit === 0)
+                        ? "Unlimited"
+                        : `$${Math.max(0, Number(customer.creditLimit || customer.credit_limit || 0) - Number(customer.total_credit_used || customer.totalCreditUsed || 0)).toFixed(2)}`}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Store Credit Ledger */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-zinc-400" />
+                Store Credit Ledger
+              </CardTitle>
+              <CardDescription>
+                Audited ledger entries recording credit issues, repayments, and balance adjustments.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {creditHistory.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No store credit ledger entries recorded for this customer.
+                </p>
+              ) : (
+                <div className="divide-y divide-white/5">
+                  {creditHistory.map((entry) => {
+                    const isPayment = entry.kind === "payment";
+                    const isIssue = entry.kind === "issue";
+                    return (
+                      <div
+                        key={entry.id}
+                        className="flex flex-col gap-2 py-3 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div
+                            className={`p-2 rounded-lg mt-0.5 ${
+                              isPayment
+                                ? "bg-emerald-500/10 text-emerald-400"
+                                : isIssue
+                                  ? "bg-amber-500/10 text-amber-400"
+                                  : "bg-blue-500/10 text-blue-400"
+                            }`}
+                          >
+                            {isPayment ? (
+                              <ArrowDownLeft className="h-4 w-4" />
+                            ) : (
+                              <ArrowUpRight className="h-4 w-4" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm text-white">
+                                {isPayment
+                                  ? "Payment Received"
+                                  : isIssue
+                                    ? "Credit Issued"
+                                    : entry.kind === "void"
+                                      ? "Adjustment / Void"
+                                      : entry.kind}
+                              </span>
+                              {entry.payment_method && (
+                                <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-white/5 text-zinc-400 border border-white/10">
+                                  {entry.payment_method}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {new Intl.DateTimeFormat(undefined, {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              }).format(new Date(entry.created_at))}
+                              {entry.description ? ` • ${entry.description}` : ""}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="sm:text-right pl-9 sm:pl-0">
+                          <p
+                            className={`font-semibold font-mono text-sm ${
+                              isPayment ? "text-emerald-400" : "text-amber-400"
+                            }`}
+                          >
+                            {isPayment ? "-" : "+"}${Number(entry.delta_amount || 0).toFixed(2)}
+                          </p>
+                          <p className="text-xs font-mono text-muted-foreground">
+                            Bal: ${Number(entry.balance_after || 0).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -486,6 +710,43 @@ export default function CustomerDetailPage() {
           />
         </div>
       </div>
+
+      <CustomerAlertModal
+        isOpen={showAlertModal}
+        onClose={() => setShowAlertModal(false)}
+        customerId={customer.id}
+        customerName={displayName}
+        totalCreditUsed={Number(customer.total_credit_used || 0)}
+        createdFrom="customer_screen"
+      />
+
+      <ExtendCreditModal
+        isOpen={showExtendCreditModal}
+        onClose={() => setShowExtendCreditModal(false)}
+        customerId={customer.id}
+        customerName={displayName}
+        currentLimit={Number(customer.creditLimit || customer.credit_limit || 0)}
+        totalCreditUsed={Number(customer.total_credit_used || customer.totalCreditUsed || 0)}
+        remainingCredit={Math.max(
+          0,
+          Number(customer.creditLimit || customer.credit_limit || 0) -
+            Number(customer.total_credit_used || customer.totalCreditUsed || 0)
+        )}
+        onSuccess={() => {
+          refreshCustomer();
+        }}
+      />
+
+      <RecordCreditPaymentModal
+        isOpen={showRecordPaymentModal}
+        onClose={() => setShowRecordPaymentModal(false)}
+        customerId={customer.id}
+        customerName={displayName}
+        currentBalance={Number(customer.total_credit_used || customer.totalCreditUsed || 0)}
+        onSuccess={() => {
+          refreshCustomer();
+        }}
+      />
     </div>
   );
 }

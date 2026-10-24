@@ -66,7 +66,7 @@ function snapshot(row: Doc<"creditRecommendations">): CreditRecommendationInputs
 function project(row: Doc<"creditRecommendations">) {
   validateOutput(row); integer(row.settingsRevision, 1);
   const inputs = snapshot(row);
-  const proposedCreditEnabled = row.recommendedLimitCents === 0 ? false : inputs.policy.creditEnabled;
+  const proposedCreditEnabled = row.recommendedLimitCents > 0;
   const proposedLimitCents = row.recommendedLimitCents === 0 ? inputs.policy.limitCents : row.recommendedLimitCents;
   const expiresAt = integer(row.asOfDate + 86400000);
   return { recommendationId: row._id, businessId: row.businessId, customerId: row.customerId, asOfDate: row.asOfDate, snapshotAt: row.snapshotAt, settingsRevision: row.settingsRevision, createdAt: row.createdAt, expiresAt, proposedCreditEnabled, proposedLimitCents, policyRevision: inputs.policy.revision, recommendedLimitCents: row.recommendedLimitCents, rangeMinCents: row.rangeMinCents, rangeMaxCents: row.rangeMaxCents, riskScore: row.riskScore, justification: row.justification, provenance: row.provenance, engineVersion: row.engineVersion };
@@ -153,7 +153,7 @@ export const apply = mutation({
     if (Date.now() >= proposal.expiresAt) throw new Error("STALE_RECOMMENDATION: Recommendation expired. Generate a new recommendation");
     const settings = await settingsFor(ctx, auth.businessId, row.settingsRevision);
     await checkSnapshot(ctx, { ...args, customerId: customer._id }, inputs); validateCap(row, inputs, settings);
-    const creditEnabled = row.recommendedLimitCents === 0 ? false : customer.creditEnabled !== false;
+    const creditEnabled = row.recommendedLimitCents > 0;
     const limitCents = row.recommendedLimitCents === 0 ? customer.creditLimitCents : row.recommendedLimitCents;
     const policyRevision = nextCreditPolicyRevision(customer.creditPolicyRevision), now = Date.now();
     await ctx.db.patch(customer._id, { creditEnabled, creditLimitCents: limitCents, creditPolicyRevision: policyRevision, updatedAt: now });

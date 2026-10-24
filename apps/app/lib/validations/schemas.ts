@@ -2,6 +2,7 @@ import { z } from "zod";
 import { newProductCommerceSchema } from "@/lib/commerce/product-creation";
 import { parseCurrency, parseDecimal } from "@/lib/utils/number-formatting";
 import { formatPhoneNumber } from "@/lib/utils/format-phone";
+import { toTitleCase } from "@/lib/utils/format-text";
 
 // Business Profile Schemas
 export const businessProfileSchema = z.object({
@@ -110,19 +111,41 @@ export const inventorySchema = z.object({
 export type Inventory = z.infer<typeof inventorySchema>;
 
 // Customer Schemas
+export const customerCustomProductPriceSchema = z.object({
+  productId: z.string().min(1),
+  productName: z.string().min(1),
+  pricePerUnit: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return 0;
+      const parsed = parseCurrency(val);
+      return parsed !== undefined ? parsed : Number(val);
+    },
+    z.number().nonnegative(),
+  ),
+});
+
 export const customerSchema = z.object({
-  id: z.string().uuid().optional(),
-  business_id: z.string().uuid(),
+  id: z.string().min(1).optional(),
+  business_id: z.string().min(1),
   alias: z.preprocess(
-    (val) => (val === "" || val === null ? undefined : val),
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      return typeof val === "string" ? toTitleCase(val) : val;
+    },
     z.string().max(100).optional(),
   ),
   first_name: z.preprocess(
-    (val) => (val === "" || val === null ? undefined : val),
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      return typeof val === "string" ? toTitleCase(val) : val;
+    },
     z.string().max(100).optional(),
   ),
   last_name: z.preprocess(
-    (val) => (val === "" || val === null ? undefined : val),
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      return typeof val === "string" ? toTitleCase(val) : val;
+    },
     z.string().max(100).optional(),
   ),
   phone_number: z.preprocess(
@@ -175,6 +198,7 @@ export const customerSchema = z.object({
     },
     z.number().nonnegative().optional().nullable(),
   ),
+  custom_product_prices: z.array(customerCustomProductPriceSchema).optional(),
   credit_limit: z.preprocess(
     (val) => {
       if (val === "" || val === null || val === undefined) return undefined;
@@ -193,9 +217,9 @@ export type Customer = z.infer<typeof customerSchema>;
 
 // Credit Transaction Schemas
 export const creditTransactionSchema = z.object({
-  id: z.string().uuid().optional(),
-  business_id: z.string().uuid(),
-  customer_id: z.string().uuid(),
+  id: z.string().min(1).optional(),
+  business_id: z.string().min(1),
+  customer_id: z.string().min(1),
   transaction_type: z.enum(["extension", "payment"]),
   amount: z.number().positive(),
   description: z.string().optional(),
