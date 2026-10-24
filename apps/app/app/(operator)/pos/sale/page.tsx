@@ -14,11 +14,13 @@ import { quickPosBootstrapResponseSchema } from "@/lib/pos/contract";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FractionalEntryDialog } from "@/components/quick-pos/fractional-entry-dialog";
 import type { QuickPosBootstrapItem } from "@/lib/quick-pos/types";
+import { CustomerAlertModal } from "@/components/customers/CustomerAlertModal";
 
 type ProductResult = QuickPosBootstrapItem & { low_stock_threshold?: number };
 
 export default function QuickPosSalePage() {
   const router = useRouter();
+  const [showAlertModal, setShowAlertModal] = useState(false);
   const {
     state,
     subtotal,
@@ -377,13 +379,29 @@ export default function QuickPosSalePage() {
                 phone: customer.phone,
                 alias: customer.alias,
                 remainingCredit: customer.remainingCredit,
+                totalCreditUsed: rich.totalCreditUsed ?? 0,
+                creditLimit: rich.creditLimit ?? 0,
                 loyaltyTier: rich.loyaltyTier ?? null,
                 discountRateBps: rich.discountRateBps ?? null,
                 fixedPricePerGram: rich.fixedPricePerGram ?? null,
+                customProductPrices: rich.customProductPrices ?? [],
                 purchaseCount: rich.purchaseCount,
                 totalPurchases: rich.totalPurchases,
               });
               setSuccess(`Attached ${customer.alias || customer.phone || "customer"}`);
+              // Automatically trigger alert modal if outstanding balance or active alerts exist
+              if ((rich.totalCreditUsed ?? 0) > 0) {
+                setShowAlertModal(true);
+              } else if (customer.id) {
+                fetch(`/api/customers/${customer.id}/notes`)
+                  .then((res) => res.json())
+                  .then((data) => {
+                    if (data.alerts?.length > 0 || data.hasOutstandingBalance) {
+                      setShowAlertModal(true);
+                    }
+                  })
+                  .catch(() => {});
+              }
             } catch {
               setError("Failed to attach customer");
             }
@@ -442,6 +460,22 @@ export default function QuickPosSalePage() {
             </button>
           </div>
         </div>
+      )}
+
+      {state.customer.id && (
+        <CustomerAlertModal
+          isOpen={showAlertModal}
+          onClose={() => setShowAlertModal(false)}
+          customerId={state.customer.id}
+          customerName={state.customer.alias || state.customer.phone || "Customer"}
+          totalCreditUsed={
+            state.customer.totalCreditUsed ??
+            (state.customer.creditLimit
+              ? Math.max(0, state.customer.creditLimit - (state.customer.remainingCredit ?? 0))
+              : 0)
+          }
+          createdFrom="sale_screen"
+        />
       )}
     </div>
   );

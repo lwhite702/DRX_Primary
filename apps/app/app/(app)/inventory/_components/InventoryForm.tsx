@@ -72,14 +72,10 @@ export function InventoryForm({
       category: initialData?.category || "Flower",
       is_taxable: initialData?.is_taxable ?? true,
       location: initialData?.location ?? "",
+      commerce_config: initialData?.commerce_config || creationCommerceDefaults(
+        initialData?.unit_of_measure || "g",
+      ),
       ...initialData,
-      ...(!initialData?.id
-        ? {
-            commerce_config: creationCommerceDefaults(
-              initialData?.unit_of_measure || "g",
-            ),
-          }
-        : {}),
     },
   });
 
@@ -459,7 +455,7 @@ export function InventoryForm({
 
           {purchaseFields}
 
-          {!initialData?.id && commerceConfig && (
+          {commerceConfig && (
             <>
               <FractionalProductFields
                 value={commerceConfig}
@@ -744,7 +740,7 @@ export function InventoryForm({
               />
             </div>
 
-            {!initialData?.id && commerceConfig && (
+            {commerceConfig && (
               <>
                 <FractionalProductFields
                   value={commerceConfig}

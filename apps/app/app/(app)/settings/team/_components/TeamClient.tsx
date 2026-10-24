@@ -43,6 +43,7 @@ interface TeamMember {
   role: string;
   created_at: string;
   email?: string;
+  name?: string | null;
 }
 
 export default function TeamClient() {
@@ -332,8 +333,13 @@ export default function TeamClient() {
                 <TableRow key={user.id}>
                   <TableCell>
                     <div className="font-medium">
-                      {user.email || "Unknown User"}
+                      {user.name || user.email || "Unknown User"}
                     </div>
+                    {user.name && user.email && (
+                      <div className="text-xs text-muted-foreground">
+                        {user.email}
+                      </div>
+                    )}
                     <div className="text-xs text-muted-foreground font-mono">
                       {user.user_id}
                     </div>

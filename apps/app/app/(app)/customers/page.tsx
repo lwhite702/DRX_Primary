@@ -27,11 +27,12 @@ import {
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useCustomerContext } from "@/components/providers/customer-provider";
 import { usePermission } from "@/lib/hooks/use-permission";
-import { Archive, Plus, Edit, RotateCcw, Search, UserX } from "lucide-react";
+import { Archive, Plus, Edit, RotateCcw, Search, UserX, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { customerSchema, type Customer } from "@/lib/validations/schemas";
 import { formatPhoneNumber } from "@/lib/utils/format-phone";
+import { toTitleCase } from "@/lib/utils/format-text";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -91,6 +92,33 @@ export default function CustomersPage() {
   );
   const [privacyProtocol, setPrivacyProtocol] =
     useState<PrivacyProtocolSettings>(getDefaultPrivacyProtocol());
+  const [availableProducts, setAvailableProducts] = useState<
+    Array<{ id: string; name: string; price?: number }>
+  >([]);
+  const [customPrices, setCustomPrices] = useState<
+    Array<{ productId: string; productName: string; pricePerUnit: number }>
+  >([]);
+  const [selectedProductId, setSelectedProductId] = useState("");
+  const [newProductPrice, setNewProductPrice] = useState("");
+
+  useEffect(() => {
+    if (!business?.id) return;
+    fetch("/api/pos/products", {
+      headers: { "X-Business-Id": business.id },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const items = data?.items || data?.data || [];
+        setAvailableProducts(
+          items.map((i: any) => ({
+            id: String(i.id || i.productId),
+            name: String(i.name || i.productName || "Product"),
+            price: Number(i.price ?? i.sellingPrice ?? 0),
+          }))
+        );
+      })
+      .catch(() => {});
+  }, [business?.id]);
 
   useEffect(() => {
     fetch("/api/business/settings")
@@ -149,6 +177,7 @@ export default function CustomersPage() {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<Customer>({
     resolver: zodResolver(customerSchema),
@@ -157,6 +186,17 @@ export default function CustomersPage() {
       is_active: true,
     },
   });
+
+  const onInvalid = (fieldErrors: any) => {
+    console.error("Customer form validation errors:", fieldErrors);
+    const errEntries = Object.entries(fieldErrors);
+    if (errEntries.length > 0) {
+      const [field, err]: [string, any] = errEntries[0];
+      toast.error(`${err?.message || `Invalid value for ${field}`}`);
+    } else {
+      toast.error("Please verify all customer fields");
+    }
+  };
 
   const onSubmit = async (data: Customer) => {
     if (!business?.id) {
@@ -167,6 +207,7 @@ export default function CustomersPage() {
     const payload: Record<string, unknown> = {
       ...data,
       business_id: business.id,
+      custom_product_prices: customPrices,
     };
 
     if (!canWriteAddress) {
@@ -244,17 +285,68 @@ export default function CustomersPage() {
 
   const handleEdit = (customer: CustomerRecord) => {
     setEditingCustomer(customer);
+    const existingPrices =
+      (customer as any).custom_product_prices ||
+      (customer as any).customProductPrices ||
+      [];
+    setCustomPrices(
+      existingPrices.map((p: any) => ({
+        productId: String(p.productId),
+        productName: String(p.productName),
+        pricePerUnit:
+          typeof p.pricePerUnit === "number"
+            ? p.pricePerUnit
+            : Number(p.pricePerUnitCents || 0) / 100,
+      }))
+    );
+    setSelectedProductId("");
+    setNewProductPrice("");
     reset(customer);
     setShowDialog(true);
   };
 
   const handleNew = () => {
     setEditingCustomer(null);
+    setCustomPrices([]);
+    setSelectedProductId("");
+    setNewProductPrice("");
     reset({
       business_id: business?.id || "",
       is_active: true,
     });
     setShowDialog(true);
+  };
+
+  const handleAddCustomPrice = () => {
+    if (!selectedProductId) {
+      toast.error("Please select a product");
+      return;
+    }
+    const numPrice = Number(newProductPrice);
+    if (!Number.isFinite(numPrice) || numPrice < 0) {
+      toast.error("Please enter a valid price per unit");
+      return;
+    }
+    const product = availableProducts.find((p) => p.id === selectedProductId);
+    if (!product) return;
+
+    setCustomPrices((prev) => {
+      const filtered = prev.filter((p) => p.productId !== selectedProductId);
+      return [
+        ...filtered,
+        {
+          productId: product.id,
+          productName: product.name,
+          pricePerUnit: numPrice,
+        },
+      ];
+    });
+    setSelectedProductId("");
+    setNewProductPrice("");
+  };
+
+  const handleRemoveCustomPrice = (productId: string) => {
+    setCustomPrices((prev) => prev.filter((p) => p.productId !== productId));
   };
 
   const handleLifecycleChange = async (
@@ -385,11 +477,21 @@ export default function CustomersPage() {
                   : "Add a new customer to your database"}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="first_name">First Name (Optional)</Label>
-                  <Input id="first_name" {...register("first_name")} />
+                  <Input
+                    id="first_name"
+                    {...register("first_name")}
+                    onBlur={(e) => {
+                      const titled = toTitleCase(e.target.value);
+                      if (titled !== e.target.value) {
+                        setValue("first_name", titled);
+                      }
+                      register("first_name").onBlur(e);
+                    }}
+                  />
                   {errors.first_name && (
                     <p className="text-sm text-destructive">
                       {errors.first_name.message}
@@ -398,7 +500,17 @@ export default function CustomersPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="last_name">Last Name</Label>
-                  <Input id="last_name" {...register("last_name")} />
+                  <Input
+                    id="last_name"
+                    {...register("last_name")}
+                    onBlur={(e) => {
+                      const titled = toTitleCase(e.target.value);
+                      if (titled !== e.target.value) {
+                        setValue("last_name", titled);
+                      }
+                      register("last_name").onBlur(e);
+                    }}
+                  />
                   {errors.last_name && (
                     <p className="text-sm text-destructive">
                       {errors.last_name.message}
@@ -409,7 +521,17 @@ export default function CustomersPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="alias">Alias (Optional)</Label>
-                <Input id="alias" {...register("alias")} />
+                <Input
+                  id="alias"
+                  {...register("alias")}
+                  onBlur={(e) => {
+                    const titled = toTitleCase(e.target.value);
+                    if (titled !== e.target.value) {
+                      setValue("alias", titled);
+                    }
+                    register("alias").onBlur(e);
+                  }}
+                />
                 {errors.alias && (
                   <p className="text-sm text-destructive">
                     {errors.alias.message}
@@ -505,10 +627,104 @@ export default function CustomersPage() {
                   <Input id="customer_type" {...register("customer_type")} />
                 </div>
 
+                <div className="space-y-3 rounded-lg border border-white/10 bg-black/20 p-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-accent">
+                      Product-Specific Fixed Pricing
+                    </Label>
+                    <HelpTooltip content="Set custom fixed price per unit for specific catalog products for this customer." />
+                  </div>
+
+                  {/* Add product price row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
+                    <div className="sm:col-span-7 space-y-1">
+                      <Label htmlFor="custom_product_select" className="text-[11px] text-white/70">
+                        Select Product
+                      </Label>
+                      <select
+                        id="custom_product_select"
+                        value={selectedProductId}
+                        onChange={(e) => setSelectedProductId(e.target.value)}
+                        className="w-full h-9 rounded-md bg-secondary/30 border border-white/10 px-2 text-xs text-white focus:border-accent"
+                      >
+                        <option value="">-- Choose a product --</option>
+                        {availableProducts.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} {p.price ? `(Reg. $${p.price.toFixed(2)})` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="sm:col-span-3 space-y-1">
+                      <Label htmlFor="custom_price_input" className="text-[11px] text-white/70">
+                        Price/Unit ($)
+                      </Label>
+                      <Input
+                        id="custom_price_input"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                        value={newProductPrice}
+                        onChange={(e) => setNewProductPrice(e.target.value)}
+                        className="h-9 text-xs bg-secondary/30 border-white/10"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleAddCustomPrice}
+                        className="w-full h-9 text-xs border-accent text-accent hover:bg-accent hover:text-black font-semibold"
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* List of custom prices */}
+                  {customPrices.length > 0 ? (
+                    <div className="space-y-1.5 pt-2 border-t border-white/5">
+                      <p className="text-[11px] text-white/50 font-medium">Configured Product Prices:</p>
+                      <div className="space-y-1 max-h-36 overflow-y-auto pr-1">
+                        {customPrices.map((cp) => (
+                          <div
+                            key={cp.productId}
+                            className="flex items-center justify-between rounded border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-white"
+                          >
+                            <span className="font-medium text-white/90">{cp.productName}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-emerald-300">
+                                ${cp.pricePerUnit.toFixed(2)}/unit
+                              </span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveCustomPrice(cp.productId)}
+                                className="h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground italic">
+                      No product-specific prices configured. Customer will pay standard product pricing.
+                    </p>
+                  )}
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="fixed_price_per_gram">
-                    Fixed Price / Gram ($)
-                    <HelpTooltip content="Override base price for weight-based products for this customer." />
+                    General Fixed Price / Gram ($) (Optional)
+                    <HelpTooltip content="Override base price for weight-based products without a product-specific rule above." />
                   </Label>
                   <Input
                     id="fixed_price_per_gram"
@@ -555,8 +771,8 @@ export default function CustomersPage() {
                   {isSubmitting
                     ? "Saving..."
                     : editingCustomer
-                      ? "Update"
-                      : "Add"}
+                      ? "Save Changes"
+                      : "Add Customer"}
                 </Button>
               </div>
             </form>

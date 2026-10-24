@@ -25,7 +25,7 @@ export const resolveScope = query({
 
 export const accountsPage = query({
   args: { businessId: v.string(), expectedUserId: v.string(), paginationOpts: paginationOptsValidator },
-  returns: v.object({ page: v.array(v.object({ customerId: v.id("customers"), displayName: v.string(), isActive: v.boolean(), creditEnabled: v.boolean(), limitCents: v.number(), unlimited: v.boolean(), balanceCents: v.number(), allocationStatus })), isDone: v.boolean(), continueCursor: v.string() }),
+  returns: v.object({ page: v.array(v.object({ customerId: v.id("customers"), displayName: v.string(), alias: v.optional(v.string()), aliasEncrypted: v.optional(v.string()), isActive: v.boolean(), creditEnabled: v.boolean(), limitCents: v.number(), unlimited: v.boolean(), balanceCents: v.number(), allocationStatus })), isDone: v.boolean(), continueCursor: v.string() }),
   handler: async (ctx, args) => {
     const auth = await requireSelectedBusiness(ctx, args.businessId, args.expectedUserId);
     requirePermission(auth.userRecord, "VIEW_FINANCIALS");
@@ -63,7 +63,8 @@ export const accountsPage = query({
         } else if (customer.totalCreditUsedCents > 0) status = "unreconciled";
       }
       const enabled = customer.creditEnabled !== false;
-      return { customerId: customer._id, displayName: `Account ${customer._id.slice(-8)}`, isActive: customer.isActive, creditEnabled: enabled, limitCents: customer.creditLimitCents, unlimited: enabled && customer.creditLimitCents === 0, balanceCents: customer.totalCreditUsedCents, allocationStatus: status };
+      const initialDisplayName = customer.alias || `Account ${customer._id.slice(-8)}`;
+      return { customerId: customer._id, displayName: initialDisplayName, alias: customer.alias, aliasEncrypted: customer.aliasEncrypted, isActive: customer.isActive, creditEnabled: enabled, limitCents: customer.creditLimitCents, unlimited: enabled && customer.creditLimitCents === 0, balanceCents: customer.totalCreditUsedCents, allocationStatus: status };
     }));
     return { page, isDone: result.isDone, continueCursor: result.continueCursor };
   },

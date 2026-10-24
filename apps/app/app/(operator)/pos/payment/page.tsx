@@ -21,6 +21,9 @@ import type {
 } from "@/lib/quick-pos/types";
 import type { PosAuthoritativeQuote } from "@/lib/pos/types";
 import { DeliveryCheckout } from "@/components/quick-pos/delivery-checkout";
+import { ExtendCreditModal } from "@/components/customers/ExtendCreditModal";
+import { CustomerAlertModal } from "@/components/customers/CustomerAlertModal";
+import { ShieldAlert } from "lucide-react";
 
 const SPLIT_TENDER_METHODS: Array<{
   id: Exclude<QuickPosPaymentMethod, "mixed" | "split">;
@@ -44,6 +47,9 @@ export default function QuickPosPaymentPage() {
   const [isQuoting, setIsQuoting] = useState(false);
   const [amountTenderedStr, setAmountTenderedStr] = useState<string>("");
   const [editingCustomer, setEditingCustomer] = useState(false);
+  const [showExtendCredit, setShowExtendCredit] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [customCardFeeInput, setCustomCardFeeInput] = useState<string>("");
   const [splitMethod, setSplitMethod] = useState<Exclude<QuickPosPaymentMethod, "mixed" | "split">>("cash");
   const [splitAmountStr, setSplitAmountStr] = useState<string>("");
@@ -66,10 +72,15 @@ export default function QuickPosPaymentPage() {
   } = useQuickPosStore();
 
   useEffect(() => {
-    if (state.cartItems.length === 0) {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    if (state.cartItems.length === 0 && !state.session.lastSaleId) {
       router.replace("/pos/sale");
     }
-  }, [router, state.cartItems.length]);
+  }, [isMounted, router, state.cartItems.length, state.session.lastSaleId]);
 
   const baseEstimatedCents = Math.round(total * 100);
   const cardFeeCents =
@@ -376,6 +387,21 @@ export default function QuickPosPaymentPage() {
                   Undo
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => setShowExtendCredit(true)}
+                className="rounded border border-amber-500/40 bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-300 hover:bg-amber-500/20 transition"
+              >
+                Extend Credit
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAlertModal(true)}
+                className="rounded border border-white/20 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/80 hover:bg-white/10 transition flex items-center gap-1"
+              >
+                <ShieldAlert className="h-3 w-3 text-amber-400" />
+                Alerts
+              </button>
               <button
                 type="button"
                 onClick={() => setEditingCustomer(true)}
@@ -858,9 +884,18 @@ export default function QuickPosPaymentPage() {
               </span>
             </div>
             {!creditCoversTotal ? (
-              <p className="mt-1 text-xs font-medium text-red-400">
-                Insufficient credit. Order total (${activeTotal.toFixed(2)}) exceeds customer credit balance (${customerRemainingCredit.toFixed(2)}).
-              </p>
+              <div className="mt-2 flex items-center justify-between gap-2 pt-2 border-t border-white/10">
+                <p className="text-xs font-medium text-red-400">
+                  Insufficient credit. Order total (${activeTotal.toFixed(2)}) exceeds balance (${customerRemainingCredit.toFixed(2)}).
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowExtendCredit(true)}
+                  className="shrink-0 rounded bg-accent px-3 py-1.5 text-xs font-bold text-black hover:bg-accent/90 transition shadow-sm"
+                >
+                  Extend Credit
+                </button>
+              </div>
             ) : null}
           </div>
 
@@ -896,6 +931,45 @@ export default function QuickPosPaymentPage() {
       >
         {state.ui.processing ? "Processing..." : "Complete Sale"}
       </button>
+
+      {state.customer.id && (
+        <>
+          <ExtendCreditModal
+            isOpen={showExtendCredit}
+            onClose={() => setShowExtendCredit(false)}
+            customerId={state.customer.id}
+            customerName={state.customer.alias || state.customer.phone || "Customer"}
+            currentLimit={
+              state.customer.creditLimit ??
+              (customerRemainingCredit + (state.customer.totalCreditUsed ?? 0))
+            }
+            totalCreditUsed={state.customer.totalCreditUsed ?? 0}
+            remainingCredit={customerRemainingCredit}
+            orderTotal={activeTotal}
+            onSuccess={(newLimit, newRemaining) => {
+              setCustomer({
+                ...state.customer,
+                creditLimit: newLimit,
+                remainingCredit: newRemaining,
+              });
+              setCreditConfirmed(true);
+            }}
+          />
+          <CustomerAlertModal
+            isOpen={showAlertModal}
+            onClose={() => setShowAlertModal(false)}
+            customerId={state.customer.id}
+            customerName={state.customer.alias || state.customer.phone || "Customer"}
+            totalCreditUsed={
+              state.customer.totalCreditUsed ??
+              (state.customer.creditLimit
+                ? Math.max(0, state.customer.creditLimit - customerRemainingCredit)
+                : 0)
+            }
+            createdFrom="sale_screen"
+          />
+        </>
+      )}
     </div>
   );
 }

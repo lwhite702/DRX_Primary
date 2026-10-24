@@ -21,6 +21,7 @@ import {
   HelpCircle,
   Building2,
   ChevronRight,
+  ExternalLink,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -398,6 +399,8 @@ export function BottomNav() {
                     href={docsHubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    title="Opens Help Center in a new window"
+                    aria-label="Help Center & Docs (opens in a new window)"
                     onClick={() => setMoreMenuOpen(false)}
                     className="flex items-center justify-between px-3.5 py-2.5 min-h-[44px] rounded-xl text-sm font-medium text-foreground hover:bg-muted active:bg-muted/80 transition-colors"
                   >
@@ -405,7 +408,7 @@ export function BottomNav() {
                       <HelpCircle className="h-4 w-4" />
                       <span>Help Center & Docs</span>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
+                    <ExternalLink className="h-4 w-4 text-muted-foreground/60" />
                   </Link>
 
                   <SentryFeedbackButton

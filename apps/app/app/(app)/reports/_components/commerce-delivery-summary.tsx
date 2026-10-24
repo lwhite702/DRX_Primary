@@ -92,7 +92,7 @@ export function CommerceDeliverySummary({
     return (
       <Card>
         <CardContent className="flex items-center gap-2 p-6 text-muted-foreground">
-          <RefreshCw className="h-4 w-4 animate-spin" /> Loading both sales ledgers…
+          <RefreshCw className="h-4 w-4 animate-spin" /> Loading sales ledger…
         </CardContent>
       </Card>
     );
@@ -102,14 +102,14 @@ export function CommerceDeliverySummary({
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-4">
         <div>
-          <CardTitle>Combined commerce and delivery reconciliation</CardTitle>
+          <CardTitle>Commerce and delivery reconciliation</CardTitle>
           <p className="mt-1 text-sm text-muted-foreground">
-            Canonical mobile/delivery sales and legacy web sales are shown separately, then combined. Matching checkout references are counted once.
+            Canonical mobile, storefront, and delivery sales reconciled from the primary sales ledger.
           </p>
         </div>
         <Button asChild type="button" variant="outline" size="sm">
           <a href={`/api/reports/commerce-delivery?${query}&format=csv`}>
-            <Download className="mr-2 h-4 w-4" /> Export combined CSV
+            <Download className="mr-2 h-4 w-4" /> Export reconciliation CSV
           </a>
         </Button>
       </CardHeader>
@@ -118,11 +118,7 @@ export function CommerceDeliverySummary({
           <TableHeader>
             <TableRow>
               <TableHead>Metric</TableHead>
-              <TableHead className="text-right">Canonical</TableHead>
-              <TableHead className="text-right">Legacy web</TableHead>
-              <TableHead className="text-right">
-                {summary.canonical.available === false || summary.legacyWeb.available === false ? "Partial total" : "Combined"}
-              </TableHead>
+              <TableHead className="text-right">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -133,20 +129,12 @@ export function CommerceDeliverySummary({
                     ? "Known gross profit"
                     : label}
                 </TableCell>
-                <TableCell className="text-right">
-                  {summary.canonical.available === false ? "Unavailable" : unit === "money"
+                <TableCell className="text-right font-semibold">
+                  {summary.canonical.available === false
+                    ? "Unavailable"
+                    : unit === "money"
                     ? money(summary.canonical.totals[field] ?? 0)
                     : summary.canonical.totals[field]}
-                </TableCell>
-                <TableCell className="text-right">
-                  {summary.legacyWeb.available === false ? "Unavailable" : unit === "money"
-                    ? money(summary.legacyWeb.totals[field] ?? 0)
-                    : summary.legacyWeb.totals[field]}
-                </TableCell>
-                <TableCell className="text-right font-semibold">
-                  {unit === "money"
-                    ? money(summary.combined[field] ?? 0)
-                    : summary.combined[field]}
                 </TableCell>
               </TableRow>
             ))}
@@ -163,7 +151,7 @@ export function CommerceDeliverySummary({
           </div>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Gross profit includes recorded COGS and vendor delivery expense for both ledgers.
+            Gross profit includes recorded COGS and vendor delivery expense.
           </p>
         )}
       </CardContent>

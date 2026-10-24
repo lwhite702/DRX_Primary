@@ -11,6 +11,7 @@ vi.mock("@/lib/privacy/privacy-policy", () => ({ canWriteField: mocks.canWrite }
 
 import { GET as GET_CUSTOMERS, POST as CREATE_CUSTOMER } from "@/app/api/customers/route";
 import { GET as GET_CUSTOMER, PATCH as UPDATE_CUSTOMER } from "@/app/api/customers/[id]/route";
+import { GET as GET_NOTES, POST as CREATE_NOTE, PATCH as DISMISS_ALERT } from "@/app/api/customers/[id]/notes/route";
 
 const policy = {
   fields: {},
@@ -89,5 +90,89 @@ describe("customer lifecycle routes", () => {
     const response = await CREATE_CUSTOMER(request("/api/customers", "POST", { alias: "Jay", ephemeral: true }));
     expect(response.status).toBe(400);
     expect(mocks.mutation).not.toHaveBeenCalled();
+  });
+
+  it("normalizes names to Title Case and parses multiple product custom prices", async () => {
+    const response = await CREATE_CUSTOMER(
+      request("/api/customers", "POST", {
+        first_name: "mary-jane",
+        last_name: "o'connor",
+        alias: "the kid",
+        custom_product_prices: [
+          { productId: "p-1", productName: "Blue Dream", pricePerUnit: 14.5 },
+          { productId: "p-2", productName: "Sour Diesel", pricePerUnit: "20.00" },
+        ],
+      })
+    );
+    expect(response.status).toBe(201);
+    expect(mocks.encode).toHaveBeenCalledWith(
+      expect.objectContaining({
+        alias: "The Kid",
+        first_name: "Mary-Jane",
+      })
+    );
+    expect(mocks.mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        lastName: "O'Connor",
+        customProductPrices: [
+          { productId: "p-1", productName: "Blue Dream", pricePerUnitCents: 1450 },
+          { productId: "p-2", productName: "Sour Diesel", pricePerUnitCents: 2000 },
+        ],
+      })
+    );
+  });
+
+  it("supports creating, querying, and dismissing customer notes and alerts", async () => {
+    mocks.query.mockResolvedValue({
+      customerId: "customer-1",
+      alerts: [{ _id: "alert-1", classification: "alert", message: "Check ID" }],
+      notes: [{ _id: "note-1", classification: "note", message: "VIP member" }],
+      hasOutstandingBalance: true,
+      totalCreditUsedCents: 3500,
+    });
+    mocks.mutation.mockResolvedValue("note-new-id");
+
+    // GET
+    const getRes = await GET_NOTES(request("/api/customers/customer-1/notes"), { params: { id: "customer-1" } });
+    expect(getRes.status).toBe(200);
+    const getData = await getRes.json();
+    expect(getData.alerts).toHaveLength(1);
+    expect(getData.hasOutstandingBalance).toBe(true);
+
+    // POST
+    const postRes = await CREATE_NOTE(
+      request("/api/customers/customer-1/notes", "POST", {
+        classification: "alert",
+        message: "Customer has credit hold",
+        severity: "critical",
+        createdFrom: "sale_screen",
+      }),
+      { params: { id: "customer-1" } }
+    );
+    expect(postRes.status).toBe(201);
+    expect(mocks.mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        customerId: "customer-1",
+        classification: "alert",
+        message: "Customer has credit hold",
+        severity: "critical",
+        createdFrom: "sale_screen",
+      })
+    );
+
+    // PATCH
+    const patchRes = await DISMISS_ALERT(
+      request("/api/customers/customer-1/notes", "PATCH", { noteId: "alert-1" }),
+      { params: { id: "customer-1" } }
+    );
+    expect(patchRes.status).toBe(200);
+    expect(mocks.mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        noteId: "alert-1",
+      })
+    );
   });
 });

@@ -123,7 +123,11 @@ async function resolveCanonicalInput(input: CanonicalInput) {
   const itemsHaveOverrides = inventoryItems.some((item) => item.overrideReason);
   const priceOverrides = (input.usePriceOverrides ?? itemsHaveOverrides) ? inventoryItems.flatMap((item, index) => {
     if (item.originalPrice !== undefined && !item.overrideReason) throw new Error("INVALID_ARGUMENT: A price override requires a reason");
-    return item.overrideReason ? [{ productId: identities.productIds[index], unitPriceCents: checkedCents(item.unitPrice), reason: item.overrideReason }] : [];
+    if (!item.overrideReason) return [];
+    const effectiveUnitPrice = item.weightGrams && item.weightGrams > 0
+      ? Math.round((item.unitPrice * 100) / item.weightGrams) / 100
+      : item.unitPrice;
+    return [{ productId: identities.productIds[index], unitPriceCents: checkedCents(effectiveUnitPrice), reason: item.overrideReason }];
   }) : [];
   const fullDelivery = input.fullDelivery ? {
     ...(await client.query(api.deliveryProfiles.resolve, { businessId: input.businessId, profileId: input.fullDelivery.profileId, customerFeeCents: input.fullDelivery.customerFeeCents })),

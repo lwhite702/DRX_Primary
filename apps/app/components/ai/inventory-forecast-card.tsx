@@ -20,6 +20,7 @@ interface InventoryForecastCardProps {
   alertIds?: string[];
   contextKey: string;
   onRestock?: (quantity: number) => void;
+  onViewDetails?: () => void;
 }
 
 export function InventoryForecastCard({
@@ -33,6 +34,8 @@ export function InventoryForecastCard({
   forecastId,
   alertIds = [],
   contextKey,
+  onRestock,
+  onViewDetails,
 }: InventoryForecastCardProps) {
   const [, refreshAcknowledgement] = useState(0);
   const ids = [...new Set(alertIds.filter(id => typeof id === "string" && id.trim()))].sort();
@@ -203,17 +206,36 @@ export function InventoryForecastCard({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-2">
+        <div className="flex flex-wrap gap-2 pt-2">
           <Button
             onClick={handleAcknowledgeAlert}
             disabled={acknowledging || acknowledged || !ids.length}
             variant="default"
             size="sm"
-            className="flex-1"
+            className="flex-1 min-w-[120px]"
           >
             {acknowledging ? "Acknowledging..." : acknowledged ? "Acknowledged" : !ids.length ? "No alerts to acknowledge" : "Acknowledge"}
           </Button>
-          <Button variant="outline" size="sm" className="flex-1">
+          {onRestock && forecast.recommendedRestockQuantity > 0 && (
+            <Button
+              onClick={() => onRestock(forecast.recommendedRestockQuantity)}
+              variant="secondary"
+              size="sm"
+              className="flex-1 min-w-[120px]"
+            >
+              Restock ({formatQuantity(forecast.recommendedRestockQuantity)})
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 min-w-[100px]"
+            onClick={onViewDetails ?? (() => {
+              if (typeof window !== "undefined") {
+                window.location.href = `/inventory?search=${encodeURIComponent(sku || productName)}`;
+              }
+            })}
+          >
             View Details
           </Button>
         </div>

@@ -16,6 +16,7 @@ interface EventDeskMetrics {
   creditOutstanding: number;
   recentIntakes: any[];
   lowStockItems: any[];
+  expiringBatches: any[];
 }
 
 export default function EventDeskPage() {
@@ -30,6 +31,7 @@ export default function EventDeskPage() {
     creditOutstanding: 0,
     recentIntakes: [],
     lowStockItems: [],
+    expiringBatches: [],
   });
   const [loading, setLoading] = useState(true);
 
@@ -46,30 +48,50 @@ export default function EventDeskPage() {
       setLoading(true);
 
       // Fetch all event desk data concurrently
-      const [baselineResponse, inventoryResponse, customerResponse] = await Promise.all([
-        fetch("/api/reports/pos-baseline", { credentials: "same-origin" }),
-        fetch("/api/inventory?limit=200", { credentials: "same-origin" }),
-        fetch("/api/customers?limit=200", { credentials: "same-origin" }),
+      const [
+        baselineResponse,
+        inventoryResponse,
+        customerResponse,
+        pendingIntakesResponse,
+        approvedIntakesResponse,
+        expiringBatchesResponse,
+      ] = await Promise.all([
+        fetch("/api/reports/pos-baseline", { credentials: "same-origin" }).catch(() => null),
+        fetch("/api/inventory?limit=200", { credentials: "same-origin" }).catch(() => null),
+        fetch("/api/customers?limit=200", { credentials: "same-origin" }).catch(() => null),
+        fetch("/api/inventory/intake?status=pending", { credentials: "same-origin" }).catch(() => null),
+        fetch("/api/inventory/intake?status=approved", { credentials: "same-origin" }).catch(() => null),
+        fetch("/api/inventory/batches/expiring?days=30", { credentials: "same-origin" }).catch(() => null),
       ]);
-      const baseline = await baselineResponse.json();
-      const inventory = await inventoryResponse.json();
-      const customers = await customerResponse.json();
+
+      const baseline = baselineResponse?.ok ? await baselineResponse.json().catch(() => ({})) : {};
+      const inventory = inventoryResponse?.ok ? await inventoryResponse.json().catch(() => ({})) : {};
+      const customers = customerResponse?.ok ? await customerResponse.json().catch(() => ({})) : {};
+      const pendingIntakesData = pendingIntakesResponse?.ok ? await pendingIntakesResponse.json().catch(() => ({})) : {};
+      const approvedIntakesData = approvedIntakesResponse?.ok ? await approvedIntakesResponse.json().catch(() => ({})) : {};
+      const expiringBatchesData = expiringBatchesResponse?.ok ? await expiringBatchesResponse.json().catch(() => ({})) : {};
+
       const totalSales = Number(baseline.today?.salesTotal ?? 0);
       const salesCount = Number(baseline.today?.salesCount ?? 0);
       const averageSale = salesCount > 0 ? totalSales / salesCount : 0;
       const lowStockItems = Array.isArray(baseline.lowStock?.items) ? baseline.lowStock.items : [];
       const creditOutstanding = Number(baseline.credit?.outstandingBalance ?? 0);
 
+      const pendingCount = Array.isArray(pendingIntakesData.items) ? pendingIntakesData.items.length : 0;
+      const recentIntakes = Array.isArray(approvedIntakesData.items) ? approvedIntakesData.items.slice(0, 5) : [];
+      const expiringBatches = Array.isArray(expiringBatchesData.batches) ? expiringBatchesData.batches.slice(0, 5) : [];
+
       setMetrics({
         totalSales,
         salesCount,
         averageSale,
         inventoryAlerts: lowStockItems.length,
-        pendingIntakes: 0,
+        pendingIntakes: pendingCount,
         activeCustomers: Array.isArray(customers.data) ? customers.data.length : 0,
         creditOutstanding,
-        recentIntakes: [],
-        lowStockItems: lowStockItems.length ? lowStockItems : (Array.isArray(inventory.data) ? inventory.data.slice(0, 5) : []),
+        recentIntakes,
+        lowStockItems,
+        expiringBatches,
       });
     } catch (error) {
       console.error("Failed to load insights data:", error);
@@ -157,7 +179,7 @@ export default function EventDeskPage() {
                 >
                   <div>
                     <p className="font-medium">
-                      {intake.inventory?.product_name || "Unknown Product"}
+                      {intake.product_name || intake.inventory?.product_name || "Product Intake"}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {new Date(intake.created_at).toLocaleDateString()}
@@ -168,7 +190,7 @@ export default function EventDeskPage() {
                       ${(intake.total_cost || 0).toFixed(2)}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {intake.total_weight_grams}g
+                      {intake.total_weight_grams}{intake.unit_of_measure || "g"}
                     </p>
                   </div>
                 </div>
@@ -196,10 +218,42 @@ export default function EventDeskPage() {
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-red-600">
-                      {item.quantity_on_hand}g
+                      {item.quantity_on_hand}{item.selling_unit || item.unit_of_measure || "g"}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Reorder: {item.reorder_level}g
+                      Reorder: {item.reorder_level}{item.selling_unit || item.unit_of_measure || "g"}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        <Card className="p-6 lg:col-span-2">
+          <h2 className="text-xl font-bold">Expiring Batches (Next 30 Days)</h2>
+          {metrics.expiringBatches.length === 0 ? (
+            <p className="text-muted-foreground mt-4">No batches expiring in the next 30 days</p>
+          ) : (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              {metrics.expiringBatches.map((batch) => (
+                <div
+                  key={batch._id}
+                  className="flex justify-between items-center p-3 border rounded"
+                >
+                  <div>
+                    <p className="font-medium">{batch.productName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {batch.lotNumber ? `Lot: ${batch.lotNumber} • ` : ""}
+                      Expires: {batch.expirationDate ? new Date(batch.expirationDate).toLocaleDateString() : "N/A"}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-amber-500">
+                      {batch.remainingQuantityGrams}g remaining
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      ${((batch.unitCostPerGramCents || 0) / 100).toFixed(2)}/g
                     </p>
                   </div>
                 </div>

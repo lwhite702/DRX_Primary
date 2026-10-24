@@ -68,6 +68,12 @@ describe("server auth adapter", () => {
     expect(mocks.clerkAuth).not.toHaveBeenCalled();
   });
 
+  it("treats NODE_ENV=production with VERCEL_ENV unset as true production", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL_ENV", "");
+
+    expect(isTrueProductionEnvironment()).toBe(true);
+  });
   it("throws in true production environment when Clerk keys are missing", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL_ENV", "production");

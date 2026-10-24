@@ -30,7 +30,14 @@ export interface QuickPosCustomer {
   loyaltyTier?: string | null;
   discountRateBps?: number | null;
   fixedPricePerGram?: number | null;
+  customProductPrices?: Array<{
+    productId: string;
+    productName: string;
+    pricePerUnit: number;
+  }>;
   remainingCredit?: number;
+  totalCreditUsed?: number;
+  creditLimit?: number;
   purchaseCount?: number;
   totalPurchases?: number;
   recentFavorites?: QuickPosCustomerFavoriteItem[];

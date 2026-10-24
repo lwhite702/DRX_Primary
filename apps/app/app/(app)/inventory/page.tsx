@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { InventoryHeader } from "./_components/InventoryHeader";
 import { InventoryList } from "./_components/InventoryList";
 import { InventoryForm } from "./_components/InventoryForm";
+import { FifoBatchesDrawer } from "./_components/FifoBatchesDrawer";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,8 @@ import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PackageOpen, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { type Inventory } from "@/lib/validations/schemas";
 
 export default function InventoryPage() {
   const router = useRouter();
@@ -45,6 +48,9 @@ export default function InventoryPage() {
   } = useInventoryActions(business?.id);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [batchesProduct, setBatchesProduct] = useState<Inventory | null>(null);
+  const [showBatchesDrawer, setShowBatchesDrawer] = useState(false);
+  const [restoringAliases, setRestoringAliases] = useState(false);
   const isEditingProduct = Boolean(editingItem?.id);
   const openedFromSetup = React.useRef(false);
   React.useEffect(() => {
@@ -53,6 +59,24 @@ export default function InventoryPage() {
       handleAdd();
     }
   }, [businessLoading, inventoryLoading, business, error, handleAdd]);
+
+  const handleRestoreAliases = async () => {
+    if (!confirm("Restore standard DRX unit aliases? Custom aliases will be preserved.")) return;
+    setRestoringAliases(true);
+    try {
+      const res = await fetch("/api/inventory/aliases", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "restore" }),
+      });
+      if (!res.ok) throw new Error("Failed to restore default aliases");
+      toast.success("Standard default unit aliases restored successfully");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to restore aliases");
+    } finally {
+      setRestoringAliases(false);
+    }
+  };
 
   if (businessLoading || inventoryLoading) {
     return <AppPageSkeleton rows={5} />;
@@ -105,28 +129,40 @@ export default function InventoryPage() {
         />
       </div>
 
-      <div className="flex items-center gap-2 border-b border-white/10 pb-2">
+      <div className="flex items-center justify-between border-b border-white/10 pb-2">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setViewStatus("active")}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+              viewStatus === "active"
+                ? "bg-accent text-black"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+            }`}
+          >
+            Active Products
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewStatus("archived")}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+              viewStatus === "archived"
+                ? "bg-accent text-black"
+                : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+            }`}
+          >
+            Archived Products
+          </button>
+        </div>
+
         <button
           type="button"
-          onClick={() => setViewStatus("active")}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-            viewStatus === "active"
-              ? "bg-accent text-black"
-              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-          }`}
+          onClick={handleRestoreAliases}
+          disabled={restoringAliases}
+          className="text-xs text-muted-foreground hover:text-white hover:underline transition-colors flex items-center gap-1"
+          title="Restore standard unit aliases (e.g. 8th, quarter, zip)"
         >
-          Active Products
-        </button>
-        <button
-          type="button"
-          onClick={() => setViewStatus("archived")}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-            viewStatus === "archived"
-              ? "bg-accent text-black"
-              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-          }`}
-        >
-          Archived Products
+          {restoringAliases ? "Restoring…" : "Restore Default Aliases"}
         </button>
       </div>
 
@@ -137,11 +173,21 @@ export default function InventoryPage() {
           onEdit={handleEdit}
           onArchive={handleArchive}
           onReactivate={handleReactivate}
+          onViewBatches={(item) => {
+            setBatchesProduct(item);
+            setShowBatchesDrawer(true);
+          }}
           viewStatus={viewStatus}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
         />
       </div>
+
+      <FifoBatchesDrawer
+        product={batchesProduct}
+        isOpen={showBatchesDrawer}
+        onClose={() => setShowBatchesDrawer(false)}
+      />
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="flex max-h-[calc(100dvh-2rem)] max-w-xl flex-col overflow-hidden bg-[#1a1a1a] border-white/10 text-foreground">

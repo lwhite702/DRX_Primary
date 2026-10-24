@@ -6,8 +6,23 @@ import { canWriteField } from "@/lib/privacy/privacy-policy";
 import { sanitizePiiInput } from "@/lib/privacy/crypto";
 import { customerMatchesSearch, normalizeCustomerSearchInput } from "@/lib/customers/core/customer-normalizer";
 import { convexPiiArgs, customerFailure, dollarsToCents, mapConvexCustomer } from "@/lib/customers/convex-operational";
+import { toTitleCase } from "@/lib/utils/format-text";
 
 const headers = { "Cache-Control": "private, no-store" };
+
+export function parseCustomProductPrices(input: unknown): Array<{ productId: string; productName: string; pricePerUnitCents: number }> | undefined {
+  if (!Array.isArray(input)) return undefined;
+  return input
+    .filter((item) => item && typeof item === "object")
+    .map((item: any) => {
+      const productId = String(item.productId || "").trim();
+      const productName = String(item.productName || "").trim();
+      const price = typeof item.pricePerUnit === "number" ? item.pricePerUnit : typeof item.pricePerUnitCents === "number" ? item.pricePerUnitCents / 100 : Number(item.pricePerUnit || 0);
+      const pricePerUnitCents = Math.round(price * 100);
+      return { productId, productName, pricePerUnitCents };
+    })
+    .filter((item) => item.productId && item.pricePerUnitCents >= 0);
+}
 
 function parseRetentionDays(value: unknown): 1 | 7 | 30 | null {
   const parsed = typeof value === "number" ? value : typeof value === "string" && value.trim() ? Number(value) : NaN;
@@ -19,7 +34,9 @@ function providedFields(body: Record<string, unknown>): string[] {
     ["alias", body.alias], ["first_name", body.first_name ?? body.firstName], ["last_name", body.last_name ?? body.lastName],
     ["phone", body.phone ?? body.phone_number ?? body.phoneNumber], ["email", body.email], ["address", body.address], ["notes", body.notes],
     ["city", body.city], ["state", body.state], ["zip_code", body.zip_code ?? body.zipCode], ["customer_type", body.customer_type ?? body.customerType],
-    ["fixed_price_per_gram", body.fixed_price_per_gram ?? body.fixedPricePerGram], ["ephemeral", body.ephemeral], ["is_active", body.is_active ?? body.isActive],
+    ["fixed_price_per_gram", body.fixed_price_per_gram ?? body.fixedPricePerGram],
+    ["custom_product_prices", body.custom_product_prices ?? body.customProductPrices],
+    ["ephemeral", body.ephemeral], ["is_active", body.is_active ?? body.isActive],
   ].filter(([, value]) => value !== undefined).map(([field]) => String(field));
 }
 
@@ -60,9 +77,12 @@ export async function POST(request: NextRequest) {
     const body = parsed as Record<string, unknown>;
     const context = { businessId, expectedUserId };
     const privacyProtocol = await client.query(api.businessPreferences.getPrivacyPolicy, context);
-    const alias = sanitizePiiInput(body.alias);
-    const firstName = sanitizePiiInput(body.first_name ?? body.firstName);
-    const lastName = sanitizePiiInput(body.last_name ?? body.lastName);
+    const rawAlias = sanitizePiiInput(body.alias);
+    const rawFirstName = sanitizePiiInput(body.first_name ?? body.firstName);
+    const rawLastName = sanitizePiiInput(body.last_name ?? body.lastName);
+    const alias = rawAlias ? toTitleCase(rawAlias) : rawAlias;
+    const firstName = rawFirstName ? toTitleCase(rawFirstName) : rawFirstName;
+    const lastName = rawLastName ? toTitleCase(rawLastName) : rawLastName;
     const phone = sanitizePiiInput(body.phone ?? body.phone_number ?? body.phoneNumber);
     const email = sanitizePiiInput(body.email);
     const address = sanitizePiiInput(body.address);
@@ -78,6 +98,7 @@ export async function POST(request: NextRequest) {
     const canStoreAddress = canWriteField(privacyProtocol, "address");
     const storage = await encodeCustomerPii({ alias, first_name: canStoreName ? firstName : null, phone, email, address: canStoreAddress ? address : null, notes });
     const fixedPricePerGramCents = dollarsToCents(body.fixed_price_per_gram ?? body.fixedPricePerGram, "Fixed price per gram");
+    const customProductPrices = parseCustomProductPrices(body.custom_product_prices ?? body.customProductPrices);
     const creditLimitCents = dollarsToCents(body.credit_limit ?? body.creditLimit, "Credit limit") ?? 0;
     const isActive = typeof body.is_active === "boolean" ? body.is_active : typeof body.isActive === "boolean" ? body.isActive : true;
     const customer = await client.mutation(api.customers.createOperational, {
@@ -85,7 +106,7 @@ export async function POST(request: NextRequest) {
       city: canStoreAddress ? sanitizePiiInput(body.city) : null, state: canStoreAddress ? sanitizePiiInput(body.state) : null,
       zipCode: canStoreAddress ? sanitizePiiInput(body.zip_code ?? body.zipCode) : null,
       customerType: sanitizePiiInput(body.customer_type ?? body.customerType) ?? "retail",
-      fixedPricePerGramCents, creditLimitCents, ephemeral,
+      fixedPricePerGramCents, customProductPrices, creditLimitCents, ephemeral,
       ephemeralExpiresAt: ephemeral ? Date.now() + retentionDays * 24 * 60 * 60 * 1000 : null,
       isActive, changedFields: providedFields(body),
     });

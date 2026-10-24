@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import {
   computeTrustScore,
   evaluateFrontApproval,
+  evaluateFrontApprovalWithAI,
   getCustomerBehaviorMetrics,
   recommendCreditLimit,
 } from "@/lib/credit/intelligenceEngine";
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     const scarcity_level =
       quantity <= threshold * 0.5 ? "HIGH" : quantity <= threshold * 1.2 ? "MEDIUM" : "LOW";
 
-    const decision = evaluateFrontApproval({
+    const decision = await evaluateFrontApprovalWithAI({
       trust_score: trust.score,
       current_balance: metrics.open_balance,
       credit_limit: current_limit,

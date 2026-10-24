@@ -272,6 +272,58 @@ export function evaluateFrontApproval(input: FrontApprovalInput): FrontApprovalD
   };
 }
 
+export async function evaluateFrontApprovalWithAI(input: FrontApprovalInput): Promise<FrontApprovalDecision> {
+  const baseline = evaluateFrontApproval(input);
+  if (!process.env.OPENAI_API_KEY) {
+    return baseline;
+  }
+
+  try {
+    const { generateText } = await import("ai");
+    const { getLanguageModel } = await import("@/lib/ai/ai-sdk");
+    const model = getLanguageModel();
+    const prompt = `
+Evaluate customer credit front approval request:
+- Customer Trust Score (0-100): ${input.trust_score}
+- Current Open Balance: $${input.current_balance.toFixed(2)}
+- Credit Limit: $${input.credit_limit.toFixed(2)}
+- Requested Front Amount: $${input.requested_amount.toFixed(2)}
+- Days Since Last Payment: ${input.days_since_last_payment}
+- Inventory Stock: ${input.inventory.quantity_on_hand} units (reorder threshold: ${input.inventory.reorder_threshold})
+- Product Scarcity: ${input.inventory.scarcity_level}
+- Baseline Suggestion: ${baseline.suggestion} (${baseline.operator_message})
+
+Provide an operator message (1-2 sentences) and 2-3 concise bullet reasons advising whether to approve, caution, or deny.
+Respond in JSON:
+{
+  "operator_message": "<short guidance>",
+  "reasons": ["<reason 1>", "<reason 2>"]
+}
+`;
+
+    const result = await generateText({
+      model,
+      system: "You are a retail credit officer analyzing store credit risk. Keep messages concise and direct. Return valid JSON only.",
+      prompt,
+      temperature: 0.3,
+      maxRetries: 0,
+    });
+
+    const parsed = JSON.parse(result.text.match(/\{[\s\S]*\}/)?.[0] || result.text);
+    if (parsed && typeof parsed.operator_message === "string" && parsed.operator_message.trim()) {
+      return {
+        ...baseline,
+        operator_message: parsed.operator_message.trim(),
+        reasons: Array.isArray(parsed.reasons) && parsed.reasons.length > 0 ? parsed.reasons : baseline.reasons,
+      };
+    }
+  } catch {
+    // Graceful fallback to deterministic rule-based decision
+  }
+
+  return baseline;
+}
+
 export async function getCustomerBehaviorMetrics(customer_id: string, business_id: string) {
   try {
     const now = Date.now();
