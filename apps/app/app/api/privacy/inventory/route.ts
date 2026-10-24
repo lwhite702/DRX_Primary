@@ -5,8 +5,8 @@ import {
   getLatestPrivacyInventorySnapshot,
 } from "@/lib/privacy/inventory";
 
-export async function GET() {
-  const { userId, businessId } = await resolveAuthContext();
+export async function GET(request?: Request) {
+  const { userId, businessId } = await resolveAuthContext(request);
   if (!userId || !businessId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -13,8 +13,31 @@ import { posCatalogItem } from "@/lib/pos/catalog-item";
 export async function GET(request?: NextRequest) {
   try {
     const { businessId } = await resolveAuthContext(request);
+    if (!businessId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const token = await getConvexAuthToken();
-    if (!businessId || !token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!token) {
+      if (isAuthBypassEnabledServer()) {
+        return NextResponse.json({
+          favorites: [],
+          recentlySold: [],
+          data: { favorites: [], recentlySold: [] },
+          creditPolicy: { enabled: true },
+          deliveryPolicy: { feeTaxable: false, dispatchSlaMinutes: 30 },
+        }, { headers: { "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate" } });
+      }
+      if (isNoClerkPreviewEnvironment()) {
+        console.warn("[bootstrap] Preview fallback activated (no Convex token available)");
+        return NextResponse.json({
+          favorites: [],
+          recentlySold: [],
+          data: { favorites: [], recentlySold: [] },
+          creditPolicy: { enabled: false },
+          deliveryPolicy: { feeTaxable: false, dispatchSlaMinutes: 5 },
+        }, { headers: { "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate" } });
+      }
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const url = process.env.NEXT_PUBLIC_CONVEX_URL?.trim();
     if (!url) throw new Error("Bootstrap unavailable");
     const client = new ConvexHttpClient(url); client.setAuth(token);

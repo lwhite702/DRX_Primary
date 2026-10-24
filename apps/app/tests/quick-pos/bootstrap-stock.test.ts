@@ -125,6 +125,25 @@ it("returns a preview fallback when query fails in preview without Clerk", async
   expect(data.deliveryPolicy).toEqual({ feeTaxable: false, dispatchSlaMinutes: 5 });
 });
 
+it("returns preview fallback when token is null in preview without Clerk", async () => {
+  vi.stubEnv("VERCEL_ENV", "preview");
+  vi.stubEnv("CLERK_SECRET_KEY", "");
+  vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "");
+  mocks.token.mockResolvedValue(null);
+  const response = await GET();
+  expect(response.status).toBe(200);
+  const data = await response.json();
+  expect(data.creditPolicy).toEqual({ enabled: false });
+  expect(data.deliveryPolicy).toEqual({ feeTaxable: false, dispatchSlaMinutes: 5 });
+});
+
+it("returns 401 when token is null and not in preview or bypass", async () => {
+  vi.stubEnv("VERCEL_ENV", "");
+  mocks.token.mockResolvedValue(null);
+  const response = await GET();
+  expect(response.status).toBe(401);
+});
+
 it("propagates error when Clerk is configured in preview", async () => {
   vi.stubEnv("VERCEL_ENV", "preview");
   vi.stubEnv("CLERK_SECRET_KEY", "sk_test_123");

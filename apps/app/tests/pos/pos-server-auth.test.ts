@@ -21,8 +21,16 @@ import { resolveAuthContext, assertBusinessAccess } from "@/app/api/pos/_lib/ser
 describe("POS server auth context resolution", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.token.mockResolvedValue(null);
+    mocks.query.mockReset();
     vi.stubEnv("NODE_ENV", "test");
     vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic.convex.cloud");
+    vi.stubEnv("BYPASS_AUTH_FOR_TESTING", "");
+    vi.stubEnv("DANGEROUS_BYPASS_AUTH_FOR_TESTING_ONLY", "");
+    vi.stubEnv("BYPASS_AUTH_USER_ID", "");
+    vi.stubEnv("BYPASS_AUTH_ORG_ID", "");
+    vi.stubEnv("PREVIEW_TEST_SECRET", "");
+    vi.stubEnv("VERCEL_AUTOMATION_BYPASS_SECRET", "");
   });
 
   afterEach(() => {
@@ -97,5 +105,30 @@ describe("POS server auth context resolution", () => {
     expect(await assertBusinessAccess("preview_tester", "preview_org")).toBe(true);
     expect(await assertBusinessAccess("preview_tester", "other_tenant")).toBe(false);
     expect(await assertBusinessAccess("other_user", "preview_org")).toBe(false);
+  });
+
+  it("fails closed when called without request in preview without Clerk and no secret set", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("CLERK_SECRET_KEY", "");
+    vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "");
+
+    const result = await resolveAuthContext();
+    expect(result).toEqual({ userId: null, businessId: null });
+  });
+
+  it("authenticates no-request calls when next/headers provides preview test token", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("CLERK_SECRET_KEY", "");
+    vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "");
+    vi.stubEnv("PREVIEW_TEST_SECRET", "header-test-secret");
+
+    vi.doMock("next/headers", () => ({
+      headers: async () => ({
+        get: (name: string) => (name === "x-preview-test-token" ? "header-test-secret" : null),
+      }),
+    }));
+
+    const result = await resolveAuthContext();
+    expect(result).toEqual({ userId: "preview_tester", businessId: "preview_org" });
   });
 });

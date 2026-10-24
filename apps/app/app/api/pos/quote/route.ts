@@ -24,8 +24,19 @@ export async function POST(request: NextRequest) {
           const deliveryFee = payload.delivery?.enabled
             ? (payload.delivery.feeAllocation === "charge_customer" ? (payload.delivery.customerFeeCents ?? payload.delivery.vendorFeeCents) / 100 : 0)
             : (payload.deliveryPrice ?? 0);
-          const total = Math.max(0, subtotal - discountAmount + feesAmount + deliveryFee);
-          quote = { subtotal, taxAmount: 0, total, discountAmount, feeAmount: feesAmount, deliveryFee };
+          const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount);
+          const total = Math.max(0, subtotalAfterDiscount + feesAmount + deliveryFee);
+          quote = {
+            subtotal,
+            subtotalAfterDiscount,
+            discountAmount,
+            taxAmount: 0,
+            feesTotal: feesAmount,
+            feeAmount: feesAmount,
+            deliveryRevenue: deliveryFee,
+            deliveryFee,
+            total,
+          };
         } else {
           throw err;
         }
@@ -56,8 +67,19 @@ export async function POST(request: NextRequest) {
         const deliveryFee = (parsed.data.delivery?.enabled && isCustomerCharged)
           ? (parsed.data.delivery.customerFeeCents ?? parsed.data.delivery.vendorFeeCents ?? 0) / 100
           : 0;
-        const total = Math.max(0, subtotal - discountAmount + feesAmount + deliveryFee);
-        quote = { subtotal, taxAmount: 0, total, discountAmount, feeAmount: feesAmount, deliveryFee };
+        const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount);
+        const total = Math.max(0, subtotalAfterDiscount + feesAmount + deliveryFee);
+        quote = {
+          subtotal,
+          subtotalAfterDiscount,
+          discountAmount,
+          taxAmount: 0,
+          feesTotal: feesAmount,
+          feeAmount: feesAmount,
+          deliveryRevenue: deliveryFee,
+          deliveryFee,
+          total,
+        };
       } else {
         throw err;
       }

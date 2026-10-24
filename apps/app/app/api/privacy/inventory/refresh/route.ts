@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { capturePrivacyInventorySnapshot } from "@/lib/privacy/inventory";
 
-export async function POST() {
-  const { userId, businessId } = await resolveAuthContext();
+export async function POST(request?: Request) {
+  const { userId, businessId } = await resolveAuthContext(request);
   if (!userId || !businessId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

@@ -269,8 +269,11 @@ describe("quick POS quote route", () => {
     const data = await response.json();
     expect(data.success).toBe(true);
     expect(data.quote.subtotal).toBe(40);
+    expect(data.quote.subtotalAfterDiscount).toBe(35);
     expect(data.quote.discountAmount).toBe(5);
+    expect(data.quote.feesTotal).toBe(2);
     expect(data.quote.feeAmount).toBe(2);
+    expect(data.quote.deliveryRevenue).toBe(3);
     expect(data.quote.deliveryFee).toBe(3);
     expect(data.quote.total).toBe(40);
   });

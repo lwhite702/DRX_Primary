@@ -5,7 +5,7 @@ import { businessClient } from "@/lib/business/convex-server";
 import { api } from "@/convex/_generated/api";
 
 export async function POST(request: NextRequest) {
-  const { userId, businessId } = await resolveAuthContext();
+  const { userId, businessId } = await resolveAuthContext(request);
   if (!userId || !businessId) return errorResponse("UNAUTHORIZED", "Unauthorized", 401);
   const body = await request.json().catch(() => ({}));
   if (body?.businessId && body.businessId !== businessId) return errorResponse("FORBIDDEN", "Forbidden", 403);
