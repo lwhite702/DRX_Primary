@@ -51,6 +51,7 @@ it("passes price overrides when items include an overrideReason", async () => {
     items: [
       {
         ...input.items[0],
+        weightGrams: undefined,
         originalPrice: 12,
         unitPrice: 8,
         overrideReason: "Manager promotional exception",
@@ -67,6 +68,36 @@ it("passes price overrides when items include an overrideReason", async () => {
           productId: "canonical-product",
           unitPriceCents: 800,
           reason: "Manager promotional exception",
+        },
+      ],
+    }),
+  );
+});
+
+it("converts price overrides to price-per-gram for fractional items with weightGrams", async () => {
+  mocks.query.mockResolvedValueOnce({ productIds: ["canonical-product"], customerId: "canonical-customer" }).mockResolvedValueOnce(quote);
+  const fractionalOverrideInput = {
+    ...input,
+    items: [
+      {
+        ...input.items[0],
+        weightGrams: 0.57,
+        originalPrice: 19.95,
+        unitPrice: 20,
+        overrideReason: "correction",
+      },
+    ],
+  };
+  await quoteCanonicalCommerce(fractionalOverrideInput);
+  expect(mocks.query).toHaveBeenNthCalledWith(
+    2,
+    expect.anything(),
+    expect.objectContaining({
+      priceOverrides: [
+        {
+          productId: "canonical-product",
+          unitPriceCents: 3509,
+          reason: "correction",
         },
       ],
     }),

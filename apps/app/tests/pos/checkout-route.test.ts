@@ -56,6 +56,37 @@ it("quotes authorized overrides and stores their reason with the sold line", asy
   const line = await t.run(ctx => ctx.db.query("salesLineItems").first());
   expect(line).toMatchObject({ unitPriceCents: 800, priceOverrideReason: "Synthetic price correction", catalogUnitPriceCents: 1000 });
 });
+it("quotes and checks out fractional items with price overrides correctly", async () => {
+  await t.run(async (ctx) => {
+    await ctx.db.patch(ctx.db.normalizeId("products", productId)!, {
+      allowFractionalWeight: true,
+      quantityPrecision: 2,
+      minimumSaleQuantity: 0.01,
+      quantityIncrement: 0.01,
+      sellingPriceCents: 3500,
+    });
+  });
+  const body = payload({
+    items: [
+      {
+        id: `inv:${productId}:fractional:1`,
+        inventoryId: productId,
+        source: "inventory",
+        name: "Synthetic Fractional",
+        unitPrice: 20,
+        qty: 1,
+        weightGrams: 0.57,
+        originalPrice: 19.95,
+        overrideReason: "correction",
+      },
+    ],
+    expectedTotal: 22,
+  });
+  const quoted = await quote(request(body));
+  const quotedJson = await quoted.json();
+  expect(quotedJson).toMatchObject({ success: true, quote: { total: 22 } });
+  expect((await POST(request(body))).status).toBe(201);
+});
 it("denies price overrides without the pricing permission", async () => {
   await t.run(async ctx => { const user = await ctx.db.query("users").first(); await ctx.db.patch(user!._id, { role: "cashier" }); });
   const response = await POST(request(payload({ items: [{ id: productId, inventoryId: productId, source: "inventory", name: "Synthetic", unitPrice: 8, qty: 1, overrideReason: "Synthetic" }] })));

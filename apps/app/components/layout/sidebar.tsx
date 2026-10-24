@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings } from "lucide-react";
+import { Settings, ExternalLink } from "lucide-react";
 
 import { primaryNav } from "@/components/layout/nav-items";
 import { LogoutButton } from "@/components/layout/logout-button";
@@ -110,6 +110,8 @@ export function Sidebar() {
           href={docsHubUrl}
           target="_blank"
           rel="noopener noreferrer"
+          title="Opens Help Center in a new window"
+          aria-label="Help Center (opens in a new window)"
           className="flex items-center gap-3 min-h-11 px-3 py-2 rounded-lg text-foreground hover:bg-border transition-colors text-sm font-medium"
         >
           <svg
@@ -125,7 +127,8 @@ export function Sidebar() {
               d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          Help Center
+          <span>Help Center</span>
+          <ExternalLink className="w-3.5 h-3.5 ml-auto text-muted-foreground" />
         </Link>
         <button
           onClick={() => {

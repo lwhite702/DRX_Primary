@@ -4,12 +4,12 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 export const revoke = action({
-  args: { sessionId: v.string() }, returns: v.object({ success: v.literal(true) }),
+  args: { sessionId: v.string(), secretKey: v.optional(v.string()) }, returns: v.object({ success: v.literal(true) }),
   handler: async (ctx, args): Promise<{ success: true }> => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("UNAUTHORIZED: Sign in required");
     if (!/^sess_[a-zA-Z0-9]+$/.test(args.sessionId) || args.sessionId.length > 256) throw new Error("INVALID_ARGUMENT: Invalid session");
-    const secret = process.env.CLERK_SECRET_KEY;
+    const secret = args.secretKey || process.env.CLERK_SECRET_KEY;
     if (!secret) throw new Error("UNAVAILABLE: Session service is not configured");
     const endpoint = `https://api.clerk.com/v1/sessions/${encodeURIComponent(args.sessionId)}`;
     const provider = async (url: string, method: string) => {

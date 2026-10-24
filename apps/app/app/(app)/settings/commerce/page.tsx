@@ -58,6 +58,8 @@ function CommerceSettingsPageInner() {
   const [merchant, setMerchant] = useState<MerchantCommerceSettings | null>(null);
   const [selectedId, setSelectedId] = useState("");
   const [draft, setDraft] = useState<CommerceProduct | null>(null);
+  const [dollarPresetsInput, setDollarPresetsInput] = useState("");
+  const [quantityPresetsInput, setQuantityPresetsInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const loadController = useRef<AbortController | null>(null);
@@ -96,6 +98,8 @@ function CommerceSettingsPageInner() {
       const next = data.products[0] ?? null;
       setSelectedId(next?.id ?? "");
       setDraft(next ? structuredClone(next) : null);
+      setDollarPresetsInput(next ? listText(next.config.suggestedDollarAmounts) : "");
+      setQuantityPresetsInput(next ? listText(next.config.suggestedQuantities) : "");
     } catch (error) {
       if (controller.signal.aborted) return;
       const message =
@@ -121,6 +125,8 @@ function CommerceSettingsPageInner() {
     setSelectedId(id);
     const product = products.find((item) => item.id === id) ?? null;
     setDraft(product ? structuredClone(product) : null);
+    setDollarPresetsInput(product ? listText(product.config.suggestedDollarAmounts) : "");
+    setQuantityPresetsInput(product ? listText(product.config.suggestedQuantities) : "");
   };
 
   const saveProduct = async () => {
@@ -262,7 +268,15 @@ function CommerceSettingsPageInner() {
                   <div className="grid gap-4 md:grid-cols-5">
                     <div className="space-y-2">
                       <Label htmlFor="selling-unit">Selling unit</Label>
-                      <Input id="selling-unit" value={draft.config.sellingUnit} onChange={(event) => setDraft({ ...draft, config: { ...draft.config, sellingUnit: event.target.value } })} />
+                      <Input
+                        id="selling-unit"
+                        value={draft.config.sellingUnit}
+                        disabled={Boolean(selectedProduct && selectedProduct.availableQuantity > 0)}
+                        onChange={(event) => setDraft({ ...draft, config: { ...draft.config, sellingUnit: event.target.value } })}
+                      />
+                      {selectedProduct && selectedProduct.availableQuantity > 0 && (
+                        <p className="text-xs text-muted-foreground">Unit is locked while stock exists. Reconcile stock to change.</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="unit-price">Price per unit</Label>
@@ -285,11 +299,39 @@ function CommerceSettingsPageInner() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="dollar-presets">Suggested dollar amounts</Label>
-                      <Input id="dollar-presets" value={listText(draft.config.suggestedDollarAmounts)} onChange={(event) => setDraft({ ...draft, config: { ...draft.config, suggestedDollarAmounts: parsePositiveList(event.target.value) } })} placeholder="10, 20, 50" />
+                      <Input
+                        id="dollar-presets"
+                        value={dollarPresetsInput}
+                        onChange={(event) => {
+                          setDollarPresetsInput(event.target.value);
+                          setDraft({
+                            ...draft,
+                            config: {
+                              ...draft.config,
+                              suggestedDollarAmounts: parsePositiveList(event.target.value),
+                            },
+                          });
+                        }}
+                        placeholder="10, 20, 50"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="quantity-presets">Suggested quantities</Label>
-                      <Input id="quantity-presets" value={listText(draft.config.suggestedQuantities)} onChange={(event) => setDraft({ ...draft, config: { ...draft.config, suggestedQuantities: parsePositiveList(event.target.value) } })} placeholder="3.5, 7, 14" />
+                      <Input
+                        id="quantity-presets"
+                        value={quantityPresetsInput}
+                        onChange={(event) => {
+                          setQuantityPresetsInput(event.target.value);
+                          setDraft({
+                            ...draft,
+                            config: {
+                              ...draft.config,
+                              suggestedQuantities: parsePositiveList(event.target.value),
+                            },
+                          });
+                        }}
+                        placeholder="3.5, 7, 14"
+                      />
                     </div>
                   </div>
 

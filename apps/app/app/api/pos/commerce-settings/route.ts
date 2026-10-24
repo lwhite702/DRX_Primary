@@ -15,7 +15,14 @@ async function clientFor(request?: NextRequest) {
 function failure(error: unknown) {
   const raw = error instanceof Error ? error.message : "";
   const status = raw.includes("UNAUTHENTICATED:") ? 401 : /FORBIDDEN:|UNAUTHORIZED:/.test(raw) ? 403 : raw.includes("NOT_FOUND:") ? 404 : raw.includes("INVALID_ARGUMENT:") ? 400 : raw.includes("CONFLICT:") ? 409 : 503;
-  return NextResponse.json({ error: status === 403 ? "You cannot configure commerce for this business" : status === 400 ? "Check the commerce settings" : "Commerce settings are unavailable; refresh and retry" }, { status });
+  const cleaned = raw.replace(/^(UNAUTHENTICATED|FORBIDDEN|UNAUTHORIZED|NOT_FOUND|INVALID_ARGUMENT|CONFLICT|UNAVAILABLE):\s*/, "").trim();
+  return NextResponse.json({
+    error: status === 403
+      ? (cleaned || "You cannot configure commerce for this business")
+      : status === 400 || status === 409
+      ? (cleaned || "Check the commerce settings")
+      : (cleaned || "Commerce settings are unavailable; refresh and retry"),
+  }, { status });
 }
 export async function GET(request?: NextRequest) {
   try {
