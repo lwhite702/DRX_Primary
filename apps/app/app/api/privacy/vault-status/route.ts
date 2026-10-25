@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { resolveAuthContext } from "@/app/api/pos/_lib/server";
 import { getVaultRuntimeStatus } from "@/lib/privacy/crypto";
 
-export async function GET(request?: Request) {
-  const { userId } = await resolveAuthContext(request);
+export async function GET() {
+  const { userId } = await resolveAuthContext();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

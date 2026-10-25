@@ -8,38 +8,33 @@ import {
 } from "@/lib/auth/bypass";
 import { isNoClerkPreviewEnvironment } from "@/lib/adapters/auth/server";
 
+function hasPreviewBypassHeaders(headers: { get(name: string): string | null }): boolean {
+  const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
+  const bypassHeader = headers.get("x-vercel-protection-bypass")?.trim();
+  if (vercelBypassSecret && bypassHeader === vercelBypassSecret) {
+    return true;
+  }
+  const previewSecret = process.env.PREVIEW_TEST_SECRET?.trim();
+  const previewHeader = headers.get("x-preview-test-token")?.trim();
+  if (previewSecret && previewHeader === previewSecret) {
+    return true;
+  }
+  return false;
+}
+
 async function isAuthorizedPreviewTestSession(request?: Request | string): Promise<boolean> {
   if (!isNoClerkPreviewEnvironment()) return false;
   if (isAuthBypassEnabledServer()) return true;
 
-  const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
-  const previewSecret = process.env.PREVIEW_TEST_SECRET?.trim();
-
   if (typeof request === "object" && request && "headers" in request) {
-    const bypassHeader = request.headers.get("x-vercel-protection-bypass")?.trim();
-    if (vercelBypassSecret && bypassHeader === vercelBypassSecret) {
-      return true;
-    }
-    const previewHeader = request.headers.get("x-preview-test-token")?.trim();
-    if (previewSecret && previewHeader === previewSecret) {
-      return true;
-    }
-    return false;
+    return hasPreviewBypassHeaders(request.headers);
   }
 
   // When request is not passed (e.g. server components or routes calling resolveAuthContext()),
   // attempt to read headers from Next.js server context if available.
   try {
     const { headers } = await import("next/headers");
-    const headerList = await headers();
-    const bypassHeader = headerList.get("x-vercel-protection-bypass")?.trim();
-    if (vercelBypassSecret && bypassHeader === vercelBypassSecret) {
-      return true;
-    }
-    const previewHeader = headerList.get("x-preview-test-token")?.trim();
-    if (previewSecret && previewHeader === previewSecret) {
-      return true;
-    }
+    return hasPreviewBypassHeaders(await headers());
   } catch {
     // Outside Next.js request context
   }

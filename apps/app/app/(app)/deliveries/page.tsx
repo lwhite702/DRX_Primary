@@ -554,6 +554,7 @@ export default function DeliveriesPage() {
                             updateDeliveryDetails({
                               deliveryId: selected._id,
                               vendorFeeCents: computedVendorCents,
+                              feeSplitMode,
                               dispatchType,
                               estimatedArrivalMinutes:
                                 Number.isSafeInteger(Number(waitMinutes)) &&

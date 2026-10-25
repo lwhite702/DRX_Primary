@@ -46,14 +46,39 @@ export async function GET(request: NextRequest) {
       summaries = await client.query((api.checkout as any).getSalesHistorySummary, { limit: 50 });
     } catch {
       const fallbackSales = await client.query(api.checkout.getSalesHistory, {});
-      summaries = fallbackSales.map((sale: any) => ({
-        sale,
-        itemCount: 0,
-        itemSummary: null,
-        customer: null,
-        delivery: null,
-        items: [],
-      }));
+      summaries = await Promise.all(
+        fallbackSales.map(async (sale: any) => {
+          try {
+            const detail: any = await client.query(api.checkout.getSaleDetail, { saleId: sale._id });
+            const items = detail.items ?? [];
+            const itemNames = items
+              .map((i: any) => i.productName || i.manualName || "Inventory Item")
+              .filter(Boolean);
+            const itemSummary =
+              itemNames.length > 0
+                ? itemNames.slice(0, 3).join(", ") +
+                  (items.length > 3 ? ` +${items.length - 3} more` : "")
+                : null;
+            return {
+              sale: detail.sale ?? sale,
+              itemCount: items.length,
+              itemSummary,
+              customer: detail.customer ?? null,
+              delivery: detail.delivery ?? null,
+              items,
+            };
+          } catch {
+            return {
+              sale,
+              itemCount: 0,
+              itemSummary: null,
+              customer: null,
+              delivery: null,
+              items: [],
+            };
+          }
+        }),
+      );
     }
 
     const data = await Promise.all(

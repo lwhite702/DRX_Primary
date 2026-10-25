@@ -1338,23 +1338,32 @@ export const getSalesHistorySummary = query({
 
     return await Promise.all(
       sales.map(async (sale) => {
-        const lineItems = await ctx.db
+        const allLineItems = await ctx.db
           .query("salesLineItems")
           .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
-          .take(10);
-        const itemCount = lineItems.length;
-        const itemNames = lineItems
-          .map((i) => i.manualName || "Inventory Item")
-          .filter(Boolean);
+          .collect();
+        const itemCount = allLineItems.length;
+        const lineItems = allLineItems.slice(0, 10);
+        const itemNames = await Promise.all(
+          lineItems.map(async (i) => {
+            let name = i.manualName;
+            if (!name && i.productId) {
+              const product = await ctx.db.get(i.productId);
+              name = product?.productName;
+            }
+            return name || "Inventory Item";
+          }),
+        );
         const itemSummary =
           itemNames.length > 0
             ? itemNames.slice(0, 3).join(", ") +
-              (itemNames.length > 3 ? ` +${itemNames.length - 3} more` : "")
+              (itemCount > 3 ? ` +${itemCount - 3} more` : "")
             : null;
 
         let customer: any = null;
         if (canViewCustomers && sale.customerId) {
-          customer = await ctx.db.get(sale.customerId);
+          const doc = await ctx.db.get(sale.customerId);
+          customer = doc && doc.businessId === auth.businessId ? doc : null;
         }
 
         const delivery = await ctx.db
@@ -1366,16 +1375,7 @@ export const getSalesHistorySummary = query({
           sale,
           itemCount,
           itemSummary,
-          customer: customer
-            ? {
-                _id: customer._id,
-                firstName: customer.firstName,
-                lastName: customer.lastName,
-                alias: customer.alias,
-                phone: customer.phone,
-                loyaltyTier: customer.loyaltyTier ?? customer.loyalty_tier ?? "none",
-              }
-            : null,
+          customer,
           delivery:
             delivery && delivery.businessId === auth.businessId
               ? {
