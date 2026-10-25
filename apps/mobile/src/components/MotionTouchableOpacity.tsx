@@ -41,7 +41,7 @@ export default function MotionTouchableOpacity({
   return (
     <AnimatedTouchableOpacity
       {...props}
-      activeOpacity={activeOpacity ?? 1}
+      activeOpacity={activeOpacity ?? (reduceMotion ? 0.7 : 0.85)}
       style={[style, animatedStyle]}
       onPressIn={(event) => {
         animatePressed(1);

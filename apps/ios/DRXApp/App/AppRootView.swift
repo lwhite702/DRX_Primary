@@ -61,7 +61,6 @@ struct AppRootView: View {
         ))
         .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: environment.rootState)
         .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: hasCompletedInitialSplash)
-        .buttonStyle(DRXTactileButtonStyle())
         .tint(DRXPalette.accent)
         .environment(environment)
         .environment(navigationCoordinator)

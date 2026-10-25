@@ -170,11 +170,14 @@ struct DRXLoadingPlaceholder: View {
 
 struct DRXTactileButtonStyle: ButtonStyle {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.975 : 1)
-            .offset(y: configuration.isPressed && !reduceMotion ? 1 : 0)
+            .foregroundStyle(configuration.role == .destructive ? Color.red : Color.primary)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.75 : 1.0) : 0.45)
+            .scaleEffect(configuration.isPressed && !reduceMotion && isEnabled ? 0.975 : 1)
+            .offset(y: configuration.isPressed && !reduceMotion && isEnabled ? 1 : 0)
             .shadow(
                 color: .black.opacity(configuration.isPressed ? 0.08 : 0.18),
                 radius: configuration.isPressed ? 2 : 5,
