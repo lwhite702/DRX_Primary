@@ -3,7 +3,7 @@
     "name": "Deelrx CRM",
     "owner": "wrelik",
     "slug": "deelrx-crm",
-    "version": "0.13.4",
+    "version": "0.14.0",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "drx",

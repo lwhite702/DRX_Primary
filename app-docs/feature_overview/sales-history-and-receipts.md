@@ -30,6 +30,30 @@ Whatever the reason, DRX keeps a permanent record of every completed order so yo
 2. Type an order reference or customer alias in the top search box.
 3. Tap an order to view its itemized breakdown and payment receipt record.
 
+## Voiding and refunding orders
+
+When an order needs to be canceled or returned, authorized managers and operators with return permissions can void or refund the transaction directly from the order details.
+
+### Understanding the difference between voids and refunds
+
+- **Void Order**: Use when an order was rung up by mistake or cancelled immediately before fulfillment. Voiding cancels the order, reverses customer purchase counts, automatically cancels any linked active delivery, and restores all merchandise back into shelf inventory.
+- **Refund Order**: Use when a customer returns items after a completed transaction. When issuing a refund, the operator selects the inventory disposition:
+  - **Return to stock (restock)**: The merchandise is inspected, undamaged, and added back into your sellable inventory.
+  - **Scrap / damaged (shrink loss)**: The merchandise was damaged, opened, or cannot be safely resold. It is recorded as damaged inventory shrink rather than returned to shelf stock.
+  Any active delivery attached to the refunded order is automatically cancelled.
+
+### Payment tender reversals
+
+- **Cash, Comp, and Store Credit**: Cash refunds must be handed back from the drawer, and credit adjustments reverse the customer's store credit balance.
+- **Card and Split Payments**: If an order was paid by card (or split tender including card), DRX requires recording the merchant card processor authorization code or external transaction reference to confirm the gateway reversal before finalizing.
+- **P2P Payments (Cash App, PayPal, Zelle, Venmo, etc.)**: Confirm the peer-to-peer reversal in your payment app before finalizing the return record in DRX.
+
+### How to void or refund on each surface
+
+- **Desktop Web**: Open the order row from the **Sales** page. For completed sales, click **Void Order** or **Refund Order** in the action bar. Enter the mandatory reason, choose the inventory disposition (for refunds), confirm tender reversal, enter any card authorization reference, and click **Confirm**.
+- **iPhone (iOS App)**: Open **Sales** or tap any recent sale on your Home dashboard or Reports view to open the **Sale Details** sheet. Tap **Void Order** or **Refund Order**, provide the reason and return parameters, and confirm.
+- **Android & Mobile Web**: In **Sales history**, tap **Void** or **Refund** on any completed sale card to open the action sheet, select your disposition and reason, and confirm.
+
 ## Receipts, refunds, and record corrections
 
 - **Add Customer After Sale**: On iOS, choose **Add customer to this sale** from the receipt after an anonymous sale. On Android, open **Sales history** and choose **Add customer** on the completed sale. Select the active customer and confirm. Linking a customer updates the customer's purchase history but does not change the saved total, payment, inventory, or credit entries. Credit sales cannot be reassigned.

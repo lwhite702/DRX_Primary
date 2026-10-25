@@ -278,6 +278,15 @@ struct DRXSale: Decodable, Identifiable, Sendable {
     let paymentMethod: String
     let createdBy: String
     let createdAt: Double
+    let voidReason: String?
+    let voidSettlementStatus: String?
+    let voidReference: String?
+    let voidedAt: Double?
+    let refundReason: String?
+    let refundDisposition: String?
+    let refundSettlementStatus: String?
+    let refundReference: String?
+    let refundedAt: Double?
 
     enum CodingKeys: String, CodingKey {
         case id = "_id"
@@ -285,6 +294,8 @@ struct DRXSale: Decodable, Identifiable, Sendable {
         case subtotalCents, taxAmountCents, totalAmountCents
         case amountPaidCents, changeAmountCents, paymentMethod
         case createdBy, createdAt
+        case voidReason, voidSettlementStatus, voidReference, voidedAt
+        case refundReason, refundDisposition, refundSettlementStatus, refundReference, refundedAt
     }
 
     var totalFormatted: String { formatCents(totalAmountCents) }
@@ -292,6 +303,39 @@ struct DRXSale: Decodable, Identifiable, Sendable {
     var taxFormatted: String { formatCents(taxAmountCents) }
     var createdDate: Date { Date(timeIntervalSince1970: createdAt / 1000) }
     var safeDisplayOrderNumber: String { OrderNumberUtils.safeDisplay(orderNumber) }
+    var isVoided: Bool { orderStatus == "cancelled" }
+    var isRefunded: Bool { orderStatus == "refunded" }
+    var isCompleted: Bool { orderStatus == "completed" }
+}
+
+// MARK: - Void & Refund Contracts
+
+struct DRXVoidOrderArgs: Encodable, Sendable {
+    let saleId: String
+    let reason: String
+    let tenderReversalConfirmed: Bool?
+    let externalReference: String?
+}
+
+struct DRXVoidOrderResponse: Decodable, Sendable {
+    let saleId: String
+    let status: String
+    let restoredAllocations: Int?
+}
+
+struct DRXRefundOrderArgs: Encodable, Sendable {
+    let saleId: String
+    let reason: String
+    let disposition: String
+    let tenderRefundConfirmed: Bool?
+    let externalReference: String?
+}
+
+struct DRXRefundOrderResponse: Decodable, Sendable {
+    let saleId: String
+    let status: String
+    let disposition: String?
+    let restoredAllocations: Int?
 }
 
 // MARK: - Sale Line Item

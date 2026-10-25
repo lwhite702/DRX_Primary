@@ -124,7 +124,6 @@ function build() {
 
   const sourceAssetRoot = path.join(root, "app-docs/_assets/help-center");
   const outputAssetRoot = path.join(mintlifyRoot, "images/help-center");
-  fs.rmSync(outputAssetRoot, { recursive: true, force: true });
   fs.cpSync(sourceAssetRoot, outputAssetRoot, { recursive: true });
 
   const receipt = {

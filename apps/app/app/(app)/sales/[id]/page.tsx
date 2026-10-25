@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CustomerSelectorModal } from "@/components/pos/customer-selector-modal";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useUserRole } from "@/lib/hooks/use-user-role";
 import { toast } from "sonner";
@@ -45,6 +46,10 @@ import {
   ExternalLink,
   Undo2,
   UserX,
+  Ban,
+  RotateCcw,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { useCustomerContext } from "@/components/providers/customer-provider";
 import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
@@ -86,6 +91,40 @@ export default function SaleDetailPage() {
   const [etaMinutes, setEtaMinutes] = useState<string>("");
   const [uberTrackingUrl, setUberTrackingUrl] = useState<string>("");
   const [savingDelivery, setSavingDelivery] = useState(false);
+
+  // Void State
+  const [showVoidModal, setShowVoidModal] = useState(false);
+  const [voidReason, setVoidReason] = useState("");
+  const [voidTenderConfirmed, setVoidTenderConfirmed] = useState(false);
+  const [voidExternalRef, setVoidExternalRef] = useState("");
+  const [submittingVoid, setSubmittingVoid] = useState(false);
+
+  // Refund State
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundReason, setRefundReason] = useState("");
+  const [refundDisposition, setRefundDisposition] = useState<"restock" | "scrap">("restock");
+  const [refundTenderConfirmed, setRefundTenderConfirmed] = useState(false);
+  const [refundExternalRef, setRefundExternalRef] = useState("");
+  const [submittingRefund, setSubmittingRefund] = useState(false);
+
+  const hasCardTender = Boolean(
+    sale &&
+      ((sale.paymentMethod || sale.payment_method) === "card" ||
+        ((sale.paymentMethod || sale.payment_method) === "split" &&
+          Array.isArray(sale.paymentTenders) &&
+          sale.paymentTenders.some((t: any) => t.method === "card"))),
+  );
+
+  const requiresTenderConfirmation = Boolean(
+    sale &&
+      (sale.paymentMethod || sale.payment_method) !== "comp" &&
+      (sale.paymentMethod || sale.payment_method) !== "credit" &&
+      !((sale.paymentMethod || sale.payment_method) === "split" &&
+        Array.isArray(sale.paymentTenders) &&
+        sale.paymentTenders.every(
+          (t: any) => t.method === "credit" || t.method === "comp",
+        )),
+  );
 
   // Initialize edit state when sale loads
   useEffect(() => {
@@ -205,6 +244,89 @@ export default function SaleDetailPage() {
     }
   };
 
+  const handleVoidSale = async () => {
+    if (!voidReason.trim()) {
+      toast.error("Please provide a reason to void this order");
+      return;
+    }
+    if (requiresTenderConfirmation && !voidTenderConfirmed) {
+      toast.error("Please confirm the tender reversal");
+      return;
+    }
+    if (hasCardTender && !voidExternalRef.trim()) {
+      toast.error("An external reference is required for card reversals");
+      return;
+    }
+    try {
+      setSubmittingVoid(true);
+      const res = await fetch(`/api/sales/${saleId}/void`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reason: voidReason.trim(),
+          tenderReversalConfirmed: voidTenderConfirmed,
+          externalReference: voidExternalRef.trim() || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to void sale");
+      }
+      toast.success("Order voided successfully");
+      setShowVoidModal(false);
+      const reload = await fetch(`/api/sales/${saleId}`);
+      if (reload.ok) {
+        setSale(await reload.json());
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to void sale");
+    } finally {
+      setSubmittingVoid(false);
+    }
+  };
+
+  const handleRefundSale = async () => {
+    if (!refundReason.trim()) {
+      toast.error("Please provide a reason to refund this order");
+      return;
+    }
+    if (requiresTenderConfirmation && !refundTenderConfirmed) {
+      toast.error("Please confirm the tender refund");
+      return;
+    }
+    if (hasCardTender && !refundExternalRef.trim()) {
+      toast.error("An external reference is required for card refunds");
+      return;
+    }
+    try {
+      setSubmittingRefund(true);
+      const res = await fetch(`/api/sales/${saleId}/refund`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reason: refundReason.trim(),
+          disposition: refundDisposition,
+          tenderRefundConfirmed: refundTenderConfirmed,
+          externalReference: refundExternalRef.trim() || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to refund sale");
+      }
+      toast.success("Order refunded successfully");
+      setShowRefundModal(false);
+      const reload = await fetch(`/api/sales/${saleId}`);
+      if (reload.ok) {
+        setSale(await reload.json());
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to refund sale");
+    } finally {
+      setSubmittingRefund(false);
+    }
+  };
+
   useEffect(() => {
     if (!saleId || !business?.id) return;
 
@@ -317,16 +439,126 @@ export default function SaleDetailPage() {
             </p>
           </div>
         </div>
-        <Badge
-          variant={
-            (sale.orderStatus || sale.order_status) === "completed"
-              ? "default"
-              : "secondary"
-          }
-        >
-          {sale.orderStatus || sale.order_status}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          {(sale.orderStatus || sale.order_status) === "completed" && isManager && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setVoidReason("");
+                  setVoidTenderConfirmed(false);
+                  setVoidExternalRef("");
+                  setShowVoidModal(true);
+                }}
+                className="h-8 gap-1.5 text-xs font-semibold text-rose-400 hover:text-rose-300 border-rose-500/30 hover:bg-rose-500/10"
+              >
+                <Ban className="h-3.5 w-3.5" />
+                Void Order
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setRefundReason("");
+                  setRefundDisposition("restock");
+                  setRefundTenderConfirmed(false);
+                  setRefundExternalRef("");
+                  setShowRefundModal(true);
+                }}
+                className="h-8 gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 border-amber-500/30 hover:bg-amber-500/10"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Refund Order
+              </Button>
+            </>
+          )}
+          <Badge
+            variant={
+              (sale.orderStatus || sale.order_status) === "completed"
+                ? "default"
+                : (sale.orderStatus || sale.order_status) === "cancelled"
+                  ? "destructive"
+                  : "secondary"
+            }
+            className={
+              (sale.orderStatus || sale.order_status) === "refunded"
+                ? "border-amber-500/30 bg-amber-500/10 text-amber-400 font-semibold uppercase text-xs"
+                : (sale.orderStatus || sale.order_status) === "cancelled"
+                  ? "border-rose-500/30 bg-rose-500/10 text-rose-400 font-semibold uppercase text-xs"
+                  : "uppercase text-xs"
+            }
+          >
+            {(sale.orderStatus || sale.order_status) === "cancelled"
+              ? "Voided"
+              : (sale.orderStatus || sale.order_status)}
+          </Badge>
+        </div>
       </div>
+
+      {/* Prominent Void / Refund Audit Banners */}
+      {(sale.orderStatus || sale.order_status) === "cancelled" && (
+        <div className="rounded-lg border border-rose-500/40 bg-rose-950/20 p-4 text-rose-200 flex items-start gap-3">
+          <Ban className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h3 className="font-semibold text-base text-rose-300">
+              This order has been voided
+            </h3>
+            <p className="text-sm">
+              <span className="font-medium text-rose-100">Reason:</span>{" "}
+              {sale.voidReason || "Voided by operator"}
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-rose-300/80 pt-1">
+              {sale.voidedAt && (
+                <span>
+                  Voided on {new Date(sale.voidedAt).toLocaleString()}
+                </span>
+              )}
+              {sale.voidSettlementStatus && (
+                <span>
+                  Settlement: {sale.voidSettlementStatus}
+                  {sale.voidReference ? ` (Ref: ${sale.voidReference})` : ""}
+                </span>
+              )}
+              <span>Allocated inventory has been restored to stock.</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {(sale.orderStatus || sale.order_status) === "refunded" && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-950/20 p-4 text-amber-200 flex items-start gap-3">
+          <RotateCcw className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h3 className="font-semibold text-base text-amber-300">
+              This order has been refunded
+            </h3>
+            <p className="text-sm">
+              <span className="font-medium text-amber-100">Reason:</span>{" "}
+              {sale.refundReason || "Refunded by operator"}
+            </p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-amber-300/80 pt-1">
+              <span>
+                Disposition:{" "}
+                {sale.refundDisposition === "restock"
+                  ? "Restocked to inventory"
+                  : "Scrapped / Discarded (Recorded shrink loss)"}
+              </span>
+              {sale.refundedAt && (
+                <span>
+                  Refunded on {new Date(sale.refundedAt).toLocaleString()}
+                </span>
+              )}
+              {sale.refundSettlementStatus && (
+                <span>
+                  Settlement: {sale.refundSettlementStatus}
+                  {sale.refundReference ? ` (Ref: ${sale.refundReference})` : ""}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Sale Information */}
@@ -963,6 +1195,262 @@ export default function SaleDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Void Order Dialog */}
+      <Dialog open={showVoidModal} onOpenChange={setShowVoidModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-400">
+              <Ban className="h-5 w-5" />
+              Void Order #{safeDisplayOrderNumber(sale.orderNumber || sale.order_number || sale.id)}
+            </DialogTitle>
+            <DialogDescription>
+              Voiding cancels the transaction, restores allocated inventory to stock, and reverses customer store credit accounting.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="rounded-md bg-muted/50 p-3 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Order Total:</span>
+                <span className="font-semibold">
+                  ${Number(sale.totalAmount || sale.total_amount || 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Payment Tender:</span>
+                <span className="font-medium">
+                  {formatPaymentMethodBadge(
+                    sale.paymentMethod || sale.payment_method,
+                    sale.paymentTenders,
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="void-reason">
+                Reason for Void <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="void-reason"
+                placeholder="e.g., Wrong items scanned, customer walked away"
+                value={voidReason}
+                onChange={(e) => setVoidReason(e.target.value)}
+              />
+            </div>
+
+            {hasCardTender && (
+              <div className="space-y-2">
+                <Label htmlFor="void-card-ref">
+                  Card Gateway / Reversal Reference <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="void-card-ref"
+                  placeholder="e.g., pos-rev-12345 or auth code"
+                  value={voidExternalRef}
+                  onChange={(e) => setVoidExternalRef(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Card reversals require an external terminal or gateway reversal reference.
+                </p>
+              </div>
+            )}
+
+            {!hasCardTender && (
+              <div className="space-y-2">
+                <Label htmlFor="void-opt-ref">
+                  External Reference (Optional)
+                </Label>
+                <Input
+                  id="void-opt-ref"
+                  placeholder="e.g., Cash App confirmation / note"
+                  value={voidExternalRef}
+                  onChange={(e) => setVoidExternalRef(e.target.value)}
+                />
+              </div>
+            )}
+
+            {requiresTenderConfirmation && (
+              <div className="flex items-start gap-2.5 pt-2">
+                <Checkbox
+                  id="void-confirm-tender"
+                  checked={voidTenderConfirmed}
+                  onCheckedChange={(checked) => setVoidTenderConfirmed(Boolean(checked))}
+                  className="mt-0.5"
+                />
+                <Label
+                  htmlFor="void-confirm-tender"
+                  className="text-xs text-muted-foreground leading-normal cursor-pointer"
+                >
+                  I confirm that physical tender or payment reversal has been performed with the customer.
+                </Label>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowVoidModal(false)}
+              disabled={submittingVoid}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => void handleVoidSale()}
+              disabled={
+                submittingVoid ||
+                !voidReason.trim() ||
+                (requiresTenderConfirmation && !voidTenderConfirmed) ||
+                (hasCardTender && !voidExternalRef.trim())
+              }
+            >
+              {submittingVoid ? "Voiding..." : "Confirm Void"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Refund Order Dialog */}
+      <Dialog open={showRefundModal} onOpenChange={setShowRefundModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-400">
+              <RotateCcw className="h-5 w-5" />
+              Refund Order #{safeDisplayOrderNumber(sale.orderNumber || sale.order_number || sale.id)}
+            </DialogTitle>
+            <DialogDescription>
+              Record an audited customer refund and choose how items are handled in inventory.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="rounded-md bg-muted/50 p-3 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Refund Total:</span>
+                <span className="font-semibold">
+                  ${Number(sale.totalAmount || sale.total_amount || 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Original Tender:</span>
+                <span className="font-medium">
+                  {formatPaymentMethodBadge(
+                    sale.paymentMethod || sale.payment_method,
+                    sale.paymentTenders,
+                  )}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="refund-disposition">
+                Inventory Handling <span className="text-destructive">*</span>
+              </Label>
+              <Select
+                value={refundDisposition}
+                onValueChange={(val) => setRefundDisposition(val as "restock" | "scrap")}
+              >
+                <SelectTrigger id="refund-disposition">
+                  <SelectValue placeholder="Select disposition" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="restock">
+                    Restock Inventory (Return items to batches)
+                  </SelectItem>
+                  <SelectItem value="scrap">
+                    Scrap / Waste (Discard damaged items; track shrink)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="refund-reason">
+                Reason for Refund <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="refund-reason"
+                placeholder="e.g., Defective packaging, wrong weight"
+                value={refundReason}
+                onChange={(e) => setRefundReason(e.target.value)}
+              />
+            </div>
+
+            {hasCardTender && (
+              <div className="space-y-2">
+                <Label htmlFor="refund-card-ref">
+                  Card Gateway / Refund Reference <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="refund-card-ref"
+                  placeholder="e.g., refund-tx-9876"
+                  value={refundExternalRef}
+                  onChange={(e) => setRefundExternalRef(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Card refunds require a gateway refund transaction or confirmation code.
+                </p>
+              </div>
+            )}
+
+            {!hasCardTender && (
+              <div className="space-y-2">
+                <Label htmlFor="refund-opt-ref">
+                  External Reference (Optional)
+                </Label>
+                <Input
+                  id="refund-opt-ref"
+                  placeholder="e.g., P2P transaction ID or receipt #"
+                  value={refundExternalRef}
+                  onChange={(e) => setRefundExternalRef(e.target.value)}
+                />
+              </div>
+            )}
+
+            {requiresTenderConfirmation && (
+              <div className="flex items-start gap-2.5 pt-2">
+                <Checkbox
+                  id="refund-confirm-tender"
+                  checked={refundTenderConfirmed}
+                  onCheckedChange={(checked) => setRefundTenderConfirmed(Boolean(checked))}
+                  className="mt-0.5"
+                />
+                <Label
+                  htmlFor="refund-confirm-tender"
+                  className="text-xs text-muted-foreground leading-normal cursor-pointer"
+                >
+                  I confirm that the refund amount has been returned to the customer.
+                </Label>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowRefundModal(false)}
+              disabled={submittingRefund}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+              onClick={() => void handleRefundSale()}
+              disabled={
+                submittingRefund ||
+                !refundReason.trim() ||
+                (requiresTenderConfirmation && !refundTenderConfirmed) ||
+                (hasCardTender && !refundExternalRef.trim())
+              }
+            >
+              {submittingRefund ? "Refunding..." : "Confirm Refund"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <CustomerSelectorModal
         open={showCustomerSelector}

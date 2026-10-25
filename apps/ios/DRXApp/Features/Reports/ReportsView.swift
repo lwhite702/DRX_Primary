@@ -15,6 +15,7 @@ struct ReportsView: View {
     @State private var isLoading = true
     @State private var error: String?
     @State private var activeLoadID = UUID()
+    @State private var selectedSale: DRXSale?
 
     // Match the reporting aggregate's New York fallback if the stored zone is invalid.
     private var reportingTimeZone: TimeZone {
@@ -85,6 +86,11 @@ struct ReportsView: View {
         .navigationTitle("Reports")
         .navigationBarTitleDisplayMode(.large)
         .refreshable { await load() }
+        .sheet(item: $selectedSale) { sale in
+            SaleDetailSheet(sale: sale) {
+                await load()
+            }
+        }
         .task { await load() }
         .onAppear { environment.telemetry.screen("Reports") }
     }
@@ -198,7 +204,13 @@ struct ReportsView: View {
                 } else {
                     LazyVStack(spacing: 0) {
                         ForEach(sales) { sale in
-                            SaleRowView(sale: sale)
+                            Button {
+                                selectedSale = sale
+                            } label: {
+                                SaleRowView(sale: sale)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
                             Divider().padding(.leading, 16)
                         }
                     }
