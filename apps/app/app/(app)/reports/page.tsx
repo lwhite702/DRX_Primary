@@ -85,7 +85,7 @@ export default async function ReportsPage({
             Baseline sales, cost, and margin visibility from the stabilized POS ledger.
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Window: {formatDateTime(report.period.from)} to {formatDateTime(report.period.to)} ({timeZone})
+            Operating window (4:00 AM cutoff): {formatDateTime(report.period.from)} to {formatDateTime(report.period.to)} ({timeZone})
           </p>
           <Link
             href={`/api/reports/pos-reconciliation?from=${encodeURIComponent(report.period.from)}&to=${encodeURIComponent(report.period.to)}&format=csv`}

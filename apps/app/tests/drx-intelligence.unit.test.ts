@@ -2,8 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   computeTrustScore,
   evaluateFrontApproval,
+  evaluateFrontApprovalWithAI,
   recommendCreditLimit,
 } from "../lib/credit/intelligenceEngine";
+import {
+  generatePricingRecommendation,
+  generatePricingRecommendationWithAI,
+} from "../lib/utils/pricing-recommendation";
 
 describe("DRX Intelligence engine", () => {
   it("computes high trust for strong repayment behavior", () => {
@@ -65,5 +70,40 @@ describe("DRX Intelligence engine", () => {
     expect(limit.recommended_limit).toBeLessThanOrEqual(limit.hard_cap_limit);
     expect(decision.suggestion).toBe("DENY");
     expect(decision.risk_flags).toContain("LOW_STOCK");
+  });
+
+  it("evaluates front approval with AI fallback to baseline when unconfigured", async () => {
+    const decision = await evaluateFrontApprovalWithAI({
+      trust_score: 85,
+      current_balance: 50,
+      credit_limit: 500,
+      requested_amount: 100,
+      days_since_last_payment: 2,
+      inventory: {
+        inventory_id: "inv-2",
+        quantity_on_hand: 50,
+        reorder_threshold: 10,
+        scarcity_level: "LOW",
+      },
+    });
+
+    expect(decision.suggestion).toBe("APPROVE");
+    expect(decision.operator_message).toBe("Looks good. This front is safe.");
+  });
+
+  it("generates pricing recommendation with AI fallback to baseline when unconfigured", async () => {
+    const recommendation = await generatePricingRecommendationWithAI({
+      cost: 50,
+      currentPrice: 80,
+      costHistory: [45, 48, 50],
+      salesVelocity7d: 5,
+      salesVelocity30d: 4,
+      currentStock: 30,
+      marginRequirement: 0.3,
+    }, "Premium Rosin");
+
+    expect(recommendation.recommendedPrice).toBeGreaterThan(50);
+    expect(recommendation.confidenceScore).toBeGreaterThanOrEqual(20);
+    expect(recommendation.reasoning).toBeTruthy();
   });
 });

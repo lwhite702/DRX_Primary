@@ -50,4 +50,73 @@ describe("Convex customer operations", () => {
     await expect(other.query(api.customers.getOperational, { businessId: foreign.businessId, expectedUserId: "other-owner", customerId: created._id })).rejects.toThrow("NOT_FOUND");
     await expect(owner.query(api.customers.listOperational, { businessId, expectedUserId: "forged", isActive: true, windowSize: 50 })).rejects.toThrow("FORBIDDEN");
   });
+
+  it("supports multiple product custom pricing, alerts and notes, and title casing", async () => {
+    const t = convexTest(schema, modules);
+    const owner = t.withIdentity({ subject: "customer-owner-2" });
+    const { businessId } = await owner.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Dispensary 2" });
+
+    // Test creating with customProductPrices and lowercase lastName (should be title-cased)
+    const customPrices = [
+      { productId: "prod-1", productName: "OG Kush", pricePerUnitCents: 1500 },
+      { productId: "prod-2", productName: "Blue Dream", pricePerUnitCents: 1200 },
+    ];
+    const created = await owner.mutation(api.customers.createOperational, {
+      ...customerArgs(businessId, "customer-owner-2", "phone-hash-multi"),
+      lastName: "o'connor smith",
+      customProductPrices: customPrices,
+    });
+    expect(created.lastName).toBe("O'Connor Smith");
+    expect(created.customProductPrices).toEqual(customPrices);
+
+    // Test adding an alert and a note
+    const alertId = await owner.mutation(api.customers.addCustomerNoteOrAlert, {
+      businessId,
+      customerId: created._id,
+      expectedUserId: "customer-owner-2",
+      classification: "alert",
+      message: "Customer prefers discrete packaging",
+      severity: "warning",
+      createdFrom: "customer_screen",
+    });
+    expect(alertId).toBeDefined();
+
+    const noteId = await owner.mutation(api.customers.addCustomerNoteOrAlert, {
+      businessId,
+      customerId: created._id,
+      expectedUserId: "customer-owner-2",
+      classification: "note",
+      message: "Referred by VIP customer Dan",
+      severity: "info",
+      createdFrom: "sale_screen",
+    });
+    expect(noteId).toBeDefined();
+
+    // Query alerts and notes
+    const queried = await owner.query(api.customers.getCustomerNotesAndAlerts, {
+      businessId,
+      customerId: created._id,
+      expectedUserId: "customer-owner-2",
+    });
+    expect(queried.alerts).toHaveLength(1);
+    expect(queried.alerts[0].message).toBe("Customer prefers discrete packaging");
+    expect(queried.notes).toHaveLength(1);
+    expect(queried.notes[0].message).toBe("Referred by VIP customer Dan");
+
+    // Dismiss alert
+    const dismissRes = await owner.mutation(api.customers.dismissCustomerAlert, {
+      businessId,
+      noteId: alertId,
+      expectedUserId: "customer-owner-2",
+    });
+    expect(dismissRes.success).toBe(true);
+
+    const queriedAfter = await owner.query(api.customers.getCustomerNotesAndAlerts, {
+      businessId,
+      customerId: created._id,
+      expectedUserId: "customer-owner-2",
+    });
+    expect(queriedAfter.alerts).toHaveLength(0);
+    expect(queriedAfter.notes).toHaveLength(1);
+  });
 });

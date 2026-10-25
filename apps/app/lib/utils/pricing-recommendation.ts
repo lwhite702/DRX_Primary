@@ -82,12 +82,12 @@ class PricingCalculator {
     } else if (daysSupply < 14) {
       position = "low";
       urgency = "high";
-    } else if (daysSupply > 60) {
-      position = "high";
-      urgency = "medium";
     } else if (daysSupply > 90) {
       position = "overstock";
       urgency = "high";
+    } else if (daysSupply > 60) {
+      position = "high";
+      urgency = "medium";
     }
 
     return { position, daysSupply, urgency };
@@ -314,4 +314,57 @@ class PricingCalculator {
 }
 export function generatePricingRecommendation(factors: PricingFactors): PricingRecommendation {
   return new PricingCalculator().generateRecommendation(factors);
+}
+
+export async function generatePricingRecommendationWithAI(
+  factors: PricingFactors,
+  productName = "Product"
+): Promise<PricingRecommendation> {
+  const baseline = generatePricingRecommendation(factors);
+  if (!process.env.OPENAI_API_KEY) {
+    return baseline;
+  }
+
+  try {
+    const { generatePricingInsightsWithAI } = await import("@/lib/ai/ai-sdk");
+    const aiInsight = await generatePricingInsightsWithAI({
+      productName,
+      cost: factors.cost,
+      currentPrice: factors.currentPrice,
+      currentStock: factors.currentStock,
+      salesVelocity7d: factors.salesVelocity7d,
+      salesVelocity30d: factors.salesVelocity30d,
+      baselinePrice: baseline.recommendedPrice,
+      baselineReasoning: baseline.reasoning,
+    });
+
+    if (aiInsight.priceAdjustmentMultiplier !== 1.0) {
+      const adjustedPrice = Math.round(baseline.recommendedPrice * aiInsight.priceAdjustmentMultiplier * 100) / 100;
+      const minP = factors.minPrice ?? factors.cost * 1.05;
+      const maxP = factors.maxPrice ?? factors.cost * 3.0;
+      const finalPrice = Math.max(minP, Math.min(maxP, adjustedPrice));
+
+      return {
+        ...baseline,
+        recommendedPrice: finalPrice,
+        reasoning: `${aiInsight.reasoning} (Baseline: ${baseline.reasoning})`,
+        factors: {
+          ...baseline.factors,
+          aiMultiplier: aiInsight.priceAdjustmentMultiplier,
+          usedVercelAISDK: true,
+        },
+      };
+    }
+
+    return {
+      ...baseline,
+      reasoning: aiInsight.reasoning,
+      factors: {
+        ...baseline.factors,
+        usedVercelAISDK: true,
+      },
+    };
+  } catch {
+    return baseline;
+  }
 }

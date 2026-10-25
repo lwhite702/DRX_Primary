@@ -5,6 +5,7 @@ import { getConvexAuthToken } from "@/lib/auth/convex-token";
 import { redis } from "@/lib/redis";
 import { logger } from "@/lib/logging";
 import { Ratelimit } from "@upstash/ratelimit";
+import { generateCreditRecommendationText } from "@/lib/ai/ai-sdk";
 import type { CustomerFeatures, NormalizedFeatures, AILimitRecommendation, AIEngineConfig, AIEngineResponse } from "./calculation";
 import { normalizeFeatures, applyRuleBasedFallback, clampAndValidateResult, validateProviderResponse } from "./calculation";
 export type { AILimitRecommendation, AIEngineConfig } from "./calculation";
@@ -31,7 +32,6 @@ async function callAILimitEngine(
   config: AIEngineConfig
 ): Promise<AIEngineResponse | null> {
   const apiKey = process.env.OPENAI_API_KEY;
-  const model = process.env.OPENAI_MODEL || "gpt-5.5";
 
   if (!apiKey) {
     logger.warn("OPENAI_API_KEY not configured");
@@ -46,47 +46,7 @@ async function callAILimitEngine(
   );
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          {
-            role: "system",
-            content: `You are a credit risk assessment specialist. Analyze customer credit metrics and recommend safe credit limits. 
-Always return valid JSON with no additional text.`,
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-      }),
-    });
-
-    if (!response.ok) {
-      logger.error("AI API error", {
-        status: response.status,
-        status_text: response.statusText,
-        model,
-      });
-      throw new Error("Credit provider request failed");
-    }
-
-    const data = await response.json();
-
-    if (!data.choices || !data.choices[0]?.message?.content) {
-      logger.error("Unexpected AI response format", { model });
-      throw new Error("Credit provider response is unavailable");
-    }
-
-    const content = data.choices[0].message.content.trim();
+    const content = await generateCreditRecommendationText(prompt);
 
     // Try to extract JSON from response
     let jsonStr = content;
@@ -102,7 +62,6 @@ Always return valid JSON with no additional text.`,
     // Invalid or failed provider output must never become an actionable fallback.
     throw new Error("CREDIT_RECOMMENDATION_UNAVAILABLE: Credit provider response is unavailable");
   }
-
 }
 
 function buildPrompt(

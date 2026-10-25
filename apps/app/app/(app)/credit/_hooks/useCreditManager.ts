@@ -78,7 +78,8 @@ export function useCreditManager(businessId: string | undefined) {
         const params = new URLSearchParams({ business_id: context.scope.businessId, limit: "50" });
         const response = await scopedFetch(`/api/credit/transactions?${params}`, { signal: controller.signal, cache: "no-store" });
         if (!response.ok) throw new Error("Credit transactions could not be refreshed.");
-        transactions = z.array(transactionSchema).max(50).parse(await response.json()).map(row => ({ ...row, customerLabel: `Account ${row.customerId.slice(-8)}` }));
+        const accountMap = new Map(accounts.map(acc => [acc.customerId, acc.displayName]));
+        transactions = z.array(transactionSchema).max(50).parse(await response.json()).map(row => ({ ...row, customerLabel: accountMap.get(row.customerId) || `Account ${row.customerId.slice(-8)}` }));
       }
       if (valid()) patch({ accounts, agingByCustomer, transactions, asOfDate, accountsComplete: page.isDone, cursor: page.isDone ? undefined : page.continueCursor, error: agingFailed ? "Some aging details are unavailable. Balances are shown without incomplete aging totals." : null });
     } catch {

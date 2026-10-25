@@ -82,13 +82,13 @@ it.each(["policy", "inventory", "settings", "day", "archive"] as const)("rejects
   expect(await t.run(ctx => ctx.db.get(customerId))).toEqual(before);
   expect(await t.run(ctx => ctx.db.query("idempotencyKeys").collect())).toHaveLength(0);
 });
-it("zero freezes retaining the limit, and positive output never unfreezes", async () => {
+it("zero freezes retaining the limit, and positive output enables credit following disable", async () => {
   const { t, owner, scope, customerId, args } = await setup();
   const zero = await owner.mutation(record, { ...args, recommendedLimitCents: 0, rangeMinCents: 0, rangeMaxCents: 0 });
   expect(await owner.mutation(apply, { ...scope, recommendationId: zero.recommendationId, requestKey: "freeze-request" })).toMatchObject({ creditEnabled: false, limitCents: 1000, unlimited: false });
   const inputs = await owner.query(readInputs, { ...scope, customerId, asOfDate });
   const positive = await owner.mutation(record, { ...args, requestKey: "positive-request", inputs });
-  expect(await owner.mutation(apply, { ...scope, recommendationId: positive.recommendationId, requestKey: "positive-request" })).toMatchObject({ creditEnabled: false, limitCents: 500, unlimited: false });
+  expect(await owner.mutation(apply, { ...scope, recommendationId: positive.recommendationId, requestKey: "positive-request" })).toMatchObject({ creditEnabled: true, limitCents: 500, unlimited: false });
   expect((await t.run(ctx => ctx.db.get(customerId)))?.totalCreditUsedCents).toBe(0);
 });
 it.each([{ recommendedLimitCents: NaN }, { rangeMinCents: -1 }, { rangeMaxCents: 5001 }, { riskScore: Infinity }, { riskScore: 101 }, { recommendedLimitCents: 1.5 }, { justification: "" }, { engineVersion: "private freeform" }])("rejects invalid or over-cap output %j", async patch => {

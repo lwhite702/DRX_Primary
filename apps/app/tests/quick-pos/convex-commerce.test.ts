@@ -23,6 +23,37 @@ it("uses the canonical idempotency key and paid amount without a legacy sale loo
   expect(await checkoutCanonicalCommerce({ ...input, idempotencyKey: "key", paymentMethod: "cash", amountPaid: 20 })).toMatchObject({ total: 12.15, changeAmount: 7.85 });
   expect(mocks.mutation).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ orderNumber: "WEB-key", amountPaidCents: 2000 }));
 });
+it("preserves the exact requested cents from the web cart through quote and checkout", async () => {
+  mocks.query.mockResolvedValueOnce({ productIds: ["canonical-product"] }).mockResolvedValueOnce(quote);
+  mocks.mutation.mockResolvedValue({ saleId: "sale", orderNumber: "WEB-dollar", totalAmountCents: 2750, changeAmountCents: 0 });
+  const dollarEntry = {
+    ...input,
+    items: [{ ...input.items[0], unitPrice: 25, weightGrams: 0.7, requestedAmountCents: 2500 }],
+  };
+  await checkoutCanonicalCommerce({ ...dollarEntry, idempotencyKey: "dollar", paymentMethod: "card" });
+  const canonicalItem = { productId: "canonical-product", quantityGrams: 0.7, requestedAmountCents: 2500 };
+  expect(mocks.query).toHaveBeenNthCalledWith(2, expect.anything(), expect.objectContaining({ items: [canonicalItem] }));
+  expect(mocks.mutation).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ items: [canonicalItem] }));
+});
+it("shows the requested dollar amount as the checkout subtotal instead of the normal price basis", async () => {
+  mocks.query.mockResolvedValueOnce({ productIds: ["canonical-product"] }).mockResolvedValueOnce({
+    ...quote,
+    merchandiseSubtotalCents: 1250,
+    priceAdjustmentCents: 1250,
+    subtotalCents: 2500,
+    totalAmountCents: 2500,
+    lines: [{ productId: "canonical-product", quantity: 0.5, requestedAmountCents: 2500, lineSubtotalCents: 2500 }],
+  });
+
+  const fixedAmountQuote = await quoteCanonicalCommerce({
+    ...input,
+    items: [{ ...input.items[0], unitPrice: 25, weightGrams: 0.5, requestedAmountCents: 2500 }],
+  });
+
+  expect(fixedAmountQuote.subtotal).toBe(25);
+  expect(fixedAmountQuote.subtotalAfterDiscount).toBe(25);
+  expect(fixedAmountQuote.total).toBe(25);
+});
 it("fails closed on foreign identities and does not attempt a sale", async () => {
   mocks.query.mockRejectedValue(new Error("FORBIDDEN: Wrong tenant"));
   await expect(checkoutCanonicalCommerce({ ...input, idempotencyKey: "key", paymentMethod: "cash" })).rejects.toThrow(/FORBIDDEN/);
@@ -51,6 +82,7 @@ it("passes price overrides when items include an overrideReason", async () => {
     items: [
       {
         ...input.items[0],
+        weightGrams: undefined,
         originalPrice: 12,
         unitPrice: 8,
         overrideReason: "Manager promotional exception",
@@ -67,6 +99,36 @@ it("passes price overrides when items include an overrideReason", async () => {
           productId: "canonical-product",
           unitPriceCents: 800,
           reason: "Manager promotional exception",
+        },
+      ],
+    }),
+  );
+});
+
+it("converts price overrides to price-per-gram for fractional items with weightGrams", async () => {
+  mocks.query.mockResolvedValueOnce({ productIds: ["canonical-product"], customerId: "canonical-customer" }).mockResolvedValueOnce(quote);
+  const fractionalOverrideInput = {
+    ...input,
+    items: [
+      {
+        ...input.items[0],
+        weightGrams: 0.57,
+        originalPrice: 19.95,
+        unitPrice: 20,
+        overrideReason: "correction",
+      },
+    ],
+  };
+  await quoteCanonicalCommerce(fractionalOverrideInput);
+  expect(mocks.query).toHaveBeenNthCalledWith(
+    2,
+    expect.anything(),
+    expect.objectContaining({
+      priceOverrides: [
+        {
+          productId: "canonical-product",
+          unitPriceCents: 3509,
+          reason: "correction",
         },
       ],
     }),

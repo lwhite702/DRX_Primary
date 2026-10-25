@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +49,7 @@ type AIInventoryItem = Record<string, unknown> & {
 };
 
 export default function AIIntelligencePage() {
+  const router = useRouter();
   const { business, loading: businessLoading } = useBusiness();
   const { userId } = useAuth();
   const scope = `${userId ?? ""}:${business?.id ?? ""}`;
@@ -63,7 +65,67 @@ export default function AIIntelligencePage() {
     new Map()
   );
   const [loading, setLoading] = useState(false);
-  useEffect(() => { setRecommendations(new Map()); setLoading(false); }, [scope]);
+
+  const fetchHydratedAnalyses = useCallback(async () => {
+    if (!business?.id) return;
+    try {
+      const response = await fetch(
+        `/api/ai/product-intelligence?business_id=${encodeURIComponent(business.id)}`,
+        { cache: "no-store" },
+      );
+      if (!response.ok) return;
+      const json = await response.json();
+      const data = json?.data;
+      if (!data) return;
+      const recs = new Map<string, AIRecommendations>();
+      for (const p of data.pricingRecommendations || []) {
+        if (!p.inventoryId) continue;
+        const existing = recs.get(p.inventoryId) || {
+          pricing: null,
+          forecast: null,
+          alerts: [],
+          scope,
+        };
+        recs.set(p.inventoryId, {
+          ...existing,
+          pricingRecommendationId: p.id,
+          pricing: p,
+          scope,
+        });
+      }
+      for (const f of data.forecasts || []) {
+        if (!f.inventoryId) continue;
+        const existing = recs.get(f.inventoryId) || {
+          pricing: null,
+          forecast: null,
+          alerts: [],
+          scope,
+        };
+        recs.set(f.inventoryId, {
+          ...existing,
+          forecastId: f.id,
+          forecast: f,
+          alerts: (data.alerts || []).filter(
+            (a: any) => a.inventoryId === f.inventoryId,
+          ),
+          scope,
+        });
+      }
+      if (recs.size > 0 && currentScope.current === scope) {
+        setRecommendations(recs);
+      }
+    } catch {
+      // Best-effort hydration
+    }
+  }, [business?.id, scope]);
+
+  useEffect(() => {
+    setRecommendations(new Map());
+    setLoading(false);
+    if (business?.id) {
+      void fetchHydratedAnalyses();
+    }
+  }, [scope, business?.id, fetchHydratedAnalyses]);
   const [searchTerm, setSearchTerm] = useState("");
   const normalizedSearch = searchTerm.toLowerCase();
   const safeInventory = Array.isArray(inventory) ? inventory : [];
@@ -167,6 +229,7 @@ export default function AIIntelligencePage() {
       toast.success(
         `Batch analysis complete: ${processedCount(result)} items processed`
       );
+      void fetchHydratedAnalyses();
     } catch (error) {
       if (currentScope.current !== scope) return;
       toast.error(error instanceof Error ? error.message : "Batch analysis failed");
@@ -390,6 +453,12 @@ export default function AIIntelligencePage() {
                     sku={item.sku}
                     inventoryId={item.id}
                     businessId={business.id}
+                    onRestock={(qty) => {
+                      router.push(`/inventory?intake=${encodeURIComponent(item.id)}&qty=${encodeURIComponent(qty)}`);
+                    }}
+                    onViewDetails={() => {
+                      router.push(`/inventory?search=${encodeURIComponent(item.sku || item.product_name || "")}`);
+                    }}
                   />
                 )}
               </div>

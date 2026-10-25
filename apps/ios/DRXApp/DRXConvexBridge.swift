@@ -376,6 +376,7 @@ struct CheckoutArgs: Encodable, Sendable {
 struct CheckoutItem: Encodable, Sendable {
     let productId: String
     let quantityGrams: Double
+    let requestedAmountCents: Int?
 }
 
 struct CheckoutDelivery: Encodable, Sendable {
@@ -400,6 +401,7 @@ struct CheckoutQuoteLine: Decodable, Sendable {
     let productId: String
     let productName: String
     let quantity: Double
+    let requestedAmountCents: Int?
     let appliedUnitPriceCents: Double
     let lineSubtotalCents: Int
     let bulkDiscountCents: Int
@@ -409,6 +411,7 @@ struct CheckoutQuoteLine: Decodable, Sendable {
 struct CheckoutQuoteResponse: Decodable, Sendable {
     let lines: [CheckoutQuoteLine]
     let merchandiseSubtotalCents: Int
+    let priceAdjustmentCents: Int?
     let discountCents: Int
     let subtotalCents: Int
     let taxableSubtotalCents: Int
@@ -596,9 +599,9 @@ enum CurrencyInput {
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "$", with: "")
         guard !normalized.isEmpty,
-              normalized.range(of: #"^(?:(?:\d+)|(?:\d{1,3}(?:,\d{3})+))(?:\.\d{1,2})?$"#, options: .regularExpression) != nil,
+              normalized.range(of: #"^(?:(?:(?:\d+)|(?:\d{1,3}(?:,\d{3})+))(?:\.\d{1,2})?|\.\d{1,2})$"#, options: .regularExpression) != nil,
               let value = Decimal(
-                string: normalized.replacingOccurrences(of: ",", with: ""),
+                string: normalized.hasPrefix(".") ? "0\(normalized)" : normalized.replacingOccurrences(of: ",", with: ""),
                 locale: Locale(identifier: "en_US_POSIX")
               ),
               value >= 0 else { return nil }

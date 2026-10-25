@@ -27,6 +27,7 @@ struct CheckoutSheet: View {
     @State private var quote: CheckoutQuoteResponse?
     @State private var isQuoting = false
     @State private var quoteError: String?
+    @State private var showFixedAmountConfirmation = false
 
     enum PaymentMethod: String, CaseIterable {
         case cash, card, credit
@@ -66,7 +67,7 @@ struct CheckoutSheet: View {
     var quoteArgs: CheckoutQuoteArgs {
         CheckoutQuoteArgs(
             customerId: store.selectedCustomer?.id,
-            items: store.cartItems.map { CheckoutItem(productId: $0.product.id, quantityGrams: $0.quantityGrams) },
+            items: store.cartItems.map { CheckoutItem(productId: $0.product.id, quantityGrams: $0.quantityGrams, requestedAmountCents: $0.requestedAmountCents) },
             discountAmountCents: discountAmountCents > 0 ? discountAmountCents : nil,
             delivery: deliveryEnabled ? CheckoutQuoteDelivery(
                 vendorFeeCents: vendorFeeCents,
@@ -75,7 +76,7 @@ struct CheckoutSheet: View {
         )
     }
     var quoteInputKey: String {
-        let itemKey = store.cartItems.map { "\($0.product.id):\($0.quantityGrams)" }.joined(separator: "|")
+        let itemKey = store.cartItems.map { "\($0.product.id):\($0.quantityGrams):\($0.requestedAmountCents ?? 0)" }.joined(separator: "|")
         return [
             store.selectedCustomer?.id ?? "guest",
             itemKey,
@@ -211,12 +212,22 @@ struct CheckoutSheet: View {
             }
         }
         .task(id: quoteInputKey) { await refreshQuote() }
+        .alert("Confirm dollar amount sale", isPresented: $showFixedAmountConfirmation) {
+            Button("Review cart", role: .cancel) {}
+            Button("Confirm sale") { Task { await processCheckout(confirmedFixedAmounts: true) } }
+        } message: {
+            Text(fixedAmountConfirmationMessage)
+        }
     }
 
     private var orderSummarySection: some View {
         VStack(spacing: 0) {
             ForEach(store.cartItems) { item in
-                let quotedLine = quote?.lines.first { $0.productId == item.product.id }
+                let quotedLine = quote?.lines.first {
+                    $0.productId == item.product.id &&
+                    $0.quantity == item.quantityGrams &&
+                    $0.requestedAmountCents == item.requestedAmountCents
+                }
                 HStack {
                     Text(item.product.productName)
                         .font(.subheadline)
@@ -256,6 +267,14 @@ struct CheckoutSheet: View {
                         Spacer()
                         Text("−\(formatCents(discountAmountCents))")
                             .foregroundStyle(.green)
+                    }
+                }
+                if let priceAdjustmentCents = quote?.priceAdjustmentCents, priceAdjustmentCents != 0 {
+                    HStack {
+                        Text("Requested amount adjustment")
+                        Spacer()
+                        Text("\(priceAdjustmentCents > 0 ? "+" : "−")\(formatCents(abs(priceAdjustmentCents)))")
+                            .foregroundStyle(priceAdjustmentCents > 0 ? DRXPalette.warning : .green)
                     }
                 }
                 let merchandiseTax = quote?.merchandiseTaxCents ?? store.cartTaxCents
@@ -752,14 +771,27 @@ struct CheckoutSheet: View {
     }
 
     @MainActor
-    private func processCheckout() async {
+    private var fixedAmountConfirmationMessage: String {
+        store.cartItems.compactMap { item -> String? in
+            guard let requested = item.requestedAmountCents else { return nil }
+            let normal = CheckoutMath.pricedLineTotalCents(product: item.product, quantity: item.quantityGrams, loyaltyRateBps: store.loyaltyRateBps, policy: store.loyaltyPolicy)
+            let variance = requested - normal
+            return "\(item.product.productName): \(formatSaleQuantity(item.quantityGrams, unit: item.product.saleUnit)) · requested \(formatCents(requested)) · normal \(formatCents(normal)) · variance \(variance >= 0 ? "+" : "−")\(formatCents(abs(variance)))"
+        }.joined(separator: "\n") + "\n\nRequested merchandise amounts are preserved. Any price difference is flagged in the sale record."
+    }
+
+    private func processCheckout(confirmedFixedAmounts: Bool = false) async {
+        if !confirmedFixedAmounts && store.cartItems.contains(where: { $0.requestedAmountCents != nil }) {
+            showFixedAmountConfirmation = true
+            return
+        }
         isProcessing = true
         checkoutError = nil
         let requestedPaymentMethod = paymentMethod
         let requestedCashTenderCents = amountTenderedCents
         let customerId = store.selectedCustomer?.id
         let items = store.cartItems.map { item in
-            CheckoutItem(productId: item.product.id, quantityGrams: item.quantityGrams)
+            CheckoutItem(productId: item.product.id, quantityGrams: item.quantityGrams, requestedAmountCents: item.requestedAmountCents)
         }
         let quotedDelivery = deliveryEnabled ? CheckoutQuoteDelivery(
             vendorFeeCents: vendorFeeCents,
@@ -1019,4 +1051,8 @@ private func formatUnitPriceCents(_ cents: Double) -> String {
 
 private func formatGrams(_ grams: Double) -> String {
     String(format: "%.2fg", grams)
+}
+
+private func formatSaleQuantity(_ quantity: Double, unit: String) -> String {
+    String(format: "%.2f %@", quantity, unit)
 }

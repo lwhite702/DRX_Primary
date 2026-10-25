@@ -190,6 +190,7 @@ function reducer(state: QuickPosState, action: Action): QuickPosState {
                 originalPrice: item.originalPrice ?? item.unitPrice,
                 unitPrice: action.payload.unitPrice,
                 overrideReason: action.payload.overrideReason,
+                requestedAmountCents: undefined,
               }
             : item,
         ),
@@ -341,8 +342,24 @@ interface QuickPosStore {
 
 const QuickPosContext = createContext<QuickPosStore | null>(null);
 
+function getInitialQuickPosState(): QuickPosState {
+  if (typeof window === "undefined") return initialState;
+  try {
+    const raw = window.sessionStorage.getItem(QUICK_POS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as QuickPosState;
+      if (parsed && typeof parsed === "object" && Array.isArray(parsed.cartItems)) {
+        return parsed;
+      }
+    }
+  } catch {
+    // Fall back to initialState if corrupted
+  }
+  return initialState;
+}
+
 export function QuickPosProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, undefined, getInitialQuickPosState);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

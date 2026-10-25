@@ -142,6 +142,11 @@ export function CartPanel({
                     Override (was ${(item.originalPrice * item.qty).toFixed(2)})
                   </span>
                 )}
+                {item.requestedAmountCents !== undefined ? (
+                  <span role="status" className="block text-[11px] text-amber-400 font-medium tracking-tight">
+                    Requested amount confirmed
+                  </span>
+                ) : null}
               </div>
               <button
                 type="button"

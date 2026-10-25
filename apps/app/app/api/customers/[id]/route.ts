@@ -5,6 +5,8 @@ import { encodeCustomerPii } from "@/lib/privacy/customer-pii";
 import { canWriteField } from "@/lib/privacy/privacy-policy";
 import { sanitizePiiInput } from "@/lib/privacy/crypto";
 import { convexPiiArgs, customerFailure, dollarsToCents, mapConvexCustomer } from "@/lib/customers/convex-operational";
+import { toTitleCase } from "@/lib/utils/format-text";
+import { parseCustomProductPrices } from "@/app/api/customers/route";
 
 const headers = { "Cache-Control": "private, no-store" };
 type RouteParams = { params: Promise<{ id: string }> | { id: string } };
@@ -19,7 +21,9 @@ function providedFields(body: Record<string, unknown>): string[] {
     ["alias", body.alias], ["first_name", body.firstName ?? body.first_name], ["last_name", body.lastName ?? body.last_name],
     ["phone", body.phoneNumber ?? body.phone_number ?? body.phone], ["email", body.email], ["address", body.address], ["notes", body.notes],
     ["city", body.city], ["state", body.state], ["zip_code", body.zipCode ?? body.zip_code], ["customer_type", body.customerType ?? body.customer_type],
-    ["fixed_price_per_gram", body.fixedPricePerGram ?? body.fixed_price_per_gram], ["credit_limit", body.creditLimit ?? body.credit_limit],
+    ["fixed_price_per_gram", body.fixedPricePerGram ?? body.fixed_price_per_gram],
+    ["custom_product_prices", body.custom_product_prices ?? body.customProductPrices],
+    ["credit_limit", body.creditLimit ?? body.credit_limit],
     ["ephemeral", body.ephemeral], ["is_active", body.isActive ?? body.is_active],
   ].filter(([, value]) => value !== undefined).map(([field]) => String(field));
 }
@@ -33,7 +37,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { id } = await Promise.resolve(params);
     const { client, businessId, expectedUserId } = await businessClient(request);
     const result = await client.query(api.customers.getOperational, { businessId, expectedUserId, customerId: id });
-    return NextResponse.json({ ...(await mapConvexCustomer(result.customer, result.metrics)), transaction_history: result.transactionHistory }, { headers });
+    return NextResponse.json({
+      ...(await mapConvexCustomer(result.customer, result.metrics)),
+      transaction_history: result.transactionHistory,
+      credit_history: result.creditHistory ?? [],
+    }, { headers });
   } catch (error) {
     return customerFailure(error);
   }
@@ -59,9 +67,9 @@ async function handleUpdate(request: NextRequest, customerId: string) {
       client.query(api.businessPreferences.getPrivacyPolicy, context),
     ]);
     const current = await mapConvexCustomer(detail.customer);
-    const incomingAlias = body.alias;
-    const incomingFirstName = body.firstName ?? body.first_name;
-    const incomingLastName = body.lastName ?? body.last_name;
+    const incomingAlias = body.alias !== undefined ? (typeof body.alias === "string" ? toTitleCase(body.alias) : body.alias) : undefined;
+    const incomingFirstName = (body.firstName ?? body.first_name) !== undefined ? (typeof (body.firstName ?? body.first_name) === "string" ? toTitleCase((body.firstName ?? body.first_name) as string) : (body.firstName ?? body.first_name)) : undefined;
+    const incomingLastName = (body.lastName ?? body.last_name) !== undefined ? (typeof (body.lastName ?? body.last_name) === "string" ? toTitleCase((body.lastName ?? body.last_name) as string) : (body.lastName ?? body.last_name)) : undefined;
     const incomingPhone = body.phoneNumber ?? body.phone_number ?? body.phone;
     const incomingEmail = body.email;
     const incomingAddress = body.address;
@@ -95,6 +103,7 @@ async function handleUpdate(request: NextRequest, customerId: string) {
       ? incomingEphemeral ? Date.now() + (retentionDays ?? privacyProtocol.ephemeral_profiles.default_retention_days) * 24 * 60 * 60 * 1000 : null
       : retentionDays && ephemeral ? Date.now() + retentionDays * 24 * 60 * 60 * 1000 : currentDoc.ephemeralExpiresAt ?? null;
     const fixedInput = body.fixedPricePerGram ?? body.fixed_price_per_gram;
+    const customProductPrices = parseCustomProductPrices(body.customProductPrices ?? body.custom_product_prices);
     const creditInput = body.creditLimit ?? body.credit_limit;
     const updated = await client.mutation(api.customers.updateOperational, {
       ...context, customerId, ...convexPiiArgs(storage),
@@ -104,6 +113,7 @@ async function handleUpdate(request: NextRequest, customerId: string) {
       zipCode: canStoreAddress ? body.zipCode !== undefined || body.zip_code !== undefined ? sanitizePiiInput(body.zipCode ?? body.zip_code) : currentDoc.zipCode ?? null : null,
       customerType: sanitizePiiInput(body.customerType ?? body.customer_type) ?? currentDoc.customerType ?? "retail",
       fixedPricePerGramCents: fixedInput !== undefined ? dollarsToCents(fixedInput, "Fixed price per gram") : currentDoc.fixedPricePerGramCents ?? null,
+      customProductPrices: customProductPrices !== undefined ? customProductPrices : currentDoc.customProductPrices,
       creditLimitCents: creditInput !== undefined ? dollarsToCents(creditInput, "Credit limit") ?? 0 : currentDoc.creditLimitCents,
       ephemeral, ephemeralExpiresAt,
       isActive: typeof body.isActive === "boolean" ? body.isActive : typeof body.is_active === "boolean" ? body.is_active : currentDoc.isActive,

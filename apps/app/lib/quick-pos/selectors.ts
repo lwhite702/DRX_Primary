@@ -11,6 +11,16 @@ export function getEffectiveItemUnitPrice(item: QuickPosCartItem, customer?: Qui
   if (item.source === "manual" || item.overrideReason) {
     return item.unitPrice;
   }
+  if (customer?.customProductPrices && customer.customProductPrices.length > 0) {
+    const match = customer.customProductPrices.find(
+      (p) =>
+        (p.productId && (p.productId === item.inventoryId || p.productId === item.id)) ||
+        (item.name && p.productName && p.productName.trim().toLowerCase() === item.name.trim().toLowerCase())
+    );
+    if (match && typeof match.pricePerUnit === "number" && match.pricePerUnit >= 0) {
+      return match.pricePerUnit;
+    }
+  }
   if (customer?.id && typeof customer.fixedPricePerGram === "number" && customer.fixedPricePerGram > 0) {
     if (item.weightGrams && item.weightGrams > 0) {
       return Math.round(customer.fixedPricePerGram * item.weightGrams * 100) / 100;

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { api } from "@/convex/_generated/api";
 import { getCurrentUser } from "@/lib/adapters/auth";
 import { getConvexAuthToken } from "@/lib/auth/convex-token";
+import { decryptPii } from "@/lib/privacy/crypto";
 
 const headers = { "Cache-Control": "private, no-store" };
 const scopeInput = z.object({ business_id: z.string().trim().min(1).max(200), customer_id: z.string().trim().min(1).max(200).optional(), expectedUserId: z.string().min(1).max(200).optional() });
@@ -35,7 +36,26 @@ export async function GET(request: NextRequest) {
     if (parsed.data.expectedUserId !== undefined && parsed.data.expectedUserId !== expectedUserId) throw new Error("FORBIDDEN:");
     if (!parsed.data.customer_id) {
       const result = await client.query(api.creditDashboard.accountsPage, { businessId: parsed.data.business_id, expectedUserId, paginationOpts: { cursor, numItems: limit } });
-      return NextResponse.json(result, { headers });
+      const page = await Promise.all(
+        result.page.map(async (account) => {
+          let displayName = account.displayName;
+          if (account.aliasEncrypted) {
+            try {
+              const decrypted = await decryptPii(account.aliasEncrypted);
+              if (decrypted) displayName = decrypted;
+            } catch {
+              // fallback to alias or existing displayName
+            }
+          } else if (account.alias) {
+            displayName = account.alias;
+          }
+          return {
+            ...account,
+            displayName,
+          };
+        })
+      );
+      return NextResponse.json({ ...result, page }, { headers });
     }
     const asOfDate = Number(params.get("as_of_date"));
     if (!params.has("as_of_date") || !Number.isSafeInteger(asOfDate) || asOfDate < 0 || asOfDate % 86400000 !== 0) throw new Error("INVALID_ARGUMENT:");

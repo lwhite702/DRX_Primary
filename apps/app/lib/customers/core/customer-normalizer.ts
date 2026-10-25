@@ -96,6 +96,20 @@ export function mapCustomerToOperationalModel(
       customer.fixedPricePerGram !== null && customer.fixedPricePerGram !== undefined
         ? toNumberSafe(customer.fixedPricePerGram)
         : null,
+    custom_product_prices: Array.isArray(customer.customProductPrices)
+      ? customer.customProductPrices.map((p: any) => ({
+          productId: String(p.productId),
+          productName: String(p.productName),
+          pricePerUnit: typeof p.pricePerUnit === "number" ? p.pricePerUnit : Number(p.pricePerUnitCents ?? 0) / 100,
+        }))
+      : [],
+    customProductPrices: Array.isArray(customer.customProductPrices)
+      ? customer.customProductPrices.map((p: any) => ({
+          productId: String(p.productId),
+          productName: String(p.productName),
+          pricePerUnit: typeof p.pricePerUnit === "number" ? p.pricePerUnit : Number(p.pricePerUnitCents ?? 0) / 100,
+        }))
+      : [],
     discount_rate_bps:
       customer.discountRateBps !== null && customer.discountRateBps !== undefined
         ? toNumberSafe(customer.discountRateBps)

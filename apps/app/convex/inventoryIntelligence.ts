@@ -52,6 +52,19 @@ async function saveAnalysis(ctx: MutationCtx, args: { businessId: Id<"businesses
     const now = Date.now();
     const { units, velocity } = await readSalesVelocity(ctx, auth.businessId, product._id, now);
     const legacyVelocity = { velocity_7d: velocity.velocity7d, velocity_30d: velocity.velocity30d, velocity_90d: velocity.velocity90d };
+    const approvedIntakes = await ctx.db
+      .query("inventoryIntakes")
+      .withIndex("by_businessId_and_productId_and_status_and_createdAt", (q) =>
+        q
+          .eq("businessId", auth.businessId)
+          .eq("productId", product._id)
+          .eq("status", "approved"),
+      )
+      .order("asc")
+      .take(20);
+    const costHistory = approvedIntakes
+      .map((intake) => intake.calculatedCostPerGramCents / 100)
+      .filter((cost) => Number.isFinite(cost) && cost > 0);
     const queued = options.calculationProfile === "queued" ? calculateQueuedInventory({ analysisType: options.analysisType, marginRequirement: options.marginRequirement, currentStock: product.quantityOnHandGrams, reorderLevel: product.reorderLevelGrams, unitCost: product.unitCostCents / 100, velocity: legacyVelocity }, now) : null;
     const forecast = queued ? (queued.forecast ? {
       projectedStockoutDate: queued.forecast.projected_stockout_date, daysUntilStockout: queued.forecast.days_until_stockout,
@@ -62,7 +75,7 @@ async function saveAnalysis(ctx: MutationCtx, args: { businessId: Id<"businesses
     const pricing = queued ? (queued.pricingRec ? {
       recommendedPrice: queued.pricingRec.recommended_price, recommendedRangeMin: queued.pricingRec.range_min, recommendedRangeMax: queued.pricingRec.range_max,
       confidenceScore: queued.pricingRec.confidence, reasoning: "Automated pricing recommendation", factors: { velocity: legacyVelocity, daysSupply: product.quantityOnHandGrams / Math.max(velocity.velocity7d, 0.01) },
-    } : null) : (options.analysisType === "inventory" ? null : generatePricingRecommendation({ cost: product.unitCostCents / 100, currentPrice: product.sellingPriceCents / 100, costHistory: [], currentStock: product.quantityOnHandGrams, salesVelocity7d: velocity.velocity7d, salesVelocity30d: velocity.velocity30d, marginRequirement: options.marginRequirement, minPrice: options.minPrice, maxPrice: options.maxPrice }));
+    } : null) : (options.analysisType === "inventory" ? null : generatePricingRecommendation({ cost: product.unitCostCents / 100, currentPrice: product.sellingPriceCents / 100, costHistory: costHistory.length > 0 ? costHistory : [product.unitCostCents / 100], currentStock: product.quantityOnHandGrams, salesVelocity7d: velocity.velocity7d, salesVelocity30d: velocity.velocity30d, marginRequirement: options.marginRequirement, minPrice: options.minPrice, maxPrice: options.maxPrice }));
     const alerts: Array<{ alertType: string; severity: "high" | "critical" | "medium"; message: string }> = [];
     if (!queued && forecast && forecast.inventoryRiskLevel === "high" && forecast.velocityTrend === "stagnant") alerts.push({ alertType: "overstock_risk", severity: "high", message: `Overstock risk: ${product.productName} has high inventory but no sales velocity. Consider price adjustment or promotions.` });
     if (!queued && forecast && (forecast.restockUrgency === "critical" || forecast.restockUrgency === "high")) alerts.push({ alertType: "stockout_risk", severity: forecast.restockUrgency, message: `Stock at risk: ${product.productName} projected to stock out in ${forecast.daysUntilStockout} days.` });

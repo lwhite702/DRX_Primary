@@ -18,7 +18,7 @@ describe("POS customers lookup route", () => {
     const response = await GET(new NextRequest("http://localhost/api/pos/customers?search=Jay"));
     expect(response.status).toBe(200);
     expect(mocks.query).toHaveBeenCalledWith(expect.anything(), { businessId: "business-1", expectedUserId: "operator-1", isActive: true, windowSize: 240 });
-    expect((await response.json()).data).toEqual([{ id: "customer-1", phone: "5551234567", alias: "Jay", remainingCredit: 75 }]);
+    expect((await response.json()).data).toEqual([{ id: "customer-1", phone: "5551234567", alias: "Jay", remainingCredit: 75, creditLimit: 100, totalCreditUsed: 25 }]);
   });
 
   it("returns a sanitized availability error without backend details", async () => {

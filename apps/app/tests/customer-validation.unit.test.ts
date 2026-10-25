@@ -79,4 +79,53 @@ describe("customer schema validation", () => {
 
     expect(result.success).toBe(false);
   });
+
+  it("accepts non-UUID Convex ID on customer edit", () => {
+    const result = customerSchema.safeParse({
+      id: "jh7abc123xyz456convexid",
+      business_id: businessId,
+      first_name: "jordan",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.id).toBe("jh7abc123xyz456convexid");
+      expect(result.data.first_name).toBe("Jordan");
+    }
+  });
+
+  it("defaults first name, last name, and alias to Title Case", () => {
+    const result = customerSchema.safeParse({
+      business_id: businessId,
+      first_name: "john-paul",
+      last_name: "o'connor smith",
+      alias: "the kid",
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.first_name).toBe("John-Paul");
+      expect(result.data.last_name).toBe("O'Connor Smith");
+      expect(result.data.alias).toBe("The Kid");
+    }
+  });
+
+  it("validates multiple product custom fixed prices", () => {
+    const result = customerSchema.safeParse({
+      business_id: businessId,
+      first_name: "Alice",
+      custom_product_prices: [
+        { productId: "prod-1", productName: "Blue Dream", pricePerUnit: 12.5 },
+        { productId: "prod-2", productName: "Sour Diesel", pricePerUnit: "15.00" },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.custom_product_prices).toEqual([
+        { productId: "prod-1", productName: "Blue Dream", pricePerUnit: 12.5 },
+        { productId: "prod-2", productName: "Sour Diesel", pricePerUnit: 15 },
+      ]);
+    }
+  });
 });

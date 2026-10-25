@@ -5,9 +5,26 @@ import { requireSelectedBusiness, requireUserAndBusiness } from "./helpers/auth"
 import { hasPermission, requirePermission } from "./helpers/permissions";
 import { loadPrivacyPolicy } from "./helpers/businessPreferences";
 import { canWritePrivacyField } from "../lib/privacy/profiles";
+import { nextCreditPolicyRevision } from "./helpers/creditPolicyRevision";
 
 const nullableString = v.union(v.string(), v.null());
 const nullableNumber = v.union(v.number(), v.null());
+
+function toTitleCase(val?: string | null): string | undefined {
+  if (!val || typeof val !== "string") return undefined;
+  const trimmed = val.trim();
+  if (!trimmed) return undefined;
+  return trimmed
+    .toLowerCase()
+    .replace(/(?:^|[\s\-'])\p{L}/gu, (match) => match.toUpperCase());
+}
+
+export const customProductPriceValidator = v.object({
+  productId: v.string(),
+  productName: v.string(),
+  pricePerUnitCents: v.number(),
+});
+
 const operationalFields = {
   aliasEncrypted: nullableString,
   firstNameEncrypted: nullableString,
@@ -25,6 +42,7 @@ const operationalFields = {
   zipCode: nullableString,
   customerType: v.string(),
   fixedPricePerGramCents: nullableNumber,
+  customProductPrices: v.optional(v.array(customProductPriceValidator)),
   ephemeral: v.boolean(),
   ephemeralExpiresAt: nullableNumber,
   isActive: v.boolean(),
@@ -104,8 +122,8 @@ export const createCustomer = mutation({
 
     const customerId = await ctx.db.insert("customers", {
       businessId: auth.businessId,
-      firstName: args.firstName,
-      lastName: args.lastName,
+      firstName: toTitleCase(args.firstName),
+      lastName: toTitleCase(args.lastName),
       phoneNumber: args.phoneNumber,
       email: args.email,
       totalPurchasesCents: 0,
@@ -224,7 +242,12 @@ export const listOperational = query({
 
 export const getOperational = query({
   args: { businessId: v.string(), expectedUserId: v.string(), customerId: v.string() },
-  returns: v.object({ customer: v.any(), metrics: v.any(), transactionHistory: v.array(v.any()) }),
+  returns: v.object({
+    customer: v.any(),
+    metrics: v.any(),
+    transactionHistory: v.array(v.any()),
+    creditHistory: v.optional(v.array(v.any())),
+  }),
   handler: async (ctx, args) => {
     const auth = await requireSelectedBusiness(ctx, args.businessId, args.expectedUserId);
     requirePermission(auth.userRecord, "VIEW_CUSTOMERS");
@@ -254,17 +277,58 @@ export const getOperational = query({
       if (entry.createdAt >= now - 90 * day) creditIssued90dCents += entry.deltaCents;
     }
     const money = (cents: number) => cents / 100;
+
+    let onTimeCount = 0;
+    let lateCount = 0;
+    const debts = await ctx.db
+      .query("creditDebts")
+      .withIndex("by_customerId_and_status", (q) => q.eq("customerId", customer._id))
+      .collect();
+    for (const debt of debts) {
+      if (debt.dueAt === undefined) continue;
+      if (debt.status === "open" && now > debt.dueAt) {
+        lateCount++;
+      } else if (debt.status === "paid") {
+        const allocations = await ctx.db
+          .query("creditPaymentAllocations")
+          .withIndex("by_debtEntryId", (q) => q.eq("debtEntryId", debt.entryId))
+          .collect();
+        const paidAt = allocations.reduce((max, a) => Math.max(max, a.createdAt), 0);
+        if (paidAt > debt.dueAt) {
+          lateCount++;
+        } else {
+          onTimeCount++;
+        }
+      } else {
+        onTimeCount++;
+      }
+    }
+    const totalDated = onTimeCount + lateCount;
+    const onTimeRatio = totalDated > 0 ? onTimeCount / totalDated : null;
+
     return {
       customer,
       metrics: {
         sales_30d: money(sales30dCents), sales_90d: money(sales90dCents), sales_all_time: money(salesAllTimeCents),
         credit_issued_30d: money(creditIssued30dCents), credit_issued_90d: money(creditIssued90dCents),
-        current_credit_balance: money(customer.totalCreditUsedCents), on_time_repayment_ratio: null, late_payment_count: 0,
+        current_credit_balance: money(customer.totalCreditUsedCents),
+        on_time_repayment_ratio: onTimeRatio,
+        late_payment_count: lateCount,
       },
       transactionHistory: sales.slice(0, 50).map(sale => ({
         id: sale._id, order_number: sale.orderNumber, status: sale.orderStatus,
         subtotal: money(sale.subtotalCents), tax_amount: money(sale.taxAmountCents), total_amount: money(sale.totalAmountCents),
         payment_method: sale.paymentMethod, created_by: sale.createdBy, created_at: new Date(sale.occurredAt ?? sale.createdAt).toISOString(),
+      })),
+      creditHistory: entries.slice(0, 50).map(entry => ({
+        id: entry._id,
+        kind: entry.kind,
+        delta_amount: money(Math.abs(entry.deltaCents)),
+        balance_after: money(entry.balanceAfterCents),
+        description: entry.description ?? null,
+        payment_method: entry.paymentMethod ?? null,
+        due_at: entry.dueAt ? new Date(entry.dueAt).toISOString() : null,
+        created_at: new Date(entry.createdAt).toISOString(),
       })),
     };
   },
@@ -292,9 +356,11 @@ export const createOperational = mutation({
       phoneEncrypted: optionalString(args.phoneEncrypted), emailEncrypted: optionalString(args.emailEncrypted),
       addressEncrypted: optionalString(args.addressEncrypted), notesEncrypted: optionalString(args.notesEncrypted),
       aliasHash: optionalString(args.aliasHash), phoneHash: optionalString(args.phoneHash), emailHash: optionalString(args.emailHash),
-      piiEncryptionVersion: args.piiEncryptionVersion, lastName: optionalString(args.lastName), city: optionalString(args.city),
+      piiEncryptionVersion: args.piiEncryptionVersion, lastName: toTitleCase(args.lastName) ?? optionalString(args.lastName), city: optionalString(args.city),
       state: optionalString(args.state), zipCode: optionalString(args.zipCode), customerType: args.customerType,
-      fixedPricePerGramCents: optionalNumber(args.fixedPricePerGramCents), ephemeral: args.ephemeral,
+      fixedPricePerGramCents: optionalNumber(args.fixedPricePerGramCents),
+      customProductPrices: args.customProductPrices,
+      ephemeral: args.ephemeral,
       ephemeralExpiresAt: optionalNumber(args.ephemeralExpiresAt), lastActivityAt: now,
       totalPurchasesCents: 0, loyaltyEligibleSpendCents: 0, totalCreditUsedCents: 0,
       creditLimitCents: args.creditLimitCents, creditEnabled: true, creditPolicyRevision: 0,
@@ -334,8 +400,9 @@ export const createOrAttachOperational = mutation({
       phoneEncrypted: optionalString(args.phoneEncrypted), emailEncrypted: optionalString(args.emailEncrypted),
       addressEncrypted: optionalString(args.addressEncrypted), notesEncrypted: optionalString(args.notesEncrypted),
       aliasHash: optionalString(args.aliasHash), phoneHash: optionalString(args.phoneHash), emailHash: optionalString(args.emailHash),
-      piiEncryptionVersion: args.piiEncryptionVersion, lastName: optionalString(args.lastName), city: optionalString(args.city), state: optionalString(args.state), zipCode: optionalString(args.zipCode),
+      piiEncryptionVersion: args.piiEncryptionVersion, lastName: toTitleCase(args.lastName) ?? optionalString(args.lastName), city: optionalString(args.city), state: optionalString(args.state), zipCode: optionalString(args.zipCode),
       customerType: args.customerType, fixedPricePerGramCents: optionalNumber(args.fixedPricePerGramCents),
+      customProductPrices: args.customProductPrices,
       ephemeral: args.ephemeral, ephemeralExpiresAt: optionalNumber(args.ephemeralExpiresAt), lastActivityAt: now,
       totalPurchasesCents: 0, loyaltyEligibleSpendCents: 0, totalCreditUsedCents: 0,
       creditLimitCents: args.creditLimitCents, creditEnabled: true, creditPolicyRevision: 0,
@@ -364,6 +431,10 @@ export const updateOperational = mutation({
     await enforceOperationalPrivacy(ctx, auth.businessId, args);
     const duplicate = await duplicateForHashes(ctx, auth.businessId, args.phoneHash, args.emailHash, customer._id);
     if (duplicate) throw new Error(`CONFLICT: ${duplicate._id}`);
+    const creditLimitChanged = customer.creditLimitCents !== args.creditLimitCents;
+    const nextRevision = creditLimitChanged
+      ? nextCreditPolicyRevision(customer.creditPolicyRevision)
+      : customer.creditPolicyRevision;
     const now = Date.now();
     await ctx.db.patch(customer._id, {
       alias: undefined, firstName: undefined, phoneNumber: undefined, email: undefined, address: undefined, notes: undefined,
@@ -371,12 +442,26 @@ export const updateOperational = mutation({
       phoneEncrypted: optionalString(args.phoneEncrypted), emailEncrypted: optionalString(args.emailEncrypted),
       addressEncrypted: optionalString(args.addressEncrypted), notesEncrypted: optionalString(args.notesEncrypted),
       aliasHash: optionalString(args.aliasHash), phoneHash: optionalString(args.phoneHash), emailHash: optionalString(args.emailHash),
-      piiEncryptionVersion: args.piiEncryptionVersion, lastName: optionalString(args.lastName), city: optionalString(args.city), state: optionalString(args.state), zipCode: optionalString(args.zipCode),
+      piiEncryptionVersion: args.piiEncryptionVersion,
+      lastName: args.lastName !== null ? toTitleCase(args.lastName) ?? optionalString(args.lastName) : undefined,
+      city: optionalString(args.city), state: optionalString(args.state), zipCode: optionalString(args.zipCode),
       customerType: args.customerType, fixedPricePerGramCents: optionalNumber(args.fixedPricePerGramCents),
+      customProductPrices: args.customProductPrices !== undefined ? args.customProductPrices : customer.customProductPrices,
       ephemeral: args.ephemeral, ephemeralExpiresAt: optionalNumber(args.ephemeralExpiresAt), isActive: args.isActive,
-      creditLimitCents: args.creditLimitCents, lastActivityAt: now, updatedAt: now,
+      creditLimitCents: args.creditLimitCents, creditPolicyRevision: nextRevision, lastActivityAt: now, updatedAt: now,
     });
-    await ctx.db.insert("auditEvents", { businessId: auth.businessId, userId: auth.userId, action: "CUSTOMER_UPDATED", entityType: "customer", entityId: customer._id, metadata: JSON.stringify({ changedFields: args.changedFields }), timestamp: now });
+    await ctx.db.insert("auditEvents", {
+      businessId: auth.businessId,
+      userId: auth.userId,
+      action: "CUSTOMER_UPDATED",
+      entityType: "customer",
+      entityId: customer._id,
+      metadata: JSON.stringify({
+        changedFields: args.changedFields,
+        ...(creditLimitChanged ? { previousLimitCents: customer.creditLimitCents, limitCents: args.creditLimitCents, policyRevision: nextRevision } : {}),
+      }),
+      timestamp: now,
+    });
     const updated = await ctx.db.get(customer._id);
     if (!updated) throw new Error("INVALID_STATE: Customer was not updated");
     return updated;
@@ -394,5 +479,110 @@ export const listCustomers = query({
       .take(500);
 
     return customers;
+  },
+});
+
+export const getCustomerNotesAndAlerts = query({
+  args: {
+    businessId: v.string(),
+    customerId: v.string(),
+    expectedUserId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const auth = args.expectedUserId !== undefined
+      ? await requireSelectedBusiness(ctx, args.businessId, args.expectedUserId)
+      : await requireUserAndBusiness(ctx);
+    const customer = await selectedCustomer(ctx, auth.businessId, args.customerId);
+    const records = await ctx.db
+      .query("customerNotes")
+      .withIndex("by_businessId_and_customerId_and_isActive", (q) =>
+        q.eq("businessId", auth.businessId).eq("customerId", customer._id).eq("isActive", true)
+      )
+      .order("desc")
+      .collect();
+    return {
+      customerId: customer._id,
+      alerts: records.filter((r) => r.classification === "alert"),
+      notes: records.filter((r) => r.classification === "note"),
+      hasOutstandingBalance: (customer.totalCreditUsedCents ?? 0) > 0,
+      totalCreditUsedCents: customer.totalCreditUsedCents ?? 0,
+    };
+  },
+});
+
+export const addCustomerNoteOrAlert = mutation({
+  args: {
+    businessId: v.string(),
+    customerId: v.string(),
+    expectedUserId: v.optional(v.string()),
+    classification: v.union(v.literal("alert"), v.literal("note")),
+    message: v.string(),
+    severity: v.optional(v.union(v.literal("info"), v.literal("warning"), v.literal("critical"))),
+    authorName: v.optional(v.string()),
+    createdFrom: v.optional(v.union(v.literal("sale_screen"), v.literal("customer_screen"))),
+  },
+  handler: async (ctx, args) => {
+    const auth = args.expectedUserId !== undefined
+      ? await requireSelectedBusiness(ctx, args.businessId, args.expectedUserId)
+      : await requireUserAndBusiness(ctx);
+    if (!hasPermission(auth.userRecord, "MANAGE_CUSTOMERS") && !hasPermission(auth.userRecord, "PROCESS_CHECKOUT")) {
+      throw new Error("FORBIDDEN: Insufficient permissions to add customer note or alert");
+    }
+    const message = args.message.trim();
+    if (!message) throw new Error("INVALID_ARGUMENT: Message cannot be empty");
+    const customer = await selectedCustomer(ctx, auth.businessId, args.customerId);
+    const now = Date.now();
+    const noteId = await ctx.db.insert("customerNotes", {
+      businessId: auth.businessId,
+      customerId: customer._id,
+      classification: args.classification,
+      message,
+      severity: args.severity ?? (args.classification === "alert" ? "warning" : "info"),
+      authorName: args.authorName || auth.userRecord.name || "Operator",
+      createdFrom: args.createdFrom ?? "customer_screen",
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+    await ctx.db.insert("auditEvents", {
+      businessId: auth.businessId,
+      userId: auth.userId,
+      action: args.classification === "alert" ? "CUSTOMER_ALERT_CREATED" : "CUSTOMER_NOTE_CREATED",
+      entityType: "customer",
+      entityId: customer._id,
+      metadata: JSON.stringify({ noteId, classification: args.classification, createdFrom: args.createdFrom }),
+      timestamp: now,
+    });
+    return noteId;
+  },
+});
+
+export const dismissCustomerAlert = mutation({
+  args: {
+    businessId: v.string(),
+    noteId: v.id("customerNotes"),
+    expectedUserId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const auth = args.expectedUserId !== undefined
+      ? await requireSelectedBusiness(ctx, args.businessId, args.expectedUserId)
+      : await requireUserAndBusiness(ctx);
+    if (!hasPermission(auth.userRecord, "MANAGE_CUSTOMERS") && !hasPermission(auth.userRecord, "PROCESS_CHECKOUT")) {
+      throw new Error("FORBIDDEN: Insufficient permissions to dismiss customer alert");
+    }
+    const note = await ctx.db.get(args.noteId);
+    if (!note || note.businessId !== auth.businessId) throw new Error("NOT_FOUND: Alert not found");
+    const now = Date.now();
+    await ctx.db.patch(note._id, { isActive: false, updatedAt: now });
+    await ctx.db.insert("auditEvents", {
+      businessId: auth.businessId,
+      userId: auth.userId,
+      action: "CUSTOMER_ALERT_DISMISSED",
+      entityType: "customer",
+      entityId: note.customerId,
+      metadata: JSON.stringify({ noteId: note._id }),
+      timestamp: now,
+    });
+    return { success: true };
   },
 });

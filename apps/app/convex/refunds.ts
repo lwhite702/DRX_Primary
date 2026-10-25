@@ -4,6 +4,7 @@ import { MutationCtx } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
 import { requireUserAndBusiness } from "./helpers/auth";
 import { requirePermission } from "./helpers/permissions";
+import { appendCreditEntry } from "./helpers/creditLedger";
 
 type Settlement = {
   status:
@@ -97,6 +98,7 @@ async function reverseCustomerAccounting(
   ctx: MutationCtx,
   sale: Doc<"sales">,
   now: number,
+  userId: string,
 ): Promise<void> {
   if (!sale.customerId) return;
   const customer = await ctx.db.get(sale.customerId);
@@ -105,25 +107,34 @@ async function reverseCustomerAccounting(
       "INTEGRITY_ERROR: Sale customer no longer matches the sale tenant",
     );
   }
-  if (
-    sale.paymentMethod === "credit" &&
-    customer.totalCreditUsedCents < sale.totalAmountCents
-  ) {
-    throw new Error(
-      "INTEGRITY_ERROR: Recorded credit balance is too low to reverse this sale automatically",
-    );
+  const creditToReverse =
+    sale.creditAmountCents ??
+    (sale.paymentMethod === "credit" ? sale.totalAmountCents : 0);
+
+  if (creditToReverse > 0) {
+    if (customer.totalCreditUsedCents < creditToReverse) {
+      throw new Error(
+        "INTEGRITY_ERROR: Recorded credit balance is too low to reverse this sale automatically",
+      );
+    }
+    await appendCreditEntry(ctx, {
+      customer,
+      userId,
+      deltaCents: -creditToReverse,
+      kind: "payment",
+      paymentMethod: "other",
+      saleId: sale._id,
+      description: `Reversal for voided/refunded sale ${sale.orderNumber}`,
+    });
   }
 
+  const updatedCustomer = (await ctx.db.get(customer._id))!;
   await ctx.db.patch(customer._id, {
     totalPurchasesCents: Math.max(
       0,
-      customer.totalPurchasesCents - sale.totalAmountCents,
+      updatedCustomer.totalPurchasesCents - sale.totalAmountCents,
     ),
-    totalCreditUsedCents:
-      sale.paymentMethod === "credit"
-        ? customer.totalCreditUsedCents - sale.totalAmountCents
-        : customer.totalCreditUsedCents,
-    purchaseCount: Math.max(0, customer.purchaseCount - 1),
+    purchaseCount: Math.max(0, updatedCustomer.purchaseCount - 1),
     updatedAt: now,
   });
 }
@@ -164,7 +175,7 @@ export const voidOrder = mutation({
     );
     const now = Date.now();
     const restoredAllocations = await restoreSaleInventory(ctx, sale, now);
-    await reverseCustomerAccounting(ctx, sale, now);
+    await reverseCustomerAccounting(ctx, sale, now, auth.userId);
 
     await ctx.db.patch(sale._id, {
       orderStatus: "cancelled",
@@ -223,7 +234,7 @@ export const refundOrder = mutation({
       args.disposition === "restock"
         ? await restoreSaleInventory(ctx, sale, now)
         : 0;
-    await reverseCustomerAccounting(ctx, sale, now);
+    await reverseCustomerAccounting(ctx, sale, now, auth.userId);
 
     await ctx.db.patch(sale._id, {
       orderStatus: "refunded",

@@ -49,15 +49,15 @@ struct CustomerDetailView: View {
                 Section(DRXContent.Navigation.payments) {
                     LabeledContent(
                         "Balance limit",
-                        value: customer.creditLimitCents == 0 ? "Unlimited" : customer.creditLimitFormatted
+                        value: customer.creditEnabled == false ? "Disabled" : customer.hasUnlimitedStoreAccount ? "Unlimited" : customer.creditLimitFormatted
                     )
                     LabeledContent(DRXContent.Terms.balanceDue, value: customer.creditUsedFormatted)
                     HStack {
                         Text("Available balance")
                         Spacer()
-                        Text(customer.creditLimitCents == 0 ? "Unlimited" : customer.creditAvailableFormatted)
+                        Text(customer.creditEnabled == false ? "Disabled" : customer.hasUnlimitedStoreAccount ? "Unlimited" : customer.creditAvailableFormatted)
                             .font(.subheadline.bold())
-                            .foregroundStyle(customer.creditLimitCents == 0 || customer.creditAvailableCents > 0 ? .green : DRXPalette.muted)
+                            .foregroundStyle(customer.creditEnabled == false ? DRXPalette.muted : customer.hasUnlimitedStoreAccount || customer.creditAvailableCents > 0 ? .green : DRXPalette.muted)
                     }
 
                     HStack(spacing: 12) {

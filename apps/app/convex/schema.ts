@@ -343,6 +343,11 @@ export default defineSchema({
     zipCode: v.optional(v.string()),
     customerType: v.optional(v.string()),
     fixedPricePerGramCents: v.optional(v.number()),
+    customProductPrices: v.optional(v.array(v.object({
+      productId: v.string(),
+      productName: v.string(),
+      pricePerUnitCents: v.number(),
+    }))),
     ephemeral: v.optional(v.boolean()),
     ephemeralExpiresAt: v.optional(v.number()),
     lastActivityAt: v.optional(v.number()),
@@ -379,6 +384,23 @@ export default defineSchema({
     aliasDelta: v.number(), phoneDelta: v.number(), emailDelta: v.number(),
     addressDelta: v.number(), notesDelta: v.number(), capturedAt: v.number(),
   }).index("by_businessId_and_capturedAt", ["businessId", "capturedAt"]),
+
+  // Customer Alerts and Notes
+  customerNotes: defineTable({
+    businessId: v.id("businesses"),
+    customerId: v.id("customers"),
+    classification: v.union(v.literal("alert"), v.literal("note")),
+    message: v.string(),
+    severity: v.optional(v.union(v.literal("info"), v.literal("warning"), v.literal("critical"))),
+    authorName: v.optional(v.string()),
+    createdFrom: v.optional(v.union(v.literal("sale_screen"), v.literal("customer_screen"))),
+    isActive: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_businessId_and_customerId", ["businessId", "customerId"])
+    .index("by_businessId_and_customerId_and_isActive", ["businessId", "customerId", "isActive"])
+    .index("by_customerId_and_classification", ["customerId", "classification"]),
 
   // Append-only balance changes. Opening entries preserve the pre-ledger
   // aggregate explicitly; historical source reconciliation remains a migration gate.
@@ -447,6 +469,8 @@ export default defineSchema({
     subtotalCents: v.number(),
     merchandiseSubtotalCents: v.optional(v.number()),
     discountCents: v.optional(v.number()),
+    // Signed requested amount minus post-discount catalog price; separate from pre-discount merchandiseSubtotalCents.
+    priceAdjustmentCents: v.optional(v.number()),
     merchandiseRevenueCents: v.optional(v.number()),
     deliveryRevenueCents: v.optional(v.number()),
     vendorDeliveryExpenseCents: v.optional(v.number()),
@@ -521,6 +545,8 @@ export default defineSchema({
     quantityGrams: v.number(),
     unitPriceCents: v.number(),
     lineTotalCents: v.number(),
+    requestedAmountCents: v.optional(v.number()),
+    operatorPriceAdjustmentCents: v.optional(v.number()),
     priceOverrideReason: v.optional(v.string()),
     catalogUnitPriceCents: v.optional(v.number()),
     baseUnitPriceCents: v.optional(v.number()),
