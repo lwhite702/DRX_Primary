@@ -81,8 +81,8 @@ export default function ResourcesHubPage() {
           <h2 className="mt-4 text-xl font-bold text-white">Privacy and terms</h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">See how DRX handles information and the rules for using the service.</p>
           <div className="mt-5 flex flex-wrap gap-4 text-sm font-bold text-accent">
-            <Link href="/legal/privacy">Read privacy</Link>
-            <Link href="/legal/terms">Read terms</Link>
+            <Link href="/legal/privacy">Privacy Policy</Link>
+            <Link href="/legal/terms">Terms of Service</Link>
           </div>
         </div>
       </section>

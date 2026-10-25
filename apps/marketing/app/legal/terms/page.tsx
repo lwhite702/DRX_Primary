@@ -38,7 +38,10 @@ export default function LegalTermsPage() {
           governing your access to and use of our websites, applications, and related services,
           including Sporkd, Klutr, and DRX / Deelrx CRM (the &quot;Services&quot;). By creating an
           account, downloading an App, clicking to accept, or using a Service, you agree to these
-          Terms and the Privacy Policy.
+          Terms and the{" "}
+          <Link className="text-neon-lime hover:underline" href="/legal/privacy">
+            Privacy Policy
+          </Link>.
         </p>
         <p>
           The app-specific terms addendum presented with these Terms forms part of the agreement and

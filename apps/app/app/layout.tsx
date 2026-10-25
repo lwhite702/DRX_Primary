@@ -106,6 +106,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://clerk.deelrxcrm.app" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://clerk.deelrxcrm.app" />
         {canLoadMeticulous ? (
           <script
             data-recording-token={meticulousToken}

@@ -319,6 +319,7 @@ export function OperatorLoginForm() {
         </p>
         <Link
           href="/waitlist"
+          prefetch={false}
           className="text-[#D9F99D] font-bold text-sm hover:underline tracking-wide"
         >
           Request Access from Administrator

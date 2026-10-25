@@ -13,7 +13,7 @@ export const drxClerkAuthAppearance = {
     colorInputForeground: "#FFFFFF",
     colorText: "#FFFFFF",
     colorTextSecondary: "#B3B3B3",
-    colorBackground: "transparent",
+    colorBackground: "#0A0A0A",
     colorInputBackground: "#262626",
     colorInputText: "#FFFFFF",
     colorDanger: "#F87171",
