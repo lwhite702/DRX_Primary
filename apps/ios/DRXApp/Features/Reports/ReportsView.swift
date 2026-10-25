@@ -8,12 +8,16 @@ struct ReportsView: View {
     @State private var aggregate: DRXDailySalesAggregate?
     @State private var salesHistory: [DRXSale] = []
     @State private var selectedDate = Date()
+    @State private var pendingDate: Date?
+    @State private var failedDate: Date?
+    @State private var reportingTimeZoneID = "America/New_York"
     @State private var isLoading = true
     @State private var error: String?
+    @State private var activeLoadID = UUID()
 
-    // Default to Eastern Standard Time ("America/New_York") or system timezone if configured
+    // Match the reporting aggregate's New York fallback if the stored zone is invalid.
     private var reportingTimeZone: TimeZone {
-        TimeZone(identifier: "America/New_York") ?? .current
+        TimeZone(identifier: reportingTimeZoneID) ?? TimeZone(identifier: "America/New_York")!
     }
 
     private var calendar: Calendar {
@@ -33,35 +37,44 @@ struct ReportsView: View {
         return formatter.string(from: selectedDate)
     }
 
+    private func dateKey(for date: Date, timeZone: TimeZone? = nil) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = timeZone ?? reportingTimeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
     private var filteredSalesForSelectedDate: [DRXSale] {
         salesHistory.filter { sale in
-            calendar.isDate(sale.createdDate, inSameDayAs: selectedDate)
+            sale.orderStatus == "completed" && calendar.isDate(sale.createdDate, inSameDayAs: selectedDate)
         }
     }
 
     private var filteredAggregate: DRXDailySalesAggregate {
-        let daySales = filteredSalesForSelectedDate
-        let orderCount = daySales.count
-        let totalRevenue = daySales.reduce(0) { $0 + $1.totalAmountCents }
-        let totalSubtotal = daySales.reduce(0) { $0 + $1.subtotalCents }
-        let totalTax = daySales.reduce(0) { $0 + $1.taxAmountCents }
-        let avgOrder = orderCount > 0 ? (totalRevenue / orderCount) : 0
-        return DRXDailySalesAggregate(
-            orderCount: orderCount,
-            totalRevenueCents: totalRevenue,
-            totalTaxCents: totalTax,
-            totalSubtotalCents: totalSubtotal,
-            averageOrderValueCents: avgOrder
+        aggregate ?? DRXDailySalesAggregate(
+            orderCount: 0,
+            totalRevenueCents: 0,
+            cashSalesCents: 0,
+            totalTaxCents: 0,
+            totalSubtotalCents: 0,
+            averageOrderValueCents: 0
         )
     }
 
     var body: some View {
         ScrollView {
-            if isLoading {
+            if aggregate == nil && isLoading {
                 loadingView
-            } else if let error {
+            } else if aggregate == nil, let error {
                 errorView(message: error)
             } else {
+                if isLoading {
+                    updatingView
+                } else if let error {
+                    inlineErrorView(message: error)
+                }
                 content
             }
         }
@@ -77,8 +90,8 @@ struct ReportsView: View {
         VStack(spacing: 8) {
             HStack {
                 Button {
-                    if let previous = calendar.date(byAdding: .day, value: -1, to: selectedDate) {
-                        selectedDate = previous
+                    if let previous = calendar.date(byAdding: .day, value: -1, to: pendingDate ?? selectedDate) {
+                        Task { await load(selectedDate: previous) }
                     }
                 } label: {
                     HStack(spacing: 4) {
@@ -95,7 +108,7 @@ struct ReportsView: View {
                     Text(selectedDateFormatted)
                         .font(.headline)
                         .foregroundStyle(DRXPalette.ink)
-                    Text("Eastern Time (America/New_York)")
+                    Text(reportingTimeZoneID)
                         .font(.caption2)
                         .foregroundStyle(DRXPalette.muted)
                 }
@@ -103,8 +116,8 @@ struct ReportsView: View {
                 Spacer()
 
                 Button {
-                    if let next = calendar.date(byAdding: .day, value: 1, to: selectedDate) {
-                        selectedDate = next
+                    if let next = calendar.date(byAdding: .day, value: 1, to: pendingDate ?? selectedDate) {
+                        Task { await load(selectedDate: next) }
                     }
                 } label: {
                     HStack(spacing: 4) {
@@ -118,7 +131,8 @@ struct ReportsView: View {
 
             if !isTodaySelected {
                 Button {
-                    selectedDate = Date()
+                    let today = Date()
+                    Task { await load(selectedDate: today) }
                 } label: {
                     Text("Jump to Today")
                         .font(.caption.weight(.semibold))
@@ -149,11 +163,13 @@ struct ReportsView: View {
                 VStack(spacing: 0) {
                     ReportSummaryRow(title: "Sales", value: agg.totalRevenueFormatted, highlight: true)
                     Divider()
+                    ReportSummaryRow(title: "Cash sales", value: agg.cashSalesFormatted)
+                    Divider()
                     ReportSummaryRow(title: "Subtotal", value: formatCents(agg.totalSubtotalCents))
                     Divider()
                     ReportSummaryRow(title: "Tax", value: agg.totalTaxFormatted)
                     Divider()
-                    ReportSummaryRow(title: "Average sale", value: agg.averageOrderFormatted)
+                    ReportSummaryRow(title: "Average sale", value: agg.orderCount == 0 ? "—" : agg.averageOrderFormatted)
                     Divider()
                     ReportSummaryRow(title: "Orders", value: "\(agg.orderCount)")
                 }
@@ -165,12 +181,17 @@ struct ReportsView: View {
 
             let sales = filteredSalesForSelectedDate
             VStack(alignment: .leading, spacing: 12) {
-                Text("Sales for this day (\(sales.count))")
+                Text("Recent sales (\(agg.orderCount) total in selected day)")
                     .font(.headline)
                     .foregroundStyle(DRXPalette.ink)
 
                 if sales.isEmpty {
-                    EmptyStateCard(symbol: "chart.bar.doc.horizontal", message: "No sales on this day.")
+                    EmptyStateCard(
+                        symbol: "chart.bar.doc.horizontal",
+                        message: agg.orderCount == 0
+                            ? "No completed sales for this day."
+                            : "Recent sale details are unavailable for this day. Daily totals include all completed sales."
+                    )
                 } else {
                     LazyVStack(spacing: 0) {
                         ForEach(sales) { sale in
@@ -198,6 +219,37 @@ struct ReportsView: View {
         .frame(maxWidth: .infinity, minHeight: 300)
     }
 
+    private var updatingView: some View {
+        HStack(spacing: 8) {
+            ProgressView().controlSize(.small).tint(DRXPalette.accent)
+            Text("Updating report…")
+                .font(.caption)
+                .foregroundStyle(DRXPalette.muted)
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
+        .padding(.horizontal)
+        .padding(.top, 8)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Updating report")
+    }
+
+    private func inlineErrorView(message: String) -> some View {
+        HStack(spacing: 8) {
+            Text("Couldn’t update this date. Your previous report is still shown.")
+                .font(.caption)
+                .foregroundStyle(DRXPalette.muted)
+            Spacer(minLength: 4)
+            Button(DRXContent.Actions.tryAgain) {
+                Task { await load(selectedDate: failedDate ?? pendingDate ?? selectedDate) }
+            }
+            .font(.caption.weight(.semibold))
+            .buttonStyle(.borderless)
+            .accessibilityHint("Reloads the report for the selected date")
+        }
+        .padding(.horizontal)
+        .padding(.top, 8)
+    }
+
     private func errorView(message: String) -> some View {
         ContentUnavailableView {
             Label("Couldn’t load reports", systemImage: "exclamationmark.triangle.fill")
@@ -210,25 +262,56 @@ struct ReportsView: View {
         .padding(.top, 60)
     }
 
-    private func load() async {
+    private func load(selectedDate requestedDate: Date? = nil) async {
+        let requestID = UUID()
+        activeLoadID = requestID
+        let targetDate = requestedDate ?? pendingDate ?? selectedDate
+        pendingDate = targetDate
         isLoading = true
         error = nil
-        async let aggTask: DRXDailySalesAggregate = ConvexClient.shared.query(
-            "reporting:getDailySalesAggregate",
-            args: EmptyConvexArgs()
-        )
-        async let salesTask: [DRXSale] = ConvexClient.shared.query(
-            "checkout:getSalesHistory",
-            args: EmptyConvexArgs()
-        )
         do {
-            let (agg, sales) = try await (aggTask, salesTask)
-            aggregate = agg
+            let settings: BusinessSettingsResponse = try await ConvexClient.shared.query(
+                "settings:getBusinessSettings",
+                args: EmptyConvexArgs()
+            )
+            guard activeLoadID == requestID else { return }
+            let targetTimeZone = TimeZone(identifier: settings.business.timezone)
+                ?? TimeZone(identifier: "America/New_York")!
+            var targetCalendar = Calendar(identifier: .gregorian)
+            targetCalendar.timeZone = targetTimeZone
+            let dayStart = targetCalendar.startOfDay(for: targetDate)
+            guard let dayEnd = targetCalendar.date(byAdding: .day, value: 1, to: dayStart) else {
+                throw NSError(domain: "ReportsView", code: 1)
+            }
+
+            async let salesTask: [DRXSale] = ConvexClient.shared.query(
+                "checkout:getSalesHistory",
+                args: DRXSalesHistoryRangeArgs(
+                    startAt: (dayStart.timeIntervalSince1970 * 1_000).rounded(),
+                    endAt: (dayEnd.timeIntervalSince1970 * 1_000).rounded()
+                )
+            )
+            async let aggregateTask: DRXDailySalesAggregate = ConvexClient.shared.query(
+                "reporting:getDailySalesAggregate",
+                args: DRXDailySalesAggregateArgs(
+                    dateKey: dateKey(for: targetDate, timeZone: targetTimeZone)
+                )
+            )
+            let (sales, aggregate) = try await (salesTask, aggregateTask)
+            guard activeLoadID == requestID else { return }
+            self.aggregate = aggregate
             salesHistory = sales
+            reportingTimeZoneID = targetTimeZone.identifier
+            selectedDate = targetDate
+            pendingDate = nil
+            failedDate = nil
         } catch {
+            guard activeLoadID == requestID else { return }
             self.error = error.localizedDescription
+            self.failedDate = targetDate
+            self.pendingDate = nil
         }
-        isLoading = false
+        if activeLoadID == requestID { isLoading = false }
     }
 }
 

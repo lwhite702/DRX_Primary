@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useDashboardData } from "@/app/(app)/dashboard/_hooks/useDashboardData";
 
 const report = {
-  today: { salesTotal: 125, salesCount: 3, cashCollected: 75 },
+  today: { salesTotal: 125, salesCount: 3, cashSales: 75, totalTax: 10, subtotal: 115, averageOrderValue: 41.67 },
   week: { salesTotal: 500, salesCount: 12 },
   previousWeek: { salesTotal: 400, salesCount: 10 },
   topProducts: [
@@ -11,9 +11,12 @@ const report = {
       id: "product-1",
       name: "Standard product",
       sku: "SKU-1",
-      quantitySold: 2,
+      quantitySoldGrams: 2,
       revenue: 50,
     },
+  ],
+  todayTopProducts: [
+    { id: "product-1", name: "Standard product", sku: "SKU-1", quantitySoldGrams: 2, revenue: 50 },
   ],
   lowStock: { count: 1, items: [] },
   credit: { outstandingBalance: 20, activeBalances: 1 },

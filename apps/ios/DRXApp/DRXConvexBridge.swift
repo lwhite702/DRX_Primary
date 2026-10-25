@@ -347,11 +347,13 @@ struct DRXInventoryBatch: Decodable, Identifiable, Sendable {
 struct DRXDailySalesAggregate: Decodable, Sendable {
     let orderCount: Int
     let totalRevenueCents: Int
+    let cashSalesCents: Int?
     let totalTaxCents: Int
     let totalSubtotalCents: Int
     let averageOrderValueCents: Int
 
     var totalRevenueFormatted: String { formatCents(totalRevenueCents) }
+    var cashSalesFormatted: String { cashSalesCents.map(formatCents) ?? "—" }
     var totalSubtotalFormatted: String { formatCents(totalSubtotalCents) }
     var totalTaxFormatted: String { formatCents(totalTaxCents) }
     var averageOrderFormatted: String { formatCents(averageOrderValueCents) }
@@ -360,6 +362,15 @@ struct DRXDailySalesAggregate: Decodable, Sendable {
 // MARK: - Empty Args (for query calls with no parameters)
 
 struct EmptyConvexArgs: Encodable, Sendable {}
+
+struct DRXDailySalesAggregateArgs: Encodable, Sendable {
+    let dateKey: String
+}
+
+struct DRXSalesHistoryRangeArgs: Encodable, Sendable {
+    let startAt: Double
+    let endAt: Double
+}
 
 // MARK: - Checkout Args/Response
 

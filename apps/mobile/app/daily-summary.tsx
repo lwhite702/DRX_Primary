@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -24,9 +24,10 @@ export default function DailySummary() {
   const { businessId, getToken } = useAuth();
 
   const [summary, setSummary] = useState<any>(null);
-  const [currentDateStr, setCurrentDateStr] = useState<string>(() => {
-    return new Date().toISOString().split("T")[0];
-  });
+  const [currentDateStr, setCurrentDateStr] = useState<string | null>(null);
+  const [todayDateStr, setTodayDateStr] = useState<string | null>(null);
+  const skipDateFetchFor = useRef<string | null>(null);
+  const requestSequence = useRef(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,10 +37,10 @@ export default function DailySummary() {
     return date.toISOString().split("T")[0];
   };
 
-  const todayStr = new Date().toISOString().split("T")[0];
-  const isToday = currentDateStr === todayStr;
+  const isToday = currentDateStr !== null && currentDateStr === todayDateStr;
 
   const fetchSummary = useCallback(async (dateStr?: string) => {
+    const requestId = ++requestSequence.current;
     if (!businessId) {
       setLoading(false);
       setSummary(null);
@@ -49,26 +50,38 @@ export default function DailySummary() {
     try {
       setLoading(true);
       setError(null);
-      const targetDate = dateStr || currentDateStr;
       const token = await getToken();
-      const data = await getDailySummary(token, targetDate, targetDate);
+      const data = await getDailySummary(token, dateStr, dateStr);
+      if (requestId !== requestSequence.current) return;
       setSummary(data);
+      setTodayDateStr(data.period.todayDateKey);
+      if (!dateStr) {
+        skipDateFetchFor.current = data.period.dateKey;
+        setCurrentDateStr(data.period.dateKey);
+      }
     } catch {
+      if (requestId !== requestSequence.current) return;
       setError("Couldn’t load the sales summary. Check your connection and try again.");
     } finally {
-      setLoading(false);
+      if (requestId === requestSequence.current) setLoading(false);
     }
-  }, [businessId, currentDateStr, getToken]);
+  }, [businessId, getToken]);
 
   useEffect(() => {
-    fetchSummary(currentDateStr);
-  }, [currentDateStr]);
+    if (currentDateStr && skipDateFetchFor.current === currentDateStr) {
+      skipDateFetchFor.current = null;
+      return;
+    }
+    if (currentDateStr) fetchSummary(currentDateStr);
+    else fetchSummary();
+  }, [currentDateStr, fetchSummary]);
 
   const handleDateChange = (newDateStr: string) => {
     setCurrentDateStr(newDateStr);
   };
 
-  const formatCurrency = (value: number) => `$${(value || 0).toFixed(2)}`;
+  const formatCurrency = (value: number | null | undefined) =>
+    typeof value === "number" ? `$${value.toFixed(2)}` : "—";
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -83,7 +96,8 @@ export default function DailySummary() {
       <View style={styles.dateBar}>
         <TouchableOpacity
           style={styles.dayNavBtn}
-          onPress={() => handleDateChange(shiftDay(currentDateStr, -1))}
+          onPress={() => currentDateStr && handleDateChange(shiftDay(currentDateStr, -1))}
+          disabled={!currentDateStr}
           accessibilityRole="button"
           accessibilityLabel="Previous day"
         >
@@ -92,13 +106,14 @@ export default function DailySummary() {
         </TouchableOpacity>
 
         <View style={styles.dateLabelContainer}>
-          <Text style={styles.dateLabelText}>{currentDateStr}</Text>
-          <Text style={styles.timezoneText}>Eastern Time</Text>
+          <Text style={styles.dateLabelText}>{currentDateStr ?? summary?.period?.dateKey ?? "Today"}</Text>
+          <Text style={styles.timezoneText}>{summary?.period?.timezone ?? "Business time"}</Text>
         </View>
 
         <TouchableOpacity
           style={styles.dayNavBtn}
-          onPress={() => handleDateChange(shiftDay(currentDateStr, 1))}
+          onPress={() => currentDateStr && handleDateChange(shiftDay(currentDateStr, 1))}
+          disabled={!currentDateStr}
           accessibilityRole="button"
           accessibilityLabel="Next day"
         >
@@ -110,7 +125,7 @@ export default function DailySummary() {
       {!isToday && (
         <TouchableOpacity
           style={styles.todayBtn}
-          onPress={() => handleDateChange(todayStr)}
+          onPress={() => setCurrentDateStr(null)}
           accessibilityRole="button"
           accessibilityLabel="Jump to today"
         >
@@ -125,7 +140,7 @@ export default function DailySummary() {
       ) : error ? (
         <View style={styles.centerContainer}>
           <Text style={styles.emptyText} accessibilityRole="alert">{error}</Text>
-          <TouchableOpacity onPress={() => fetchSummary(currentDateStr)} style={styles.retryButton} accessibilityRole="button">
+          <TouchableOpacity onPress={() => fetchSummary(currentDateStr ?? undefined)} style={styles.retryButton} accessibilityRole="button">
             <Text style={styles.retryText}>Try again</Text>
           </TouchableOpacity>
         </View>
@@ -134,28 +149,47 @@ export default function DailySummary() {
 
           <Card style={styles.summaryCard}>
             <Text style={styles.cardTitle}>Total sales</Text>
-            <Text style={styles.cardValue}>{formatCurrency(summary.today?.salesTotal ?? summary.totalGrossSales ?? 0)}</Text>
+            <Text style={styles.cardValue}>{formatCurrency(summary.today?.salesTotal)}</Text>
           </Card>
 
           <View style={[styles.row, stackMetrics && { flexDirection: "column" }]}>
             <Card style={[styles.summaryCard, { flex: 1 }]}>
               <Text style={styles.cardTitle}>Sales</Text>
-              <Text style={styles.cardValue}>{summary.today?.salesCount ?? summary.totalTransactions ?? 0}</Text>
+              <Text style={styles.cardValue}>{typeof summary.today?.salesCount === "number" ? summary.today.salesCount : "—"}</Text>
             </Card>
             <Card style={[styles.summaryCard, { flex: 1 }]}>
-              <Text style={styles.cardTitle}>Gross Profit</Text>
-              <Text style={styles.cardValue}>{formatCurrency(summary.today?.grossProfit ?? summary.totalNetSales ?? 0)}</Text>
+              <Text style={styles.cardTitle}>Cash sales</Text>
+              <Text style={styles.cardValue}>{formatCurrency(summary.today?.cashSales)}</Text>
+            </Card>
+            <Card style={[styles.summaryCard, { flex: 1 }]}>
+              <Text style={styles.cardTitle}>Average sale</Text>
+              <Text style={styles.cardValue}>{summary.today?.salesCount === 0 ? "—" : formatCurrency(summary.today?.averageOrderValue)}</Text>
+            </Card>
+          </View>
+
+          <View style={[styles.row, stackMetrics && { flexDirection: "column" }]}>
+            <Card style={[styles.summaryCard, { flex: 1 }]}>
+              <Text style={styles.cardTitle}>Subtotal</Text>
+              <Text style={styles.cardValue}>{formatCurrency(summary.today?.subtotal)}</Text>
+            </Card>
+            <Card style={[styles.summaryCard, { flex: 1 }]}>
+              <Text style={styles.cardTitle}>Tax</Text>
+              <Text style={styles.cardValue}>{formatCurrency(summary.today?.totalTax)}</Text>
             </Card>
           </View>
 
           <Text style={styles.sectionTitle}>Payment methods</Text>
           <View style={styles.paymentMethodsContainer}>
-            {Object.entries(summary.paymentMethodTotals || {}).map(([method, amount]: [string, any]) => (
-              <View key={method} style={styles.paymentMethodRow}>
-                <Text style={styles.paymentMethodName}>{method.toUpperCase()}</Text>
-                <Text style={styles.paymentMethodAmount}>{formatCurrency(amount)}</Text>
-              </View>
-            ))}
+            {summary.paymentMethodTotals && Object.keys(summary.paymentMethodTotals).length > 0 ? (
+              Object.entries(summary.paymentMethodTotals).map(([method, amount]: [string, any]) => (
+                <View key={method} style={styles.paymentMethodRow}>
+                  <Text style={styles.paymentMethodName}>{method.toUpperCase()}</Text>
+                  <Text style={styles.paymentMethodAmount}>{formatCurrency(amount)}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.emptyText}>No payment totals are available for this day.</Text>
+            )}
           </View>
 
         </ScrollView>

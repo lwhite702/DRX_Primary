@@ -68,6 +68,31 @@ describe("Convex Phase 4 Operational Reporting & Customer Credit", () => {
     expect(report.totalSubtotalCents).toBe(10000); // 2g * $50 = $100 (10000¢)
     expect(report.totalTaxCents).toBe(825); // 8.25% of 10000 = 825¢
     expect(report.totalRevenueCents).toBe(10825); // $108.25
+    expect(report.cashSalesCents).toBe(10825); // tender after change is returned
+    expect(report.paymentMethodTotalsCents).toEqual({ cash: 10825 });
+    expect(report.timezone).toBe("America/New_York");
+    expect(report.topProducts[0]).toMatchObject({
+      id: productId,
+      name: "Reporting Product",
+      quantitySoldGrams: 2,
+      revenueCents: 10000,
+    });
+
+    await tUser.mutation(api.checkout.processCheckout, {
+      orderNumber: "ORD-REP-02",
+      items: [{ productId, quantityGrams: 1 }],
+      paymentMethod: "split",
+      amountPaidCents: 5413,
+      paymentTenders: [
+        { method: "cash", amountCents: 2000 },
+        { method: "card", amountCents: 3413 },
+      ],
+    });
+    const splitTenderReport = await tUser.query(api.reporting.getDailySalesAggregate, {});
+    expect(splitTenderReport.orderCount).toBe(2);
+    expect(splitTenderReport.cashSalesCents).toBe(12825);
+    expect(splitTenderReport.paymentMethodTotalsCents).toEqual({ cash: 12825, card: 3413 });
+    expect(splitTenderReport.topProducts[0].quantitySoldGrams).toBe(3);
 
     // 4. Customer Credit Management
     const custId = await tUser.mutation(api.customers.createCustomer, {
@@ -76,19 +101,40 @@ describe("Convex Phase 4 Operational Reporting & Customer Credit", () => {
       creditLimitCents: 50000, // $500.00 limit
     });
 
+    await tUser.mutation(api.checkout.processCheckout, {
+      orderNumber: "ORD-REP-MIXED",
+      items: [{ productId, quantityGrams: 1 }],
+      paymentMethod: "mixed",
+      amountPaidCents: 2500,
+      customerId: custId,
+    });
+    const mixedReport = await tUser.query(api.reporting.getDailySalesAggregate, {});
+    expect(mixedReport.cashSalesCents).toBe(15325);
+    expect(mixedReport.paymentMethodTotalsCents).toEqual({ cash: 15325, card: 3413, credit: 2913 });
+
+    await tUser.mutation(api.checkout.processCheckout, {
+      orderNumber: "ORD-REP-DISCOUNT",
+      items: [{ productId, quantityGrams: 1 }],
+      paymentMethod: "cash",
+      amountPaidCents: 4330,
+      discountAmountCents: 1000,
+    });
+    const discountedReport = await tUser.query(api.reporting.getDailySalesAggregate, {});
+    expect(discountedReport.topProducts[0].revenueCents).toBe(24000);
+
     const issueRes = await tUser.mutation(api.credit.issueCustomerCredit, {
       customerId: custId,
       amountCents: 15000, // Issue $150 credit
       description: "Store credit line",
     });
 
-    expect(issueRes.newCreditUsedCents).toBe(15000);
+    expect(issueRes.newCreditUsedCents).toBe(17913);
 
     const payRes = await tUser.mutation(api.credit.recordCreditPayment, {
       customerId: custId,
       paymentAmountCents: 5000, // Pay $50
     });
 
-    expect(payRes.remainingCreditUsedCents).toBe(10000);
+    expect(payRes.remainingCreditUsedCents).toBe(12913);
   });
 });

@@ -1,105 +1,178 @@
 import "server-only";
 import { api } from "@/convex/_generated/api";
 import { businessClient } from "@/lib/business/convex-server";
+import { businessDateKey, businessDayBounds, isValidTimeZone, shiftDateKey } from "@/convex/helpers/businessTimezone";
 
 export interface PosBaselineReport {
-  period: { from: string; to: string; mode: "default" | "custom"; timezone?: string };
-  today: { salesTotal: number; salesCount: number; cashCollected: number; costOfGoodsSold: number; grossProfit: number };
-  week: { salesTotal: number; salesCount: number; costOfGoodsSold: number; grossProfit: number };
-  previousWeek: { salesTotal: number; salesCount: number; costOfGoodsSold: number; grossProfit: number };
-  topProducts: Array<{ id: string; name: string; sku: string | null; quantitySold: number; revenue: number }>;
-  lowStock: { count: number; items: Array<{ id: string; name: string; sku: string; quantityOnHand: number; lowStockThreshold: number }> };
-  credit: { outstandingBalance: number; activeBalances: number };
-  recentSales: Array<{ id: string; total: number; costOfGoodsSold: number; grossProfit: number; costSource: "fifo" | "unallocated"; paymentMethod: string | null; customerId: string | null; createdAt: string }>;
-  unallocatedSalesCount: number; latestAuditAt: string | null; generatedAt: string;
+  period: { from: string; to: string; dateKey: string; todayDateKey: string; mode: "default" | "custom"; timezone: string };
+  today: { salesTotal: number; salesCount: number; cashSales: number; totalTax: number; subtotal: number; averageOrderValue: number; costOfGoodsSold: number | null; grossProfit: number | null };
+  todayTopProducts: Array<{ id: string; name: string; sku: string; quantitySoldGrams: number; revenue: number }>;
+  paymentMethodTotals: Record<string, number>;
+  week: { salesTotal: number; salesCount: number; costOfGoodsSold: number | null; grossProfit: number | null };
+  previousWeek: { salesTotal: number; salesCount: number; costOfGoodsSold: number | null; grossProfit: number | null };
+  topProducts: Array<{ id: string; name: string; sku: string; quantitySoldGrams: number; revenue: number }>;
+  lowStock: { count: number | null; items: Array<{ id: string; name: string; sku: string; quantityOnHand: number; lowStockThreshold: number }> };
+  credit: { outstandingBalance: number | null; activeBalances: number | null };
+  recentSales: Array<{ id: string; total: number; costOfGoodsSold: null; grossProfit: null; costSource: "unallocated"; paymentMethod: string | null; customerId: string | null; createdAt: string }>;
+  unallocatedSalesCount: null; latestAuditAt: string | null; generatedAt: string;
 }
 
-const day = 86_400_000;
-
-export function getZonedDayBounds(date: Date, timeZone: string = "America/New_York") {
-  try {
-    const dtf = new Intl.DateTimeFormat("en-CA", {
-      timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
-    const dateStr = dtf.format(date);
-    const [y, m, d] = dateStr.split("-").map(Number);
-
-    const getOffset = (targetDate: Date) => {
-      const parts = new Intl.DateTimeFormat("en-US", {
-        timeZone,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }).formatToParts(targetDate);
-      const map: Record<string, string> = {};
-      for (const p of parts) map[p.type] = p.value;
-      const asUTC = Date.UTC(
-        parseInt(map.year, 10),
-        parseInt(map.month, 10) - 1,
-        parseInt(map.day, 10),
-        parseInt(map.hour, 10),
-        parseInt(map.minute, 10),
-        parseInt(map.second, 10),
-      );
-      return asUTC - targetDate.getTime();
-    };
-
-    const zonedMidnight = (year: number, month: number, dayNum: number) => {
-      const utcGuess = Date.UTC(year, month - 1, dayNum, 0, 0, 0);
-      const offset1 = getOffset(new Date(utcGuess));
-      const target1 = utcGuess - offset1;
-      const offset2 = getOffset(new Date(target1));
-      return utcGuess - offset2;
-    };
-
-    const startAt = zonedMidnight(y, m, d);
-    const nextZoned = new Date(startAt + 86_400_000 + 3_600_000);
-    const [ny, nm, nd] = dtf.format(nextZoned).split("-").map(Number);
-    const endAt = zonedMidnight(ny, nm, nd);
-    return { startAt, endAt, dateStr };
-  } catch {
-    const utcStart = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-    return { startAt: utcStart, endAt: utcStart + day, dateStr: date.toISOString().split("T")[0] };
-  }
+export function getZonedDayBounds(date: Date | string, timeZone: string = "America/New_York") {
+  const dateKey = typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)
+    ? date
+    : businessDateKey(typeof date === "string" ? new Date(date) : date, timeZone);
+  return { ...businessDayBounds(dateKey, timeZone), dateStr: dateKey };
 }
 
 function money(cents: number) { return Number((cents / 100).toFixed(2)); }
 
-export async function getPosBaselineReport(businessId: string, range?: { from?: Date; to?: Date; timezone?: string }): Promise<PosBaselineReport> {
+async function summarizeCredit(client: Awaited<ReturnType<typeof businessClient>>["client"], businessId: string, expectedUserId: string) {
+  // Bound the dashboard work. Large tenants need a maintained aggregate before
+  // we can claim a complete balance; never walk every customer on page load.
+  try {
+  const result: {
+    page: Array<{ allocationStatus: string; isActive: boolean; balanceCents: number }>;
+    isDone: boolean;
+    continueCursor: string;
+  } = await client.query(api.creditDashboard.accountsPage, {
+    businessId,
+    expectedUserId,
+    paginationOpts: { cursor: null, numItems: 100 },
+  });
+  if (!result.isDone) return { outstandingBalance: null, activeBalances: null };
+
+  let balanceCents = 0;
+  let activeBalances = 0;
+  let consistent = true;
+  for (const account of result.page) {
+    if (account.allocationStatus === "pending" || account.allocationStatus === "unreconciled") {
+      consistent = false;
+      continue;
+    }
+    if (!account.isActive || account.balanceCents <= 0) continue;
+    balanceCents += account.balanceCents;
+    activeBalances += 1;
+  }
+
+  return consistent
+    ? { outstandingBalance: money(balanceCents), activeBalances }
+    : { outstandingBalance: null, activeBalances: null };
+  } catch {
+    console.warn("Credit dashboard summary unavailable because the query failed");
+    return { outstandingBalance: null, activeBalances: null };
+  }
+}
+
+export async function getPosBaselineReport(businessId: string, range?: { from?: Date | string; to?: Date | string }): Promise<PosBaselineReport> {
   const clientContext = await businessClient(businessId);
   const client = clientContext.client;
-  const timeZone = range?.timezone || "America/New_York";
+  const profile = await client.query(api.businessProfiles.getProfile, {
+    businessId: clientContext.businessId,
+    expectedUserId: clientContext.expectedUserId,
+  });
+  const timeZone = profile.timezone && isValidTimeZone(profile.timezone)
+    ? profile.timezone
+    : "America/New_York";
 
   const now = new Date();
   const custom = Boolean(range?.from || range?.to);
-  const fromBounds = range?.from ? getZonedDayBounds(range.from, timeZone) : getZonedDayBounds(now, timeZone);
+  const todayDateKey = businessDateKey(now, timeZone);
+  const fromBounds = range?.from ? getZonedDayBounds(range.from, timeZone) : getZonedDayBounds(todayDateKey, timeZone);
   const toBounds = range?.to ? getZonedDayBounds(range.to, timeZone) : fromBounds;
 
   const start = fromBounds.startAt;
   const end = toBounds.endAt;
-  const weekStart = custom ? start : start - 6 * day;
-  const weekEnd = custom ? end : end;
-  const previousStart = weekStart - 7 * day;
+  if (fromBounds.dateStr > toBounds.dateStr) {
+    throw new Error("INVALID_ARGUMENT: Report start date must not be after its end date");
+  }
+  const weekStart = custom
+    ? start
+    : businessDayBounds(shiftDateKey(todayDateKey, -6), timeZone).startAt;
+  const selectedWindowDays = Math.round(
+    (Date.parse(`${toBounds.dateStr}T00:00:00Z`) - Date.parse(`${fromBounds.dateStr}T00:00:00Z`)) / 86_400_000,
+  ) + 1;
+  const previousStart = businessDayBounds(
+    shiftDateKey(custom ? fromBounds.dateStr : todayDateKey, custom ? -selectedWindowDays : -13),
+    timeZone,
+  ).startAt;
+  const previousEnd = custom ? start : weekStart;
 
   const [today, week, previous, sales] = await Promise.all([
-    client.query(api.reporting.getFinancialReport, { startDate: start, endDate: end - 1 }),
-    client.query(api.reporting.getFinancialReport, { startDate: weekStart, endDate: weekEnd - 1 }),
-    client.query(api.reporting.getFinancialReport, { startDate: previousStart, endDate: weekStart - 1 }),
-    client.query(api.checkout.getSalesHistory, {}),
+    client.query(api.reporting.getSalesAggregate, { startAt: start, endAt: end, timezone: timeZone }),
+    client.query(api.reporting.getSalesAggregate, { startAt: weekStart, endAt: end, timezone: timeZone }),
+    client.query(api.reporting.getSalesAggregate, { startAt: previousStart, endAt: previousEnd, timezone: timeZone }),
+    client.query(api.checkout.getSalesHistory, { startAt: start, endAt: end }),
   ]);
-  const summarize = (report: typeof today) => ({ salesTotal: money(report?.totalRevenueCents ?? 0), salesCount: report?.orderCount ?? 0, cashCollected: money(report?.totalRevenueCents ?? 0), costOfGoodsSold: money(report?.costOfGoodsSoldCents ?? 0), grossProfit: money(report?.grossProfitCents ?? 0) });
-  const recentSales = Array.isArray(sales) ? sales.slice(0, 10).map(sale => ({ id: sale._id, total: money(sale.totalAmountCents), costOfGoodsSold: 0, grossProfit: money(sale.totalAmountCents), costSource: "unallocated" as const, paymentMethod: sale.paymentMethod ?? null, customerId: sale.customerId ?? null, createdAt: new Date(sale.createdAt).toISOString() })) : [];
+  const [products, credit] = await Promise.all([
+    client.query(api.products.listProducts, {}),
+    summarizeCredit(client, clientContext.businessId, clientContext.expectedUserId),
+  ]);
+  const eligibleProducts = products.filter((product) => product.isActive && product.reorderLevelGrams > 0);
+  const lowStockProducts = eligibleProducts.filter((product) => product.quantityOnHandGrams <= product.reorderLevelGrams);
+  const lowStock = products.length < 500
+    ? {
+        count: lowStockProducts.length,
+        items: lowStockProducts.map((product) => ({
+          id: product._id,
+          name: product.productName,
+          sku: product.sku,
+          quantityOnHand: product.quantityOnHandGrams,
+          lowStockThreshold: product.reorderLevelGrams,
+        })),
+      }
+    : { count: null, items: [] };
+  const summarize = (report: typeof today) => ({
+    salesTotal: money(report.totalRevenueCents),
+    salesCount: report.orderCount,
+    cashSales: money(report.cashSalesCents),
+    totalTax: money(report.totalTaxCents),
+    subtotal: money(report.totalSubtotalCents),
+    averageOrderValue: money(report.averageOrderValueCents),
+    costOfGoodsSold: report.grossProfitComplete ? money(report.cogsCents) : null,
+    grossProfit: report.grossProfitComplete ? money(report.grossProfitCents) : null,
+  });
+  const summarizePeriod = (report: typeof week) => ({
+    salesTotal: money(report.totalRevenueCents),
+    salesCount: report.orderCount,
+    costOfGoodsSold: report.grossProfitComplete ? money(report.cogsCents) : null,
+    grossProfit: report.grossProfitComplete ? money(report.grossProfitCents) : null,
+  });
+  const topProducts = week.topProducts.map((product) => ({
+    id: product.id,
+    name: product.name,
+    sku: product.sku,
+    quantitySoldGrams: product.quantitySoldGrams,
+    revenue: money(product.revenueCents),
+  }));
+  const todayTopProducts = today.topProducts.map((product) => ({
+    id: product.id,
+    name: product.name,
+    sku: product.sku,
+    quantitySoldGrams: product.quantitySoldGrams,
+    revenue: money(product.revenueCents),
+  }));
+  const paymentMethodTotals = Object.fromEntries(
+    Object.entries(today.paymentMethodTotalsCents).map(([method, cents]) => [method, money(cents)]),
+  );
+  const recentSales = Array.isArray(sales)
+    ? sales
+        .filter((sale) => sale.createdAt >= start && sale.createdAt < end)
+        .slice(0, 10)
+        .map((sale) => ({
+          id: sale._id,
+          total: money(sale.totalAmountCents),
+          costOfGoodsSold: null,
+          grossProfit: null,
+          costSource: "unallocated" as const,
+          paymentMethod: sale.paymentMethod ?? null,
+          customerId: sale.customerId ?? null,
+          createdAt: new Date(sale.createdAt).toISOString(),
+        }))
+    : [];
   return {
-    period: { from: new Date(start).toISOString(), to: new Date(end).toISOString(), mode: custom ? "custom" : "default", timezone: timeZone },
-    today: summarize(today), week: summarize(week), previousWeek: summarize(previous),
-    topProducts: [], lowStock: { count: 0, items: [] }, credit: { outstandingBalance: 0, activeBalances: 0 }, recentSales,
-    unallocatedSalesCount: recentSales.length, latestAuditAt: null, generatedAt: new Date().toISOString(),
+    period: { from: new Date(start).toISOString(), to: new Date(end).toISOString(), dateKey: fromBounds.dateStr, todayDateKey, mode: custom ? "custom" : "default", timezone: timeZone },
+    today: summarize(today), todayTopProducts, paymentMethodTotals, week: summarizePeriod(week), previousWeek: summarizePeriod(previous),
+    topProducts, lowStock, credit, recentSales,
+    unallocatedSalesCount: null, latestAuditAt: null, generatedAt: new Date().toISOString(),
   };
 }

@@ -2,12 +2,15 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface DashboardStats {
   salesToday: number;
-  cashCollected: number;
+  cashSales: number;
+  totalTax: number;
+  subtotal: number;
+  averageOrderValue: number;
   transactionsCount: number;
   salesGrowth: number;
-  lowStockCount: number;
-  overdueBalance: number;
-  overdueCount: number;
+  lowStockCount: number | null;
+  outstandingBalance: number | null;
+  outstandingAccounts: number | null;
   recentActivity: ActivityItem[];
   topMovers: TopMover[];
 }
@@ -25,7 +28,7 @@ export interface TopMover {
   id: string;
   name: string;
   category: string;
-  quantitySold: number;
+  quantitySoldGrams: number;
   revenue: number;
 }
 
@@ -33,7 +36,10 @@ interface BaselineResponse {
   today: {
     salesTotal: number;
     salesCount: number;
-    cashCollected: number;
+    cashSales: number;
+    totalTax: number;
+    subtotal: number;
+    averageOrderValue: number;
   };
   week: {
     salesTotal: number;
@@ -47,11 +53,18 @@ interface BaselineResponse {
     id: string;
     name: string;
     sku: string | null;
-    quantitySold: number;
+    quantitySoldGrams: number;
+    revenue: number;
+  }>;
+  todayTopProducts: Array<{
+    id: string;
+    name: string;
+    sku: string;
+    quantitySoldGrams: number;
     revenue: number;
   }>;
   lowStock: {
-    count: number;
+    count: number | null;
     items: Array<{
       id: string;
       name: string;
@@ -61,8 +74,8 @@ interface BaselineResponse {
     }>;
   };
   credit: {
-    outstandingBalance: number;
-    activeBalances: number;
+    outstandingBalance: number | null;
+    activeBalances: number | null;
   };
   recentSales: Array<{
     id: string;
@@ -139,25 +152,28 @@ export function useDashboardData(businessId: string | undefined) {
         amount: sale.total,
       }));
 
-      const topMovers: TopMover[] = report.topProducts.map((product) => ({
+      const topMovers: TopMover[] = report.todayTopProducts.map((product) => ({
         id: product.id,
         name: product.name,
         category: product.sku ? `SKU ${product.sku}` : "POS Product",
-        quantitySold: product.quantitySold,
+        quantitySoldGrams: product.quantitySoldGrams,
         revenue: product.revenue,
       }));
 
       const nextStats: DashboardStats = {
         salesToday: report.today.salesTotal,
-        cashCollected: report.today.cashCollected,
+        cashSales: report.today.cashSales,
+        totalTax: report.today.totalTax,
+        subtotal: report.today.subtotal,
+        averageOrderValue: report.today.averageOrderValue,
         transactionsCount: report.today.salesCount,
         salesGrowth: calcGrowth(
           report.week.salesTotal,
           report.previousWeek.salesTotal,
         ),
         lowStockCount: report.lowStock.count,
-        overdueBalance: report.credit.outstandingBalance,
-        overdueCount: report.credit.activeBalances,
+        outstandingBalance: report.credit.outstandingBalance,
+        outstandingAccounts: report.credit.activeBalances,
         recentActivity,
         topMovers,
       };
