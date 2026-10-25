@@ -9,7 +9,7 @@ export function PointerEventsGuardian() {
     const checkAndRestore = () => {
       if (document.body.style.pointerEvents === "none") {
         const hasOpenModal = document.querySelector(
-          '[data-state="open"][role="dialog"], [data-state="open"][role="alertdialog"], [data-slot="dialog-content"][data-state="open"], [data-radix-portal] [data-state="open"], [data-slot="sheet-content"][data-state="open"]'
+          '[role="dialog"][aria-modal="true"], [role="alertdialog"][aria-modal="true"], [data-slot="dialog-content"][data-state="open"], [data-slot="sheet-content"][data-state="open"], [data-radix-dialog-content][data-state="open"], [data-radix-alert-dialog-content][data-state="open"]'
         );
         if (!hasOpenModal) {
           document.body.style.pointerEvents = "";
