@@ -1223,6 +1223,89 @@ export const getSalesHistory = query({
   },
 });
 
+export const getSalesHistorySummary = query({
+  args: {
+    limit: v.optional(v.number()),
+  },
+  returns: v.any(),
+  handler: async (ctx, args) => {
+    const auth = await requireUserAndBusiness(ctx);
+    requirePermission(auth.userRecord, "VIEW_FINANCIALS");
+    const canViewCustomers = hasPermission(auth.userRecord, "VIEW_CUSTOMERS");
+    const count = Math.min(Math.max(1, args.limit ?? 50), 100);
+    const sales = await ctx.db
+      .query("sales")
+      .withIndex("by_businessId", (q) => q.eq("businessId", auth.businessId))
+      .order("desc")
+      .take(count);
+
+    return await Promise.all(
+      sales.map(async (sale) => {
+        const lineItems = await ctx.db
+          .query("salesLineItems")
+          .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
+          .take(10);
+        const itemCount = lineItems.length;
+        const itemNames = lineItems
+          .map((i) => i.manualName || "Inventory Item")
+          .filter(Boolean);
+        const itemSummary =
+          itemNames.length > 0
+            ? itemNames.slice(0, 3).join(", ") +
+              (itemNames.length > 3 ? ` +${itemNames.length - 3} more` : "")
+            : null;
+
+        let customer: any = null;
+        if (canViewCustomers && sale.customerId) {
+          customer = await ctx.db.get(sale.customerId);
+        }
+
+        const delivery = await ctx.db
+          .query("deliveries")
+          .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
+          .unique();
+
+        return {
+          sale,
+          itemCount,
+          itemSummary,
+          customer: customer
+            ? {
+                _id: customer._id,
+                firstName: customer.firstName,
+                lastName: customer.lastName,
+                alias: customer.alias,
+                phone: customer.phone,
+                loyaltyTier: customer.loyaltyTier ?? customer.loyalty_tier ?? "none",
+              }
+            : null,
+          delivery:
+            delivery && delivery.businessId === auth.businessId
+              ? {
+                  _id: delivery._id,
+                  status: delivery.status,
+                  dispatchType: delivery.dispatchType,
+                  feeSplitMode: delivery.feeSplitMode,
+                  chargeCustomer: delivery.chargeCustomer,
+                  vendorFeeCents: delivery.vendorFeeCents,
+                  customerFeeCents: delivery.customerFeeCents,
+                  estimatedArrivalMinutes: delivery.estimatedArrivalMinutes,
+                  uberTrackingUrl: delivery.uberTrackingUrl,
+                }
+              : null,
+          items: lineItems.map((item, idx) => ({
+            id: item._id ?? `${sale._id}-line-${idx}`,
+            productName: item.manualName ?? "Inventory Item",
+            unitPrice: (item.unitPriceCents ?? 0) / 100,
+            lineTotal: (item.lineTotalCents ?? 0) / 100,
+            quantity: item.quantityGrams ?? 1,
+          })),
+        };
+      })
+    );
+  },
+});
+
 export const getSaleDetail = query({
   args: { saleId: v.string() },
   returns: v.any(),

@@ -1358,6 +1358,22 @@ describe("Convex commerce and delivery workflow", () => {
     });
     const deliveryId = checkoutResult.deliveryId!;
 
+    // Rejects update when expectedSaleId does not match delivery.saleId
+    await expect(
+      owner.mutation(api.deliveries.updateDeliveryDetails, {
+        deliveryId,
+        expectedSaleId: "different-sale-id",
+        dispatchType: "merchant_dispatch",
+      }),
+    ).rejects.toThrow("INVALID_ARGUMENT: Delivery does not belong to the specified sale");
+
+    // Accepts update when expectedSaleId matches delivery.saleId
+    await owner.mutation(api.deliveries.updateDeliveryDetails, {
+      deliveryId,
+      expectedSaleId: String(checkoutResult.saleId),
+      dispatchType: "merchant_dispatch",
+    });
+
     // Rejects non-https URL
     await expect(
       owner.mutation(api.deliveries.updateDeliveryDetails, {

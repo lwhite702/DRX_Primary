@@ -169,6 +169,28 @@ describe("GET/PATCH /api/sales/[id]", () => {
     });
   });
 
+  it("updates delivery details with expectedSaleId scoped to route param", async () => {
+    const res = await PATCH(makePatchRequest({
+      delivery: {
+        deliveryId: "del_123",
+        vendorFeeCents: 850,
+        dispatchType: "merchant_dispatch",
+      },
+    }), {
+      params: { id: "sale_123" },
+    });
+    expect(res.status).toBe(200);
+    expect(mocks.mutation).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        deliveryId: "del_123",
+        expectedSaleId: "sale_123",
+        vendorFeeCents: 850,
+        dispatchType: "merchant_dispatch",
+      }),
+    );
+  });
+
   it("returns 404 when sale not found on GET", async () => {
     mocks.query.mockRejectedValue(new Error("NOT_FOUND: Sale not found"));
     const res = await GET(new NextRequest("http://localhost/api/sales/unknown"), {

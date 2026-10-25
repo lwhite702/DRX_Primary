@@ -592,6 +592,7 @@ export const markUberOrdered = mutation({
 export const updateDeliveryDetails = mutation({
   args: {
     deliveryId: v.id("deliveries"),
+    expectedSaleId: v.optional(v.string()),
     vendorFeeCents: v.optional(v.number()),
     feeSplitMode: v.optional(v.string()),
     customerFeeCents: v.optional(v.number()),
@@ -613,6 +614,9 @@ export const updateDeliveryDetails = mutation({
       args.deliveryId,
       auth.businessId,
     );
+    if (args.expectedSaleId && String(delivery.saleId) !== String(args.expectedSaleId)) {
+      throw new Error("INVALID_ARGUMENT: Delivery does not belong to the specified sale");
+    }
     const patch: Record<string, unknown> = {
       updatedAt: Date.now(),
     };
