@@ -47,6 +47,7 @@ export const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     "MANAGE_DELIVERIES",
     "MANAGE_COMMERCE_SETTINGS",
     "VIEW_FINANCIALS",
+    "MANAGE_MEMBERS",
     "VIEW_AUDIT_LOGS",
   ],
   MEMBER: [
@@ -88,8 +89,10 @@ export function hasPermission(user: Doc<"users">, permission: Permission): boole
   // role defaults remain intact; migrated web roles retain their explicit matrix.
   if (user.permissions?.[mapped] === true) return true;
   if (ROLE_PERMISSIONS[user.role]) return ROLE_PERMISSIONS[user.role].includes(permission);
+  const upperRole = user.role.toUpperCase();
+  if (ROLE_PERMISSIONS[upperRole]) return ROLE_PERMISSIONS[upperRole].includes(permission);
   if (user.role === "super_admin") return false;
-  return (WEB_ROLE_PERMISSIONS[user.role as WebRole] ?? []).includes(mapped);
+  return (WEB_ROLE_PERMISSIONS[user.role.toLowerCase() as WebRole] ?? []).includes(mapped);
 }
 
 export function requirePermission(user: Doc<"users">, permission: Permission): void {

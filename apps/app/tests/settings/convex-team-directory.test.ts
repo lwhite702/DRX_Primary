@@ -182,3 +182,18 @@ it("retains uncertain invitation deliveries and records a provider receipt idemp
   const events = await t.run(ctx => ctx.db.query("auditEvents").filter(q => q.eq(q.field("action"), "invitation_delivery")).collect());
   expect(events).toHaveLength(2);
 });
+
+it("allows business administrator to list team members, view invites, and invite team members", async () => {
+  const t = convexTest(schema, modules); const owner = t.withIdentity({ subject: "owner-a" });
+  const { businessId } = await owner.mutation(api.onboarding.createBusinessOnboarding, { businessName: "Admin tenant" });
+  await t.run(ctx => ctx.db.insert("users", { businessId, clerkUserId: "admin-a", email: "admin@example.invalid", status: "ACTIVE", role: "ADMIN", createdAt: 1, updatedAt: 1 }));
+  const admin = t.withIdentity({ subject: "admin-a" });
+  const directory = await admin.query(api.members.listMembers, {});
+  expect(directory.members).toHaveLength(2);
+  const teamList = await admin.query(api.teamManagement.listTeamMembers, { businessId, expectedUserId: "admin-a", paginationOpts: { cursor: null, numItems: 50 } });
+  expect(teamList.page).toHaveLength(2);
+  const invite = await admin.mutation(api.members.inviteMember, { email: "cashier@example.invalid", role: "cashier" });
+  expect(invite.token).toMatch(/^[a-f0-9]{64}$/);
+  const inviteAdmin = await admin.mutation(api.teamManagement.prepareTeamInvitation, { businessId, expectedUserId: "admin-a", email: "newadmin@example.invalid", role: "admin" });
+  expect(inviteAdmin.role).toBe("admin");
+});
