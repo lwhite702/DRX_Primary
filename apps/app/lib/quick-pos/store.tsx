@@ -363,19 +363,6 @@ export function QuickPosProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const raw = window.sessionStorage.getItem(QUICK_POS_STORAGE_KEY);
-    if (!raw) return;
-
-    try {
-      const parsed = JSON.parse(raw) as QuickPosState;
-      dispatch({ type: "hydrate", payload: parsed });
-    } catch {
-      window.sessionStorage.removeItem(QUICK_POS_STORAGE_KEY);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
     window.sessionStorage.setItem(QUICK_POS_STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 

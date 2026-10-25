@@ -16,7 +16,8 @@ export function requireAssignableRole(auth: AuthenticatedUser, value: string) {
   return role;
 }
 export function canManagePrivilegedRoles(auth: AuthenticatedUser) {
-  return auth.businessRecord.ownerId === auth.userId || auth.userRecord.role === "OWNER" || auth.userRecord.role === "admin" || auth.userRecord.permissions?.["system.manage"] === true;
+  const role = auth.userRecord.role.toLowerCase();
+  return auth.businessRecord.ownerId === auth.userId || role === "owner" || role === "admin" || auth.userRecord.permissions?.["system.manage"] === true;
 }
 export async function changeMember(ctx: MutationCtx, auth: AuthenticatedUser, id: string, change: { role: string } | { remove: true }) {
   requirePermission(auth.userRecord, "MANAGE_MEMBERS");

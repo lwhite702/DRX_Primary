@@ -75,3 +75,27 @@ it("enriches missing team member email and name from Clerk", async () => {
   expect(ownerMember.email).toBe("lee@wrelik.com");
   expect(ownerMember.name).toBe("Lee");
 });
+it("allows business administrators to invite members and assign roles", async () => {
+  actor("admin");
+  const response = await invite("supervisor");
+  expect(response.status).toBe(201);
+  expect(mocks.send).toHaveBeenCalledTimes(1);
+  expect(mocks.send).toHaveBeenCalledWith(expect.objectContaining({
+    emailAddress: "new@example.invalid",
+    ignoreExisting: true,
+  }));
+});
+it("allows uppercase ADMIN business administrators to invite team members", async () => {
+  await t.run(async (ctx) => {
+    const adminRow = await ctx.db.query("users").withIndex("by_clerkUserId", (q) => q.eq("clerkUserId", "admin")).unique();
+    await ctx.db.patch(adminRow!._id, { role: "ADMIN" });
+  });
+  actor("admin");
+  const response = await invite("cashier");
+  expect(response.status).toBe(201);
+});
+it("allows business administrators to invite other administrators", async () => {
+  actor("admin");
+  const response = await invite("admin");
+  expect(response.status).toBe(201);
+});

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Team member invitations and management for business administrators (WRE-232)**: Enabled business administrators (`ADMIN` / `admin`) to view, invite, and assign roles for team members by adding `MANAGE_MEMBERS` to the `ADMIN` role permission matrix, normalizing role checks in team management mutations, and setting `ignoreExisting: true` on Clerk invitation requests.
+
 ## [0.13.0] - 2026-10-25
 
 ### Added

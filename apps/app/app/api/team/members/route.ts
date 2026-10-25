@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     try {
       const clerk = await clerkClient();
       const invitation = await clerk.invitations.createInvitation({
-        emailAddress: prepared.email, expiresInDays: 7, ignoreExisting: false, notify: true,
+        emailAddress: prepared.email, expiresInDays: 7, ignoreExisting: true, notify: true,
         publicMetadata: { drxBusinessId: context.businessId, drxInviteToken: prepared.token, drxRole: prepared.role, drxInvitedBy: context.expectedUserId, ...(name ? { drxInvitedName: name } : {}) },
       });
       providerInvitationId = invitation.id;

@@ -162,7 +162,10 @@ export default function TeamClient() {
         `/api/team/members?business_id=${encodeURIComponent(business.id)}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-Business-Id": business.id,
+          },
           body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
         },
       );
@@ -174,6 +177,7 @@ export default function TeamClient() {
       setInviteEmail("");
       setInviteRole("cashier");
       toast.success("Invitation sent");
+      await fetchTeam();
     } catch (error) {
       console.error("Error inviting team member:", error);
       toast.error(
