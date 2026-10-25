@@ -4,6 +4,22 @@ This page highlights changes that affect day-to-day work in DRX. Release notes u
 
 DRX is in early access, so a feature may be available on web, mobile web, or a native app at different times.
 
+## 2026-10-25 — v0.13.0
+
+### New
+
+- **Split payments and peer-to-peer checkout:** Accept Cash App, PayPal, Zelle, Venmo, or split a single order across multiple payment methods right from the payment screen.
+- **Fast customer lookup, usual items, and post-sale linking:** Search customers by name, alias, or phone number during a sale, view their top recently ordered items, add a new customer without leaving payment, or attach a customer to an anonymous receipt after checkout.
+- **Store credit controls and customer alerts:** Extend store credit limits, record balance payments, add timestamped staff notes, and set high-visibility customer alert banners that appear when an account is selected.
+- **Stock batch history and expiration tracking:** Open any product's batch drawer to inspect remaining quantities, unit costs, intake dates, and upcoming batch expirations.
+- **Flexible delivery fee splits and tracking:** Split delivery costs between the store and the customer (full pass-through, store-absorbed, 50/50 split, or custom amount) and attach live courier tracking links and arrival estimates.
+
+### Improved
+
+- **Exact dollar-amount fractional sales:** Entering a specific dollar spend for weight-based items keeps the exact dollar charge on the receipt even if you fine-tune the weighed quantity on the scale.
+- **Smoother preset editing and unit safeguards:** Weight and price preset fields let you type commas and decimals naturally, and a product's selling unit stays locked while active stock is on hand so counts stay accurate.
+- **Clearer daily reports and iOS error recovery:** Reports group daily sales summaries and operating cutoff hours in one view, and iOS screens provide a clear retry button whenever a connection check needs another attempt.
+
 ## 2026-10-10 — v0.12.0
 
 ### New

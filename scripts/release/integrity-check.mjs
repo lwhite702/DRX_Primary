@@ -294,6 +294,65 @@ export function extractUnreleased(content) {
     .trim();
 }
 
+export function extractLatestReleaseSection(content) {
+  const match = /^## \[(?!Unreleased\])([^\]]+)\](?:\s+-\s+\d{4}-\d{2}-\d{2})?\s*$/m.exec(content);
+  if (!match) return null;
+  const version = match[1];
+  const remainder = content.slice(match.index + match[0].length).replace(/^\r?\n/, "");
+  const nextHeading = remainder.search(/^## \[/m);
+  const body = (nextHeading >= 0 ? remainder.slice(0, nextHeading) : remainder)
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .join("\n")
+    .trim();
+  return { version, body };
+}
+
+export function isRuntimeProductFile(file) {
+  if (!/^(?:apps|packages|prisma)\//.test(file)) return false;
+  if (/^(?:apps|packages)\/.*(?:^|\/)(?:tests|__tests__|e2e|DRXAppTests|DRXAppUITests)\//.test(file)) {
+    return false;
+  }
+  if (/\.(?:test|spec)\.[cm]?[jt]sx?$/.test(file) || /Tests\.swift$/.test(file)) return false;
+  if (/\.mdx?$/i.test(file) || /(?:^|\/)\.env\.example$/.test(file)) return false;
+  if (/^apps\/ios\/ci_scripts\/test_/.test(file)) return false;
+  return true;
+}
+
+export function validateVersionIncrement(baseVersion, headVersion, impact, { baseBuild = null, headBuild = null } = {}) {
+  const errors = [];
+  if (!baseVersion || !headVersion || impact === "none") return errors;
+  if (!STABLE_SEMVER.test(baseVersion) || !STABLE_SEMVER.test(headVersion)) return errors;
+
+  if (compareSemver(headVersion, baseVersion) <= 0) {
+    errors.push(
+      `Release impact ${impact} requires VERSION (${headVersion}) to advance beyond base VERSION (${baseVersion}).`,
+    );
+  } else {
+    const [baseMajor, baseMinor] = baseVersion.split(".").map(Number);
+    const [headMajor, headMinor] = headVersion.split(".").map(Number);
+    if (impact === "major" && headMajor <= baseMajor) {
+      errors.push(`Release impact major requires major version to advance (${baseVersion} -> ${headVersion}).`);
+    } else if (impact === "minor" && headMajor === baseMajor && headMinor <= baseMinor) {
+      errors.push(`Release impact minor requires at least minor version to advance (${baseVersion} -> ${headVersion}).`);
+    }
+  }
+
+  if (baseBuild !== null && headBuild !== null && Number.isInteger(baseBuild) && Number.isInteger(headBuild)) {
+    if (headBuild <= baseBuild) {
+      errors.push(
+        `Release impact ${impact} requires native build CURRENT_PROJECT_VERSION (${headBuild}) to advance beyond ${baseBuild}.`,
+      );
+    }
+  }
+  return errors;
+}
+
+function parseProjectBuildNumber(projectYmlContent) {
+  const match = projectYmlContent.match(/^\s*CURRENT_PROJECT_VERSION:\s*(\d+)\s*$/m);
+  return match ? Number(match[1]) : null;
+}
+
 function isVersionLine(file, line) {
   if (file === "VERSION") return line.trim().length > 0;
   if (["package.json", "apps/app/package.json", "apps/mobile/package.json", "apps/mobile/app.json"].includes(file)) {
@@ -330,20 +389,36 @@ export function versionSurfaceEdits(diff) {
 }
 
 export function validateImpactChanges(impact, files, { baseChangelog = null, headChangelog = null, diff = "" } = {}) {
+  const { baseVersion = null, headVersion = null, baseBuild = null, headBuild = null } = arguments[2] ?? {};
   const errors = [];
+  const runtimeFiles = files.filter(isRuntimeProductFile);
+  if (impact.release === "none" && runtimeFiles.length) {
+    errors.push(
+      `Release impact none cannot modify runtime product files: ${runtimeFiles.slice(0, 5).join(", ")}${runtimeFiles.length > 5 ? "..." : ""}.`,
+    );
+  }
   if (impact.release !== "none" && !files.includes("CHANGELOG.md")) {
     errors.push(`Release impact ${impact.release} requires a CHANGELOG.md change.`);
   }
   if (impact.release !== "none" && files.includes("CHANGELOG.md")) {
     const before = baseChangelog === null ? null : extractUnreleased(baseChangelog);
     const after = headChangelog === null ? null : extractUnreleased(headChangelog);
-    if (before === null || after === null || before === after) {
+    const baseLatest = baseChangelog === null ? null : extractLatestReleaseSection(baseChangelog);
+    const headLatest = headChangelog === null ? null : extractLatestReleaseSection(headChangelog);
+    const cutNewReleaseSection =
+      headLatest !== null &&
+      headLatest.body.length > 0 &&
+      (baseLatest === null || headLatest.version !== baseLatest.version || headLatest.body !== baseLatest.body);
+    if ((before === null || after === null || before === after) && !cutNewReleaseSection) {
       errors.push(`Release impact ${impact.release} requires a substantive diff in the leading [Unreleased] section.`);
     }
   }
   const versionEdits = versionSurfaceEdits(diff);
   if (impact.release === "none" && versionEdits.length) {
     errors.push(`Release impact none cannot edit version surfaces: ${versionEdits.join(", ")}.`);
+  }
+  if (impact.release !== "none" && baseVersion && headVersion) {
+    errors.push(...validateVersionIncrement(baseVersion, headVersion, impact.release, { baseBuild, headBuild }));
   }
   if (impact.roadmap !== "none" && !files.includes("docs/help-center-export/roadmap/customer-roadmap.md")) {
     errors.push(`Roadmap impact ${impact.roadmap} requires the canonical customer roadmap to change.`);
@@ -515,25 +590,52 @@ export function validatePullRequest(root, providedEvent = null) {
   if (!impact.roadmap) errors.push("Pull request must declare Roadmap impact: none|add|move|remove.");
   if (errors.length) return errors;
 
-  const files = changedFiles(root, event.pull_request.base.sha);
-  const diff = gitDiff(root, event.pull_request.base.sha);
+  const baseSha = event.pull_request.base.sha;
+  const files = changedFiles(root, baseSha);
+  const diff = gitDiff(root, baseSha);
   const releaseChange = detectReleaseChange(
     diff,
-    contractSnapshots(root, event.pull_request.base.sha, files),
+    contractSnapshots(root, baseSha, files),
   );
   errors.push(...validateBreakingSurfaceReview(
     root,
-    event.pull_request.base.sha,
+    baseSha,
     files,
     releaseChange.breakingSurfaces,
     impact.release,
   ));
+  const baseVersion = optionalGitFile(root, baseSha, "VERSION").trim() || null;
+  const headVersion = optionalWorkingFile(root, "VERSION").trim() || null;
+  const baseBuild = parseProjectBuildNumber(optionalGitFile(root, baseSha, "apps/ios/project.yml"));
+  const headBuild = parseProjectBuildNumber(optionalWorkingFile(root, "apps/ios/project.yml"));
   errors.push(...validateImpactChanges(impact, files, {
-    baseChangelog: gitFile(root, event.pull_request.base.sha, "CHANGELOG.md"),
+    baseChangelog: gitFile(root, baseSha, "CHANGELOG.md"),
     headChangelog: readFileSync(join(root, "CHANGELOG.md"), "utf8"),
     diff,
+    baseVersion,
+    headVersion,
+    baseBuild,
+    headBuild,
   }));
   return errors;
+}
+
+export function validatePushEvent(root, providedEvent = null) {
+  if (!providedEvent && !process.env.GITHUB_EVENT_PATH) return [];
+  const event = providedEvent ?? JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
+  if (event.pull_request || event.ref !== "refs/heads/main") return [];
+  const beforeSha = event.before;
+  if (!beforeSha || /^0+$/.test(beforeSha)) return [];
+
+  const files = changedFiles(root, beforeSha);
+  const runtimeFiles = files.filter(isRuntimeProductFile);
+  if (!runtimeFiles.length) return [];
+
+  const baseVersion = optionalGitFile(root, beforeSha, "VERSION").trim() || null;
+  const headVersion = optionalWorkingFile(root, "VERSION").trim() || null;
+  const baseBuild = parseProjectBuildNumber(optionalGitFile(root, beforeSha, "apps/ios/project.yml"));
+  const headBuild = parseProjectBuildNumber(optionalWorkingFile(root, "apps/ios/project.yml"));
+  return validateVersionIncrement(baseVersion, headVersion, "patch", { baseBuild, headBuild });
 }
 
 export function validateRepository(root) {
@@ -556,12 +658,34 @@ export function validateRepository(root) {
     "utf8",
   );
   const technicalReleases = new Set(technicalChangelog.stableVersions);
+  const customerVersions = [];
   for (const match of customerChangelog.matchAll(/^## \d{4}-\d{2}-\d{2} — v(.+)\s*$/gm)) {
     const customerVersion = match[1];
+    customerVersions.push(customerVersion);
     if (!STABLE_SEMVER.test(customerVersion)) {
       errors.push(`Customer changelog contains a non-stable release heading: ${customerVersion}.`);
     } else if (!technicalReleases.has(customerVersion)) {
       errors.push(`Customer changelog ${customerVersion} has no matching technical release section.`);
+    }
+  }
+
+  const mintlifyChangelogPath = join(root, "mintlify/CHANGELOG.mdx");
+  if (existsSync(mintlifyChangelogPath)) {
+    const mintlifyChangelog = readFileSync(mintlifyChangelogPath, "utf8");
+    const mintlifyVersions = [];
+    for (const match of mintlifyChangelog.matchAll(/^## \d{4}-\d{2}-\d{2} — v(.+)\s*$/gm)) {
+      const mintlifyVersion = match[1];
+      mintlifyVersions.push(mintlifyVersion);
+      if (!STABLE_SEMVER.test(mintlifyVersion)) {
+        errors.push(`Mintlify changelog contains a non-stable release heading: ${mintlifyVersion}.`);
+      } else if (!technicalReleases.has(mintlifyVersion)) {
+        errors.push(`Mintlify changelog ${mintlifyVersion} has no matching technical release section.`);
+      }
+    }
+    if (customerVersions.length && mintlifyVersions.length && customerVersions[0] !== mintlifyVersions[0]) {
+      errors.push(
+        `Latest customer changelog version (${customerVersions[0]}) does not match Mintlify changelog (${mintlifyVersions[0]}).`,
+      );
     }
   }
 
@@ -583,6 +707,7 @@ export function validateRepository(root) {
   }
   errors.push(...validateCiDependencyPolicy(root));
   errors.push(...validatePullRequest(root));
+  errors.push(...validatePushEvent(root));
   return { errors, targetVersion, versionResult };
 }
 

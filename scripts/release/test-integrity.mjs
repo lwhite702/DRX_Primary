@@ -9,6 +9,7 @@ import { dirname, join } from "node:path";
 import {
   classifyEvidenceState,
   classifyReleaseImpact,
+  isRuntimeProductFile,
   parseImpact,
   validateChangelog,
   validateCiDependencyPolicy,
@@ -16,6 +17,8 @@ import {
   validateDeclaredImpact,
   validateImpactChanges,
   validatePullRequest,
+  validatePushEvent,
+  validateVersionIncrement,
 } from "./integrity-check.mjs";
 
 const require = createRequire(import.meta.url);
@@ -297,6 +300,67 @@ const cut = spawnSync(process.execPath, [join(import.meta.dirname, "cut.mjs"), "
 assert.equal(cut.status, 0, cut.stderr);
 assert.match(readFileSync(join(cutRoot, "CHANGELOG.md"), "utf8"), /^## \[0\.6\.0\] - \d{4}-\d{2}-\d{2}$/m);
 assert.ok(existsSync(join(cutRoot, "docs/help-center-export/changelog/drafts/0.6.0.md")));
+
+assert.equal(isRuntimeProductFile("apps/app/convex/checkout.ts"), true);
+assert.equal(isRuntimeProductFile("apps/app/tests/pos/checkout-route.test.ts"), false);
+assert.equal(isRuntimeProductFile("apps/ios/DRXAppTests/CheckoutMathTests.swift"), false);
+assert.equal(isRuntimeProductFile("docs/release/google-play-data-safety-inventory.md"), false);
+
+assert.match(
+  validateImpactChanges(
+    { release: "none", roadmap: "none" },
+    ["apps/app/convex/checkout.ts"],
+  ).join("\n"),
+  /Release impact none cannot modify runtime product files/,
+);
+
+const emptyUnreleasedBase = "# Changelog\n\n## [Unreleased]\n\n## [0.5.8] - 2026-08-20\n\n- Old work.\n";
+const cutReleaseHead = "# Changelog\n\n## [Unreleased]\n\n## [0.6.0] - 2026-08-21\n\n### Added\n\n- Cut directly.\n\n## [0.5.8] - 2026-08-20\n\n- Old work.\n";
+assert.deepEqual(
+  validateImpactChanges(
+    { release: "minor", roadmap: "none" },
+    ["CHANGELOG.md"],
+    {
+      baseChangelog: emptyUnreleasedBase,
+      headChangelog: cutReleaseHead,
+      baseVersion: "0.5.8",
+      headVersion: "0.6.0",
+      baseBuild: 31,
+      headBuild: 32,
+    },
+  ),
+  [],
+);
+
+assert.match(
+  validateVersionIncrement("0.12.0", "0.12.0", "patch", { baseBuild: 51, headBuild: 51 }).join("\n"),
+  /requires VERSION \(0\.12\.0\) to advance beyond base VERSION \(0\.12\.0\)/,
+);
+assert.match(
+  validateVersionIncrement("0.12.0", "0.12.1", "minor", { baseBuild: 51, headBuild: 51 }).join("\n"),
+  /requires at least minor version to advance/,
+);
+
+const pushRoot = registerTempDir(mkdtempSync(join(tmpdir(), "drx-release-push-")));
+const runPushGit = (args) => {
+  const result = spawnSync("git", args, { cwd: pushRoot, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout.trim();
+};
+runPushGit(["init", "--quiet"]);
+write(pushRoot, "VERSION", "0.12.0\n");
+write(pushRoot, "apps/ios/project.yml", "CURRENT_PROJECT_VERSION: 51\nMARKETING_VERSION: 0.12.0\n");
+write(pushRoot, "apps/app/feature.ts", "export const v = 1;\n");
+runPushGit(["add", "."]);
+runPushGit(["-c", "user.name=Release Integrity", "-c", "user.email=release-integrity@example.invalid", "commit", "--quiet", "-m", "base"]);
+const pushBeforeSha = runPushGit(["rev-parse", "HEAD"]);
+write(pushRoot, "apps/app/feature.ts", "export const v = 2;\n");
+runPushGit(["add", "."]);
+runPushGit(["-c", "user.name=Release Integrity", "-c", "user.email=release-integrity@example.invalid", "commit", "--quiet", "-m", "product change without version bump"]);
+assert.match(
+  validatePushEvent(pushRoot, { ref: "refs/heads/main", before: pushBeforeSha }).join("\n"),
+  /requires VERSION \(0\.12\.0\) to advance beyond base VERSION \(0\.12\.0\)/,
+);
 
 cleanup();
 console.log("Release integrity fixtures passed (version, changelog diff, SemVer, CI dependency policy, and six behavioral scenarios).");
