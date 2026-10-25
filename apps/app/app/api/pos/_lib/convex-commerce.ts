@@ -138,6 +138,36 @@ async function resolveCanonicalInput(input: CanonicalInput) {
     ...(input.fullDelivery.uberTrackingUrl ? { uberTrackingUrl: input.fullDelivery.uberTrackingUrl } : {}),
   } : undefined;
 
+  const resolvedDelivery = (() => {
+    if (fullDelivery) return fullDelivery;
+    if (!input.delivery?.enabled) return undefined;
+    const vendorFee = Math.max(0, input.delivery.vendorFeeCents || 0);
+    const mode = input.delivery.feeSplitMode ?? (input.delivery.feeAllocation === "absorb" ? "absorb_full" : "pass_full");
+    let customerFee = 0;
+    if (mode === "pass_full") customerFee = vendorFee;
+    else if (mode === "absorb_full") customerFee = 0;
+    else if (mode === "split_half") customerFee = Math.round(vendorFee / 2);
+    else if (mode === "custom") customerFee = Math.min(vendorFee, Math.max(0, input.delivery.customerFeeCents ?? 0));
+    else customerFee = input.delivery.customerFeeCents ?? (input.delivery.feeAllocation === "charge_customer" ? vendorFee : 0);
+
+    const chargeCustomer = customerFee > 0;
+    const rawTrackingUrl = input.delivery.uberTrackingUrl?.trim();
+    const validTrackingUrl = rawTrackingUrl && rawTrackingUrl.startsWith("https://") ? rawTrackingUrl : undefined;
+
+    return {
+      address: input.delivery.address || "",
+      vendorFeeCents: vendorFee,
+      chargeCustomer,
+      customerFeeCents: customerFee,
+      feeSplitMode: mode,
+      ...(input.delivery.dispatchType ? { dispatchType: input.delivery.dispatchType } : {}),
+      ...(input.delivery.estimatedArrivalMinutes !== undefined && input.delivery.estimatedArrivalMinutes > 0
+        ? { estimatedArrivalMinutes: input.delivery.estimatedArrivalMinutes }
+        : {}),
+      ...(validTrackingUrl ? { uberTrackingUrl: validTrackingUrl } : {}),
+    };
+  })();
+
   return {
     client,
     items,
@@ -145,19 +175,7 @@ async function resolveCanonicalInput(input: CanonicalInput) {
     customerId,
     priceOverrides,
     fees: input.fees?.map(fee => ({ type: fee.type, amountCents: checkedCents(fee.amount ?? 0), ...(fee.value === undefined ? {} : { value: fee.value }) })),
-    delivery: fullDelivery ?? (input.delivery?.enabled
-      ? {
-          address: input.delivery.address,
-          vendorFeeCents: input.delivery.vendorFeeCents,
-          chargeCustomer:
-            input.delivery.feeAllocation === "charge_customer",
-          ...(input.delivery.dispatchType ? { dispatchType: input.delivery.dispatchType } : {}),
-          ...(input.delivery.feeSplitMode ? { feeSplitMode: input.delivery.feeSplitMode } : {}),
-          ...(input.delivery.customerFeeCents !== undefined ? { customerFeeCents: input.delivery.customerFeeCents } : {}),
-          ...(input.delivery.estimatedArrivalMinutes !== undefined ? { estimatedArrivalMinutes: input.delivery.estimatedArrivalMinutes } : {}),
-          ...(input.delivery.uberTrackingUrl ? { uberTrackingUrl: input.delivery.uberTrackingUrl } : {}),
-        }
-      : undefined),
+    delivery: resolvedDelivery,
   };
 }
 

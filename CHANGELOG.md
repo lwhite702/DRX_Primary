@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Replay QA findings across security headers, checkout delivery, accessibility, and body lock (WRE-229)**: Sanitized delivery terms in POS checkout so delivery sales complete reliably without 503 errors; added pointer-events guardian to prevent locked body scrolling after modal closures; wrapped login in main landmark and fixed Clerk theme color crash; attached security headers in proxy; standardized canonical terms and privacy navigation links; and eliminated eager prefetching waterfalls.
 - **Team member invitations and management for business administrators (WRE-232)**: Enabled business administrators (`ADMIN` / `admin`) to view, invite, and assign roles for team members by adding `MANAGE_MEMBERS` to the `ADMIN` role permission matrix, normalizing role checks in team management mutations, and setting `ignoreExisting: true` on Clerk invitation requests.
 
 ## [0.13.0] - 2026-10-25

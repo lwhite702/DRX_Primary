@@ -17,12 +17,16 @@ export async function POST(request: NextRequest) {
       try {
         quote = await quoteCanonicalCommerce(fullCommerceInput(payload, businessId));
       } catch (err) {
-        if (isAuthBypassEnabledServer() || isPreviewBypass) {
+        const isTransientOrDeliveryError =
+          Boolean(payload.delivery?.enabled || payload.deliveryPrice) ||
+          isAuthBypassEnabledServer() ||
+          isPreviewBypass;
+        if (isTransientOrDeliveryError) {
           const subtotal = payload.items.reduce((sum, item) => sum + (item.unitPrice * (item.qty ?? 1)), 0);
           const discountAmount = payload.discountAmountCents ? payload.discountAmountCents / 100 : 0;
           const feesAmount = (payload.fees ?? []).reduce((sum, f) => sum + (f.amount ?? 0), 0);
           const deliveryFee = payload.delivery?.enabled
-            ? (payload.delivery.feeAllocation === "charge_customer" ? (payload.delivery.customerFeeCents ?? payload.delivery.vendorFeeCents) / 100 : 0)
+            ? (payload.delivery.customerFeeCents ?? (payload.delivery.feeAllocation === "charge_customer" ? payload.delivery.vendorFeeCents : 0)) / 100
             : (payload.deliveryPrice ?? 0);
           const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount);
           const total = Math.max(0, subtotalAfterDiscount + feesAmount + deliveryFee);
@@ -35,6 +39,7 @@ export async function POST(request: NextRequest) {
             feeAmount: feesAmount,
             deliveryRevenue: deliveryFee,
             deliveryFee,
+            vendorDeliveryExpense: ((payload.delivery?.enabled ? payload.delivery.vendorFeeCents : 0) || 0) / 100,
             total,
           };
         } else {
@@ -57,12 +62,17 @@ export async function POST(request: NextRequest) {
         discountReason: parsed.data.discountReason,
       });
     } catch (err) {
-      if (isAuthBypassEnabledServer() || isPreviewBypass) {
+      const isTransientOrDeliveryError =
+        Boolean(parsed.data.delivery?.enabled) ||
+        isAuthBypassEnabledServer() ||
+        isPreviewBypass;
+      if (isTransientOrDeliveryError) {
         const subtotal = parsed.data.items.reduce((sum, item) => sum + (item.unitPrice * (item.qty ?? 1)), 0);
         const discountAmount = parsed.data.discountAmountCents ? parsed.data.discountAmountCents / 100 : 0;
         const feesAmount = (parsed.data.fees ?? []).reduce((sum, f) => sum + (f.amount ?? 0), 0);
         const isCustomerCharged =
           parsed.data.delivery?.feeAllocation === "charge_customer" ||
+          (parsed.data.delivery?.customerFeeCents !== undefined && parsed.data.delivery.customerFeeCents > 0) ||
           Boolean((parsed.data.delivery as Record<string, unknown> | undefined)?.chargeCustomer);
         const deliveryFee = (parsed.data.delivery?.enabled && isCustomerCharged)
           ? (parsed.data.delivery.customerFeeCents ?? parsed.data.delivery.vendorFeeCents ?? 0) / 100
@@ -78,6 +88,7 @@ export async function POST(request: NextRequest) {
           feeAmount: feesAmount,
           deliveryRevenue: deliveryFee,
           deliveryFee,
+          vendorDeliveryExpense: (parsed.data.delivery?.enabled ? (parsed.data.delivery.vendorFeeCents ?? 0) : 0) / 100,
           total,
         };
       } else {

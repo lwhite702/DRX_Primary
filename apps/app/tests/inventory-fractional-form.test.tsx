@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterAll, beforeAll, afterEach, describe, expect, it, vi } from "vitest";
 import { InventoryForm } from "../app/(app)/inventory/_components/InventoryForm";
+import { guidedCommerceProfile } from "@/lib/commerce/product-creation";
 
 vi.mock("@/components/ui/help-tooltip", () => ({ HelpTooltip: () => null }));
 afterEach(cleanup);
@@ -76,7 +77,20 @@ describe("guided product setup", () => {
   });
 
   it("does not reset selling rules while editing an existing product", () => {
-    render(<InventoryForm initialData={{ ...initialData, id: businessId }} businessId={businessId} onSuccess={vi.fn()} onCancel={() => {}} />);
-    expect(screen.queryByRole("switch", { name: "Sell by weight or fractional amounts" })).not.toBeInTheDocument();
+    const customConfig = {
+      ...guidedCommerceProfile("g", true),
+      fractionalEnabled: true,
+      minimumSaleQuantity: 0.5,
+    };
+    render(
+      <InventoryForm
+        initialData={{ ...initialData, id: businessId, commerce_config: customConfig }}
+        businessId={businessId}
+        onSuccess={vi.fn()}
+        onCancel={() => {}}
+      />,
+    );
+    expect(screen.getByRole("switch", { name: "Sell by weight or fractional amounts" })).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "Sell by weight or fractional amounts" })).toBeChecked();
   });
 });

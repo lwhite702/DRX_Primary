@@ -41,6 +41,29 @@ const nextConfig = {
         ],
       },
       {
+        source: "/",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com https://snippet.meticulous.ai",
+              "style-src 'self' 'unsafe-inline' https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com",
+              "img-src 'self' data: blob: https://img.clerk.com https://images.clerk.dev https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com",
+              "font-src 'self' data: https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com",
+              "connect-src 'self' https://*.convex.cloud wss://*.convex.cloud https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com https://*.ingest.sentry.io https://*.posthog.com https://app.posthog.com https://us.i.posthog.com https://snippet.meticulous.ai",
+              "frame-src 'self' https://challenges.cloudflare.com https://clerk.deelrxcrm.app https://*.clerk.accounts.dev https://*.clerk.com",
+              "frame-ancestors 'none'",
+              "object-src 'none'",
+              "base-uri 'self'",
+            ].join("; "),
+          },
+        ],
+      },
+      {
         source: "/:path*",
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },

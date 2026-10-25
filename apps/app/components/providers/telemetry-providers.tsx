@@ -11,6 +11,13 @@ const PostHogProvider = dynamic(
   { ssr: false },
 );
 
+import { PointerEventsGuardian } from "@/components/ui/pointer-events-guardian";
+
 export function TelemetryProviders({ children }: { children: React.ReactNode }) {
-  return <PostHogProvider>{children}</PostHogProvider>;
+  return (
+    <PostHogProvider>
+      <PointerEventsGuardian />
+      {children}
+    </PostHogProvider>
+  );
 }
