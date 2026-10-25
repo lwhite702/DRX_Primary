@@ -23,6 +23,10 @@ export function hasClerkServerEnv() {
   );
 }
 
+export function isNoClerkPreviewEnvironment() {
+  return process.env.VERCEL_ENV === "preview" && !hasClerkServerEnv();
+}
+
 export function isTrueProductionEnvironment() {
   if (process.env.VERCEL_ENV === "preview" || process.env.VERCEL_ENV === "development") {
     return false;

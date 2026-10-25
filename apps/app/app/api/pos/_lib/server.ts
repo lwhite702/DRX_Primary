@@ -6,6 +6,41 @@ import {
   getBypassAuthUserId,
   getBypassAuthOrgId,
 } from "@/lib/auth/bypass";
+import { isNoClerkPreviewEnvironment } from "@/lib/adapters/auth/server";
+
+function hasPreviewBypassHeaders(headers: { get(name: string): string | null }): boolean {
+  const vercelBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET?.trim();
+  const bypassHeader = headers.get("x-vercel-protection-bypass")?.trim();
+  if (vercelBypassSecret && bypassHeader === vercelBypassSecret) {
+    return true;
+  }
+  const previewSecret = process.env.PREVIEW_TEST_SECRET?.trim();
+  const previewHeader = headers.get("x-preview-test-token")?.trim();
+  if (previewSecret && previewHeader === previewSecret) {
+    return true;
+  }
+  return false;
+}
+
+async function isAuthorizedPreviewTestSession(request?: Request | string): Promise<boolean> {
+  if (!isNoClerkPreviewEnvironment()) return false;
+  if (isAuthBypassEnabledServer()) return true;
+
+  if (typeof request === "object" && request && "headers" in request) {
+    return hasPreviewBypassHeaders(request.headers);
+  }
+
+  // When request is not passed (e.g. server components or routes calling resolveAuthContext()),
+  // attempt to read headers from Next.js server context if available.
+  try {
+    const { headers } = await import("next/headers");
+    return hasPreviewBypassHeaders(await headers());
+  } catch {
+    // Outside Next.js request context
+  }
+
+  return false;
+}
 
 async function businessContext(selectedBusinessId?: string) {
   const token = await getConvexAuthToken();
@@ -25,6 +60,11 @@ async function businessContext(selectedBusinessId?: string) {
 
 export async function assertBusinessAccess(userId: string, businessId: string): Promise<boolean> {
   if (isAuthBypassEnabledServer()) return true;
+  if (isNoClerkPreviewEnvironment()) {
+    const allowedOrg = process.env.BYPASS_AUTH_ORG_ID || "preview_org";
+    const allowedUser = process.env.BYPASS_AUTH_USER_ID || "preview_tester";
+    return userId === allowedUser && businessId === allowedOrg;
+  }
   const context = await businessContext(businessId);
   return context?.userId === userId;
 }
@@ -40,6 +80,12 @@ export async function resolveAuthContext(request?: Request | string) {
     return {
       userId: getBypassAuthUserId(),
       businessId: selectedBusinessId || getBypassAuthOrgId(),
+    };
+  }
+  if (await isAuthorizedPreviewTestSession(request)) {
+    return {
+      userId: process.env.BYPASS_AUTH_USER_ID || "preview_tester",
+      businessId: process.env.BYPASS_AUTH_ORG_ID || "preview_org",
     };
   }
   const context = await businessContext(selectedBusinessId);

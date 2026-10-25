@@ -15,14 +15,6 @@ const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(({ className, align = "center", sideOffset = 4, ...props }, ref) => {
-  React.useEffect(() => {
-    return () => {
-      if (typeof document !== "undefined" && document.body.style.pointerEvents === "none") {
-        document.body.style.pointerEvents = "";
-      }
-    };
-  }, []);
-
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content

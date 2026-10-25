@@ -156,9 +156,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (hasDeliveryUpdates) {
       await client.mutation((api.deliveries as any).updateDeliveryDetails, {
         deliveryId: body.delivery.deliveryId,
+        expectedSaleId: id,
         ...(body.delivery.vendorFeeCents !== undefined ? { vendorFeeCents: body.delivery.vendorFeeCents } : {}),
         ...(body.delivery.feeSplitMode !== undefined ? { feeSplitMode: body.delivery.feeSplitMode } : {}),
-        ...(body.delivery.customerFeeCents !== undefined ? { customerFeeCents: body.delivery.customerFeeCents } : {}),
         ...(body.delivery.dispatchType !== undefined ? { dispatchType: body.delivery.dispatchType } : {}),
         ...(body.delivery.estimatedArrivalMinutes !== undefined ? { estimatedArrivalMinutes: body.delivery.estimatedArrivalMinutes } : {}),
         ...(body.delivery.uberTrackingUrl !== undefined ? { uberTrackingUrl: body.delivery.uberTrackingUrl } : {}),

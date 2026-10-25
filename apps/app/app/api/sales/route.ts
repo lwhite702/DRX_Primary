@@ -41,16 +41,50 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { client } = await businessClient(request);
-    const result = await client.query(api.checkout.getSalesHistory, {});
+    let summaries: any[] = [];
+    try {
+      summaries = await client.query((api.checkout as any).getSalesHistorySummary, { limit: 50 });
+    } catch {
+      const fallbackSales = await client.query(api.checkout.getSalesHistory, {});
+      summaries = await Promise.all(
+        fallbackSales.map(async (sale: any) => {
+          try {
+            const detail: any = await client.query(api.checkout.getSaleDetail, { saleId: sale._id });
+            const items = detail.items ?? [];
+            const itemNames = items
+              .map((i: any) => i.productName || i.manualName || "Inventory Item")
+              .filter(Boolean);
+            const itemSummary =
+              itemNames.length > 0
+                ? itemNames.slice(0, 3).join(", ") +
+                  (items.length > 3 ? ` +${items.length - 3} more` : "")
+                : null;
+            return {
+              sale: detail.sale ?? sale,
+              itemCount: items.length,
+              itemSummary,
+              customer: detail.customer ?? null,
+              delivery: detail.delivery ?? null,
+              items,
+            };
+          } catch {
+            return {
+              sale,
+              itemCount: 0,
+              itemSummary: null,
+              customer: null,
+              delivery: null,
+              items: [],
+            };
+          }
+        }),
+      );
+    }
+
     const data = await Promise.all(
-      result.map(async (sale: any) => {
-        let detail: any = null;
-        try {
-          detail = await client.query(api.checkout.getSaleDetail, { saleId: sale._id });
-        } catch {
-          // fallback to raw sale row if detail query is unavailable
-        }
-        const customerSource = detail?.customer ?? sale.customer ?? null;
+      summaries.map(async (entry: any) => {
+        const sale = entry.sale ?? entry;
+        const customerSource = entry.customer ?? sale.customer ?? null;
         let customerMasked: string | null = null;
         let customerLoyaltyTier: string | null = null;
         if (customerSource) {
@@ -73,17 +107,10 @@ export async function GET(request: NextRequest) {
         } else if (sale.customerId) {
           customerMasked = formatMaskedCustomerIdentifier({ fallbackId: sale.customerId });
         }
-        const items = detail?.items ?? [];
-        const itemCount = items.length;
-        const itemNames = items
-          .map((item: any) => item.productName || item.manualName || "Item")
-          .filter(Boolean);
-        const itemSummary =
-          itemNames.length > 0
-            ? itemNames.slice(0, 3).join(", ") +
-              (itemNames.length > 3 ? ` +${itemNames.length - 3} more` : "")
-            : null;
-        const deliverySource = detail?.delivery ?? sale.delivery ?? null;
+        const items = entry.items ?? [];
+        const itemCount = entry.itemCount ?? items.length;
+        const itemSummary = entry.itemSummary ?? null;
+        const deliverySource = entry.delivery ?? sale.delivery ?? null;
         return {
           id: sale._id,
           order_number: safeDisplayOrderNumber(sale.orderNumber || sale._id),
@@ -108,18 +135,18 @@ export async function GET(request: NextRequest) {
                 status: deliverySource.status,
                 dispatchType: deliverySource.dispatchType ?? "merchant_dispatch",
                 feeSplitMode: deliverySource.feeSplitMode ?? (deliverySource.chargeCustomer ? "pass_full" : "absorb_full"),
-                vendorFee: deliverySource.vendorFeeCents / 100,
-                customerFee: (deliverySource.customerFeeCents ?? (deliverySource.chargeCustomer ? deliverySource.vendorFeeCents : 0)) / 100,
+                vendorFee: (deliverySource.vendorFeeCents ?? 0) / 100,
+                customerFee: ((deliverySource.customerFeeCents ?? (deliverySource.chargeCustomer ? deliverySource.vendorFeeCents : 0)) ?? 0) / 100,
                 estimatedArrivalMinutes: deliverySource.estimatedArrivalMinutes ?? null,
                 uberTrackingUrl: deliverySource.uberTrackingUrl ?? null,
               }
             : null,
           items: items.map((item: any, idx: number) => ({
-            id: item._id ?? `${sale._id}-line-${idx}`,
+            id: item.id ?? item._id ?? `${sale._id}-line-${idx}`,
             productName: item.productName ?? item.manualName ?? "Inventory Item",
-            unitPrice: (item.unitPriceCents ?? 0) / 100,
-            lineTotal: (item.lineTotalCents ?? 0) / 100,
-            quantity: item.quantityGrams ?? 1,
+            unitPrice: typeof item.unitPrice === "number" ? item.unitPrice : (item.unitPriceCents ?? 0) / 100,
+            lineTotal: typeof item.lineTotal === "number" ? item.lineTotal : (item.lineTotalCents ?? 0) / 100,
+            quantity: item.quantity ?? item.quantityGrams ?? 1,
           })),
         };
       }),

@@ -128,7 +128,7 @@ function unavailableSource(source: CommerceDeliverySourceSummary["source"]): Com
 
 export async function GET(request: NextRequest) {
   try {
-    const { businessId, userId } = await resolveAuthContext();
+    const { businessId, userId } = await resolveAuthContext(request);
     if (!businessId || !userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

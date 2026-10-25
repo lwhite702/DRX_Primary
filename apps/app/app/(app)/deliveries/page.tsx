@@ -555,7 +555,6 @@ export default function DeliveriesPage() {
                               deliveryId: selected._id,
                               vendorFeeCents: computedVendorCents,
                               feeSplitMode,
-                              customerFeeCents: computedCustomerCents,
                               dispatchType,
                               estimatedArrivalMinutes:
                                 Number.isSafeInteger(Number(waitMinutes)) &&

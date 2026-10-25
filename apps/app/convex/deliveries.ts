@@ -501,6 +501,29 @@ export const markUberOrdered = mutation({
       auth.businessId,
     );
     requireAssignedOperator(delivery, auth.userId, auth.userRecord.role);
+    let trimmedTrackingUrl: string | undefined = undefined;
+    if (args.uberTrackingUrl !== undefined) {
+      trimmedTrackingUrl = args.uberTrackingUrl.trim();
+      let isValidUrl = false;
+      try {
+        const parsed = new URL(trimmedTrackingUrl);
+        isValidUrl = parsed.protocol === "https:" && Boolean(parsed.hostname);
+      } catch {
+        isValidUrl = false;
+      }
+      if (!isValidUrl || trimmedTrackingUrl.length > 2000) {
+        throw new Error("INVALID_ARGUMENT: Invalid Uber tracking URL");
+      }
+    }
+    if (args.vendorFeeCents !== undefined) {
+      if (
+        !Number.isSafeInteger(args.vendorFeeCents) ||
+        args.vendorFeeCents < 0 ||
+        args.vendorFeeCents > 500000
+      ) {
+        throw new Error("INVALID_ARGUMENT: Invalid vendor fee cents");
+      }
+    }
     const now = Date.now();
     const estimatedArrivalAt = now + args.waitMinutes * 60_000;
     await transitionDelivery(ctx, {
@@ -509,16 +532,29 @@ export const markUberOrdered = mutation({
       nextStatus: "uber_ordered",
       patch: {
         estimatedArrivalAt,
-        ...(args.uberTrackingUrl ? { uberTrackingUrl: args.uberTrackingUrl } : {}),
-        ...(args.vendorFeeCents !== undefined ? { vendorFeeCents: args.vendorFeeCents } : {}),
+        ...(trimmedTrackingUrl ? { uberTrackingUrl: trimmedTrackingUrl } : {}),
+        ...(args.vendorFeeCents !== undefined
+          ? { vendorFeeCents: args.vendorFeeCents, vendorExpenseKnown: true }
+          : {}),
         estimatedArrivalMinutes: args.waitMinutes,
       },
       metadata: {
         waitMinutes: args.waitMinutes,
         estimatedArrivalAt,
-        ...(args.uberTrackingUrl ? { uberTrackingUrl: args.uberTrackingUrl } : {}),
+        ...(trimmedTrackingUrl ? { uberTrackingUrl: trimmedTrackingUrl } : {}),
       },
     });
+    if (args.vendorFeeCents !== undefined) {
+      const sale = await ctx.db.get(delivery.saleId);
+      if (!sale || sale.businessId !== auth.businessId) {
+        throw new Error("INVALID_STATE: Linked sale not found");
+      }
+      await ctx.db.patch(sale._id, {
+        vendorDeliveryExpenseCents: args.vendorFeeCents,
+        vendorDeliveryExpenseKnown: true,
+        updatedAt: Date.now(),
+      });
+    }
     const warningAt = Math.max(now, estimatedArrivalAt - 2 * 60_000);
     const reminders: Array<{
       at: number;
@@ -556,6 +592,7 @@ export const markUberOrdered = mutation({
 export const updateDeliveryDetails = mutation({
   args: {
     deliveryId: v.id("deliveries"),
+    expectedSaleId: v.optional(v.string()),
     vendorFeeCents: v.optional(v.number()),
     feeSplitMode: v.optional(v.string()),
     customerFeeCents: v.optional(v.number()),
@@ -577,6 +614,9 @@ export const updateDeliveryDetails = mutation({
       args.deliveryId,
       auth.businessId,
     );
+    if (args.expectedSaleId && String(delivery.saleId) !== String(args.expectedSaleId)) {
+      throw new Error("INVALID_ARGUMENT: Delivery does not belong to the specified sale");
+    }
     const patch: Record<string, unknown> = {
       updatedAt: Date.now(),
     };
@@ -610,13 +650,43 @@ export const updateDeliveryDetails = mutation({
     if (args.uberTrackingUrl !== undefined) {
       if (args.uberTrackingUrl !== null) {
         const trimmed = args.uberTrackingUrl.trim();
-        if (trimmed.length === 0 || trimmed.length > 2000 || !trimmed.startsWith("https://")) {
+        let isValidUrl = false;
+        try {
+          const parsed = new URL(trimmed);
+          isValidUrl = parsed.protocol === "https:" && Boolean(parsed.hostname);
+        } catch {
+          isValidUrl = false;
+        }
+        if (!isValidUrl || trimmed.length > 2000) {
           throw new Error("INVALID_ARGUMENT: Invalid Uber tracking URL");
         }
         patch.uberTrackingUrl = trimmed;
       } else {
         patch.uberTrackingUrl = undefined;
       }
+    }
+    if (args.vendorFeeCents !== undefined) {
+      if (delivery.status === "delivered" || delivery.status === "canceled") {
+        throw new Error("INVALID_STATE: Cannot update vendor fee on completed or canceled delivery");
+      }
+      if (
+        !Number.isSafeInteger(args.vendorFeeCents) ||
+        args.vendorFeeCents < 0 ||
+        args.vendorFeeCents > 500000
+      ) {
+        throw new Error("INVALID_ARGUMENT: Invalid vendor fee cents");
+      }
+      patch.vendorFeeCents = args.vendorFeeCents;
+      patch.vendorExpenseKnown = true;
+      const sale = await ctx.db.get(delivery.saleId);
+      if (!sale || sale.businessId !== auth.businessId) {
+        throw new Error("INVALID_STATE: Linked sale not found");
+      }
+      await ctx.db.patch(sale._id, {
+        vendorDeliveryExpenseCents: args.vendorFeeCents,
+        vendorDeliveryExpenseKnown: true,
+        updatedAt: Date.now(),
+      });
     }
     if (args.address !== undefined) {
       const encrypted = await encryptDeliveryAddress(args.address, {

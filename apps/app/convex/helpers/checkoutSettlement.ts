@@ -38,6 +38,20 @@ export function normalizePaymentReference(value: string | undefined) {
   return reference;
 }
 
+export const ALLOWED_SPLIT_TENDER_METHODS = new Set([
+  "cash",
+  "card",
+  "credit",
+  "zelle",
+  "p2p_cashapp",
+  "p2p_paypal",
+  "p2p_zelle",
+  "p2p_onepay",
+  "p2p_chime",
+  "p2p_venmo",
+  "p2p_other",
+]);
+
 /** Mixed tender may settle in full; any unpaid remainder requires customer credit. Split tenders derive store credit from credit tenders. */
 export function calculateSettlement(
   method: CheckoutPaymentMethod,
@@ -56,6 +70,9 @@ export function calculateSettlement(
     let tendersSum = 0;
     let splitCreditCents = 0;
     for (const tender of tenders) {
+      if (!ALLOWED_SPLIT_TENDER_METHODS.has(tender.method)) {
+        throw new Error("INVALID_ARGUMENT: Invalid payment tender method");
+      }
       if (!Number.isSafeInteger(tender.amountCents) || tender.amountCents <= 0) {
         throw new Error("INVALID_ARGUMENT: Invalid payment tender amount");
       }

@@ -182,8 +182,6 @@ export default function SaleDetailPage() {
           delivery: {
             deliveryId: sale.delivery.id,
             vendorFeeCents,
-            feeSplitMode,
-            customerFeeCents,
             dispatchType,
             estimatedArrivalMinutes:
               etaMinutes.trim() && Number(etaMinutes) > 0

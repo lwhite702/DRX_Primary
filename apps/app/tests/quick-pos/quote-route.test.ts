@@ -235,4 +235,46 @@ describe("quick POS quote route", () => {
     expect(data.success).toBe(true);
     expect(data.quote.total).toBe(30);
   });
+
+  it("computes accurate fallback quote in preview mode without Clerk when canonical commerce rejects", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("CLERK_SECRET_KEY", "");
+    vi.stubEnv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "");
+    mocks.resolveAuthContext.mockResolvedValue({
+      userId: "preview_tester",
+      businessId: "preview_org",
+    });
+    mocks.quoteCanonicalCommerce.mockRejectedValue(new Error("Convex unavailable in preview"));
+
+    const response = await POST(
+      new NextRequest("http://localhost/api/pos/quote", {
+        method: "POST",
+        body: JSON.stringify({
+          mode: "quick",
+          items: [{ id: "item-1", inventoryId: null, name: "Sample", unitPrice: 20, qty: 2, source: "manual" }],
+          discountAmountCents: 500,
+          fees: [{ type: "service", amount: 2 }],
+          delivery: {
+            enabled: true,
+            vendorFeeCents: 300,
+            feeAllocation: "charge_customer",
+            feeTaxable: false,
+            customerFeeCents: 300,
+          },
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.quote.subtotal).toBe(40);
+    expect(data.quote.subtotalAfterDiscount).toBe(35);
+    expect(data.quote.discountAmount).toBe(5);
+    expect(data.quote.feesTotal).toBe(2);
+    expect(data.quote.feeAmount).toBe(2);
+    expect(data.quote.deliveryRevenue).toBe(3);
+    expect(data.quote.deliveryFee).toBe(3);
+    expect(data.quote.total).toBe(40);
+  });
 });
