@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Improved
+
+- **Cross-surface motion and tactile feedback (WRE-218)**: Establish shared motion timing, easing, and reduced-motion conventions across web, Android, and native iOS, adding restrained route transitions, tactile button feedback, and stable loading skeletons.
+
 ### Fixed
 
 - **Dashboard and report parity across platforms (WRE-220)**: Aligned dashboard, insights, and reporting figures to use business-local timezones and the tenant-scoped completed-sale aggregate across web, iOS, and Android; stabilized iOS reports date navigation and pull-to-refresh behavior; and avoided rendering fabricated zeroes when credit, cost, or inventory data is unavailable.
@@ -21,10 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **POS customer lookup, split tenders, sales history, and delivery dispatch (WRE-199)**: Added real-time POS customer lookup with normalized phone/alias search, recent customer favorite items, and quick-add modal; expanded tender support for split payments and P2P methods (Cash App, PayPal, Zelle, Venmo) with card processor fee policies; added configurable delivery fee split models, dispatch modes, ETA updates, and Uber tracking URLs; and added full sales history inspection with tender and override breakdowns.
 - **Customer continuity through checkout (WRE-166)**: Allow authorized operators to quick-create a privacy-scoped customer during payment without losing the sale, and link an anonymous completed sale to a customer from native transaction review. Customer attribution updates purchase and loyalty totals and linked delivery records atomically with an audit event; sale settlement, inventory, and credit entries remain unchanged. Credit-sale reassignment remains blocked.
 - **Release-integrity unique version enforcement (WRE-233)**: Hardened `scripts/release/integrity-check.mjs` to reject `Release impact: none` when runtime product files change, require `VERSION` and native `CURRENT_PROJECT_VERSION` build increments on product PRs and `main` pushes, allow changelog validation via either `[Unreleased]` or a newly cut release heading matching `VERSION`, and enforce `mintlify/CHANGELOG.mdx` parity.
-
-### Improved
-
-- **Cross-surface motion and feedback (WRE-218)**: Add consistent button press depth, stable loading transitions, and restrained screen and panel motion across web, Android, and iOS, with reduced-motion support.
 
 ### Fixed
 
