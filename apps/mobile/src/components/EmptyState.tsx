@@ -1,5 +1,6 @@
+import MotionTouchableOpacity from "./MotionTouchableOpacity";
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZES } from '../constants/theme';
 
@@ -20,13 +21,13 @@ export default function EmptyState({ icon, title, message, actionLabel, onAction
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>
       {actionLabel && onAction && (
-        <TouchableOpacity
+        <MotionTouchableOpacity
           activeOpacity={0.7}
           onPress={onAction}
           style={styles.button}
         >
           <Text style={styles.buttonText}>{actionLabel}</Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       )}
     </View>
   );

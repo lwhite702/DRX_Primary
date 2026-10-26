@@ -1,14 +1,6 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
 import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useMutation } from "convex/react";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -58,9 +50,9 @@ export default function OnboardingScreen() {
         <Text style={styles.subtitle}>Next, open Inventory → Add Product. Choose whole-unit sales or turn on Allow fractional sales for that product, then set its minimum, increment, and suggested amounts. Fractional sales are never enabled for every product automatically.</Text>
         <TextInput style={styles.input} value={ownerName} onChangeText={setOwnerName} placeholder="Your name (optional)" placeholderTextColor={COLORS.textMuted} autoCapitalize="words" />
         <TextInput style={styles.input} value={businessName} onChangeText={setBusinessName} placeholder="Business name" placeholderTextColor={COLORS.textMuted} autoCapitalize="words" />
-        <TouchableOpacity style={styles.primary} onPress={submit} disabled={loading}>
+        <MotionTouchableOpacity style={styles.primary} onPress={submit} disabled={loading}>
           {loading ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.primaryText}>CREATE SECURE WORKSPACE</Text>}
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );

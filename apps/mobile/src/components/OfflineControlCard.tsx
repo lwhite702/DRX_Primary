@@ -1,5 +1,6 @@
+import MotionTouchableOpacity from "./MotionTouchableOpacity";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@drx-convex/_generated/api";
 import { useAuth } from "../contexts/AuthContext";
@@ -75,9 +76,9 @@ export function OfflineControlCard() {
       <Field label="Per-sale dollars" value={fields.perSaleLimitDollars} onChangeText={(v) => update("perSaleLimitDollars", v)} />
       <Field label="Device-session dollars" value={fields.sessionLimitDollars} onChangeText={(v) => update("sessionLimitDollars", v)} />
       <Field label="Offline credit dollars" value={fields.creditLimitDollars} onChangeText={(v) => update("creditLimitDollars", v)} />
-      <TouchableOpacity style={styles.primary} onPress={save} disabled={saving || !isOnline}>{saving ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.primaryText}>SAVE LIMITS & AUTHORIZE DEVICE</Text>}</TouchableOpacity>
-    </View> : <TouchableOpacity style={styles.secondary} onPress={refresh} disabled={!isOnline}><Text style={styles.secondaryText}>Refresh approved authorization</Text></TouchableOpacity>}
-    {queue.pending > 0 && isOnline ? <TouchableOpacity style={styles.secondary} onPress={() => void syncPending()} disabled={isSyncing}><Text style={styles.secondaryText}>{isSyncing ? "Reconciling…" : "Sync queued sales"}</Text></TouchableOpacity> : null}
+      <MotionTouchableOpacity style={styles.primary} onPress={save} disabled={saving || !isOnline}>{saving ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.primaryText}>SAVE LIMITS & AUTHORIZE DEVICE</Text>}</MotionTouchableOpacity>
+    </View> : <MotionTouchableOpacity style={styles.secondary} onPress={refresh} disabled={!isOnline}><Text style={styles.secondaryText}>Refresh approved authorization</Text></MotionTouchableOpacity>}
+    {queue.pending > 0 && isOnline ? <MotionTouchableOpacity style={styles.secondary} onPress={() => void syncPending()} disabled={isSyncing}><Text style={styles.secondaryText}>{isSyncing ? "Reconciling…" : "Sync queued sales"}</Text></MotionTouchableOpacity> : null}
   </View>;
 }
 

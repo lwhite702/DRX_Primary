@@ -1,15 +1,10 @@
+import MotionTouchableOpacity from "../../../src/components/MotionTouchableOpacity";
 import React from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-} from "react-native";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery } from "convex/react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SkeletonRows } from "../../../src/components/LoadingSkeleton";
 import { api } from "@drx-convex/_generated/api";
 import {
   BORDER_RADIUS,
@@ -32,7 +27,7 @@ export default function InventoryScreen() {
       <View style={styles.header}>
         <Text style={styles.eyebrow}>STOCK COUNTS</Text>
         <Text style={styles.title}>Products</Text>
-        <TouchableOpacity
+        <MotionTouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Add product"
           onPress={() => router.push("/(tabs)/inventory/add")}
@@ -41,13 +36,13 @@ export default function InventoryScreen() {
           <Text style={{ color: COLORS.accent, fontWeight: "700" }}>
             Add product
           </Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
         <Text style={styles.summary}>
           {products?.length ?? 0} products · {low} low · {out} out
         </Text>
       </View>
       {products === undefined ? (
-        <ActivityIndicator style={styles.loader} color={COLORS.accent} />
+        <SkeletonRows style={styles.loader} />
       ) : (
         <FlatList
           data={products}
@@ -120,7 +115,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.sm,
     marginTop: SPACING.xs,
   },
-  loader: { marginTop: 60 },
+  loader: { flex: 1 },
   list: { padding: SPACING.md, paddingBottom: 120 },
   empty: { color: COLORS.textMuted, textAlign: "center", padding: SPACING.xl },
   card: {

@@ -62,7 +62,7 @@ export function MarketingNav() {
             ref={menuButton}
             type="button"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="md:hidden flex min-h-[44px] min-w-[44px] items-center justify-center px-2 text-[14px] text-text-primary hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md"
+            className="drx-button-motion md:hidden flex min-h-[44px] min-w-[44px] items-center justify-center px-2 text-[14px] text-text-primary hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md"
             aria-expanded={mobileMenuOpen}
             aria-controls="marketing-mobile-menu"
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
@@ -76,7 +76,8 @@ export function MarketingNav() {
 
           <Link
             href={appWaitlistUrl}
-            className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[6px] bg-accent px-4 py-2 text-[14px] font-medium text-primary-foreground hover:opacity-95 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            data-motion="button"
+            className="drx-button-motion flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[6px] bg-accent px-4 py-2 text-[14px] font-medium text-primary-foreground hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             {marketingContent.hero.primaryCta.label}
           </Link>

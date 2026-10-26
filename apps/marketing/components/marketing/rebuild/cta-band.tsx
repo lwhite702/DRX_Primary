@@ -23,13 +23,15 @@ export function MarketingCtaBand() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
           <Link
             href={appWaitlistUrl}
-            className="flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[10px] bg-black px-6 text-[14px] font-semibold text-white transition-colors hover:bg-[#242424] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-accent"
+            data-motion="button"
+            className="drx-button-motion flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[10px] bg-black px-6 text-[14px] font-semibold text-white hover:bg-[#242424] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-accent"
           >
             {marketingContent.betaAccess.cta.label}
           </Link>
           <Link
             href="#workflows"
-            className="flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[10px] border border-black/65 bg-black/[0.035] px-6 text-[14px] font-semibold text-black transition-colors hover:bg-black/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-accent"
+            data-motion="button"
+            className="drx-button-motion flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[10px] border border-black/65 bg-black/[0.035] px-6 text-[14px] font-semibold text-black hover:bg-black/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-accent"
           >
             See the product
           </Link>

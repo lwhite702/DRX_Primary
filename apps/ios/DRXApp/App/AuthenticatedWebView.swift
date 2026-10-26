@@ -7,6 +7,7 @@ struct AuthenticatedWebView: View {
 
     @Environment(AppEnvironment.self) private var environment
     @Environment(Clerk.self) private var clerk
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var token: String?
     @State private var isLoadingToken = true
@@ -18,12 +19,12 @@ struct AuthenticatedWebView: View {
                 ZStack {
                     DRXPalette.canvas.ignoresSafeArea()
                     VStack(spacing: 16) {
-                        ProgressView()
-                            .tint(DRXPalette.accent)
+                        ProgressView().tint(DRXPalette.accent)
                         Text("Connecting to \(title)…")
                             .font(.subheadline)
                             .foregroundStyle(DRXPalette.muted)
                     }
+                    .transition(.opacity)
                 }
             } else if let loadError {
                 ZStack {
@@ -48,6 +49,8 @@ struct AuthenticatedWebView: View {
                     .ignoresSafeArea(.all, edges: .bottom)
             }
         }
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: isLoadingToken)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: loadError != nil)
         .onAppear {
             loadSessionToken()
         }

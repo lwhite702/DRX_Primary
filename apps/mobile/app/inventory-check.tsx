@@ -1,13 +1,7 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
+import { SkeletonBlock, SkeletonSummary } from "../src/components/LoadingSkeleton";
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  TextInput,
-} from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, Alert, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -89,20 +83,21 @@ export default function InventoryCheck() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <MotionTouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
         <Text style={styles.title}>Inventory Check</Text>
-        <TouchableOpacity style={styles.backBtn} onPress={loadRandomProduct} disabled={submitting || retryPending || loading}>
+        <MotionTouchableOpacity style={styles.backBtn} onPress={loadRandomProduct} disabled={submitting || retryPending || loading}>
           <Ionicons name="refresh" size={20} color={COLORS.accent} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </View>
 
       <View style={styles.content}>
         {loading ? (
-          <View style={styles.center}>
-             <ActivityIndicator size="large" color={COLORS.accent} />
-             <Text style={styles.loadingText}>Selecting a random product...</Text>
+          <View style={styles.loadingState}>
+             <SkeletonSummary />
+             <SkeletonBlock style={styles.loadingField} />
+             <SkeletonBlock style={styles.loadingAction} />
           </View>
         ) : product ? (
           <View>
@@ -131,7 +126,7 @@ export default function InventoryCheck() {
               autoFocus
             />
 
-            <TouchableOpacity
+            <MotionTouchableOpacity
               style={styles.actionBtn}
               onPress={handleSubmit}
               disabled={submitting || !measuredWeight}
@@ -141,7 +136,7 @@ export default function InventoryCheck() {
               ) : (
                 <Text style={styles.actionBtnText}>{retryPending ? "Retry Check" : "Submit Check"}</Text>
               )}
-            </TouchableOpacity>
+            </MotionTouchableOpacity>
           </View>
         ) : <Text style={styles.loadingText}>{loadError ?? "No product selected. Refresh to start a check."}</Text>}
       </View>
@@ -164,6 +159,9 @@ const styles = StyleSheet.create({
   title: { color: COLORS.text, fontSize: FONT_SIZES.xl, fontWeight: "700" },
   content: { flex: 1, padding: SPACING.xl },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  loadingState: { flex: 1, gap: SPACING.md },
+  loadingField: { height: 52, borderRadius: BORDER_RADIUS.md },
+  loadingAction: { height: 52, borderRadius: BORDER_RADIUS.md },
   loadingText: { color: COLORS.textSecondary, marginTop: SPACING.md },
   card: {
     backgroundColor: COLORS.surface,

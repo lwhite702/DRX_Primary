@@ -1,12 +1,6 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Linking,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -27,9 +21,9 @@ export default function Help() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+        <MotionTouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
         <Text style={styles.title}>Help & Support</Text>
         <View style={{ width: 40 }} />
       </View>
@@ -41,17 +35,17 @@ export default function Help() {
           <Text style={styles.cardText}>
             Access operator runbooks, setup guides, and troubleshooting in the DRX documentation hub.
           </Text>
-          <TouchableOpacity style={styles.actionBtn} onPress={handleOpenDocs}>
+          <MotionTouchableOpacity style={styles.actionBtn} onPress={handleOpenDocs}>
             <Ionicons name="open-outline" size={20} color={COLORS.background} />
             <Text style={styles.actionBtnText}>Open Documentation</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </MotionTouchableOpacity>
+          <MotionTouchableOpacity
             style={[styles.actionBtn, { backgroundColor: COLORS.surface, borderWidth: 1, borderColor: COLORS.border, marginTop: SPACING.sm }]}
             onPress={handleEmailSupport}
           >
             <Ionicons name="mail-outline" size={20} color={COLORS.text} />
             <Text style={[styles.actionBtnText, { color: COLORS.text }]}>Email Help Scout</Text>
-          </TouchableOpacity>
+          </MotionTouchableOpacity>
         </View>
 
         <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>

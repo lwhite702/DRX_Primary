@@ -1,14 +1,6 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
 import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSignUp } from "../src/adapters/auth/client";
@@ -97,12 +89,12 @@ export default function SignUpScreen() {
             selectionColor={COLORS.accent}
           />
         )}
-        <TouchableOpacity style={styles.primary} onPress={submit} disabled={loading}>
+        <MotionTouchableOpacity style={styles.primary} onPress={submit} disabled={loading}>
           {loading ? <ActivityIndicator color={COLORS.background} /> : <Text style={styles.primaryText}>CONTINUE</Text>}
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.secondary} onPress={() => router.replace("/login")}>
+        </MotionTouchableOpacity>
+        <MotionTouchableOpacity style={styles.secondary} onPress={() => router.replace("/login")}>
           <Text style={styles.secondaryText}>Back to sign in</Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );

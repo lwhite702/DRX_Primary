@@ -9,6 +9,15 @@ import { canonicalCreationCommerce, guidedCommerceProfile } from "../lib/commerc
 // Exercise the mobile component's controlled state with DOM equivalents of the
 // native primitives. TextInput forwards the complete text after each keystroke.
 // Resolve the native package from the mobile workspace, where it is installed.
+vi.mock("../../mobile/src/components/MotionTouchableOpacity", () => ({
+  default: ({ children, onPress, accessibilityLabel, disabled }: {
+    children?: ReactNode;
+    onPress?: () => void;
+    accessibilityLabel?: string;
+    disabled?: boolean;
+  }) => <button aria-label={accessibilityLabel} onClick={onPress} disabled={disabled}>{children}</button>,
+}));
+
 vi.mock("../../mobile/node_modules/react-native/index.js", () => ({
   View: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   Text: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
@@ -31,6 +40,10 @@ vi.mock("../../mobile/node_modules/react-native/index.js", () => ({
     accessibilityLabel?: string;
     disabled?: boolean;
   }) => <button aria-label={accessibilityLabel} onClick={onPress} disabled={disabled}>{children}</button>,
+  Platform: {
+    OS: "web",
+    select: (options: Record<string, unknown>) => options.web ?? options.default,
+  },
 }));
 
 afterEach(cleanup);

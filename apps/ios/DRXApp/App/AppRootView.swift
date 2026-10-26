@@ -55,12 +55,12 @@ struct AppRootView: View {
             }
         }
         .id(hasCompletedInitialSplash ? String(describing: environment.rootState) : "launchSplash")
-        .transition(
-            reduceMotion
-                ? .opacity
-                : .opacity.combined(with: .scale(scale: 0.985))
-        )
-        .animation(.easeInOut(duration: reduceMotion ? 0.16 : 0.3), value: environment.rootState)
+        .transition(.asymmetric(
+            insertion: DRXMotion.enter(reduceMotion: reduceMotion),
+            removal: DRXMotion.exit(reduceMotion: reduceMotion)
+        ))
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: environment.rootState)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: hasCompletedInitialSplash)
         .tint(DRXPalette.accent)
         .environment(environment)
         .environment(navigationCoordinator)
@@ -249,9 +249,9 @@ private struct SessionBootstrapView: View {
                 }
 
                 ProgressView("Loading your business…")
-                        .tint(DRXPalette.accent)
-                        .foregroundStyle(DRXPalette.muted)
-                        .accessibilityIdentifier("sessionLoadingIndicator")
+                    .tint(DRXPalette.accent)
+                    .foregroundStyle(DRXPalette.muted)
+                    .accessibilityIdentifier("sessionLoadingIndicator")
             }
             .padding(32)
             .frame(maxWidth: 440)
@@ -312,6 +312,7 @@ private struct OperatorTabView: View {
     @State private var signOutError: String?
     @State private var presentsDeliveries = false
     @State private var consumedDeliveryRouteRequestID = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         @Bindable var coordinator = navigationCoordinator
@@ -417,6 +418,7 @@ private struct OperatorTabView: View {
             .onAppear { environment.telemetry.screen("More") }
         }
         .tint(DRXPalette.accent)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: coordinator.selectedTab)
         .toolbarBackground(DRXPalette.surface, for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .toolbarColorScheme(.dark, for: .tabBar)
@@ -771,6 +773,7 @@ private struct IgnoredDeliveryMutationResponse: Decodable {}
 
 private struct DeliveryQueueView: View {
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var store = DeliveryQueueStore()
     @State private var deliveryForUber: DRXDelivery?
     @State private var deliveryForCancellation: DRXDelivery?
@@ -787,6 +790,8 @@ private struct DeliveryQueueView: View {
         Group {
             if store.isLoading && store.deliveries.isEmpty {
                 ProgressView("Loading deliveries…")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .transition(.opacity)
             } else if let error = store.error, store.deliveries.isEmpty {
                 ContentUnavailableView(
                     "Deliveries unavailable",
@@ -875,6 +880,8 @@ private struct DeliveryQueueView: View {
         } message: {
             Text(store.serverReminder?.message ?? "A delivery needs attention.")
         }
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: store.isLoading)
+        .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: store.error != nil)
     }
 }
 
@@ -915,7 +922,7 @@ private struct DeliveryQueueRow: View {
                             .foregroundStyle(DRXPalette.accent)
                     }
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(DRXQuietButtonStyle())
                 .accessibilityLabel("View details and audit history for \(delivery.safeDisplayOrderNumber)")
 
                 Spacer()
@@ -1078,6 +1085,7 @@ private struct DeliveryDetailSheet: View {
     let delivery: DRXDelivery
     let store: DeliveryQueueStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var details: DRXDeliveryDetailResponse?
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -1087,6 +1095,8 @@ private struct DeliveryDetailSheet: View {
             Group {
                 if isLoading {
                     ProgressView("Loading delivery audit log…")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .transition(.opacity)
                 } else if let errorMessage {
                     ContentUnavailableView(
                         "Audit details unavailable",
@@ -1167,6 +1177,8 @@ private struct DeliveryDetailSheet: View {
                     .listStyle(.insetGrouped)
                 }
             }
+            .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: isLoading)
+            .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: errorMessage != nil)
             .navigationTitle("Audit Log")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

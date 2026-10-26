@@ -17,10 +17,8 @@ export function NeonButton({
   return (
     <button
       className={cn(
-        "relative group bg-neon-lime text-black font-bold text-lg uppercase tracking-wider rounded-full px-8 py-4",
-        "shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all duration-300 ease-in-out",
-        "hover:scale-105 hover:shadow-[0_0_30px_rgba(204,255,0,0.5)]",
-        "active:scale-95",
+        "drx-button-motion relative group bg-neon-lime text-black font-bold text-lg uppercase tracking-wider rounded-full px-8 py-4",
+        "shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_24px_rgba(204,255,0,0.38)]",
         fullWidth ? "w-full" : "w-auto",
         className,
       )}

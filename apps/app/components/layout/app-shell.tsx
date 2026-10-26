@@ -40,7 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <NativeAppBanner />
             <div
               id="main-content"
-              className="min-w-0 flex-1 overflow-auto pb-24 md:pb-0 safe-bottom route-content-transition"
+              className="min-w-0 flex-1 overflow-auto pb-24 md:pb-0 safe-bottom"
             >
               {children}
             </div>

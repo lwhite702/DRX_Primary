@@ -18,6 +18,7 @@ import { MarketingCtaBand } from "./cta-band";
 import { ComingSoonOrdering } from "./coming-soon-ordering";
 import { MarketingFooter } from "./footer";
 import { appWaitlistUrl } from "@/lib/app-links";
+import { MarketingEntrance } from "@/components/marketing/entrance-motion";
 
 const faqItems = marketingContent.faq;
 
@@ -33,7 +34,8 @@ export function RebuiltMarketingSections() {
       {/* Main Content Landmark */}
       <main id="main-content" className="flex-1 w-full">
         {/* 02 Hero Section */}
-        <section
+        <MarketingEntrance>
+          <section
           className="relative w-full overflow-hidden border-b border-border/40 py-12 md:py-16 lg:py-24"
           aria-label="Hero"
         >
@@ -57,7 +59,7 @@ export function RebuiltMarketingSections() {
             <div className="flex flex-col justify-between gap-10 text-left lg:flex-row lg:items-center lg:gap-14">
               {/* Hero Copy */}
               <div className="flex max-w-[560px] flex-1 flex-col gap-6">
-                <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[12px] font-mono font-medium text-accent w-fit">
+                <div data-motion-entrance className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[12px] font-mono font-medium text-accent w-fit">
                   <span className="relative flex size-2">
                     <span className="animate-beacon-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
                     <span className="relative inline-flex rounded-full size-2 bg-accent" />
@@ -65,14 +67,14 @@ export function RebuiltMarketingSections() {
                   {marketingContent.hero.preheadline}
                 </div>
 
-                <h1 className="font-display text-[32px] md:text-[40px] lg:text-[48px] font-extrabold leading-[38px] md:leading-[48px] lg:leading-[56px] tracking-tight text-text-primary">
+                <h1 data-motion-entrance className="font-display text-[32px] md:text-[40px] lg:text-[48px] font-extrabold leading-[38px] md:leading-[48px] lg:leading-[56px] tracking-tight text-text-primary">
                   {marketingContent.hero.headlineLead}{" "}
                   <span className="text-accent underline decoration-accent/35 decoration-2 underline-offset-4">
                     {marketingContent.hero.headlineAccent}
                   </span>
                 </h1>
 
-                <p className="text-[16px] md:text-[18px] font-normal leading-[26px] md:leading-[28px] text-text-primary/90">
+                <p data-motion-entrance className="text-[16px] md:text-[18px] font-normal leading-[26px] md:leading-[28px] text-text-primary/90">
                   {marketingContent.hero.subheadline}
                 </p>
 
@@ -80,13 +82,15 @@ export function RebuiltMarketingSections() {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   <Link
                     href={appWaitlistUrl}
-                    className="flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[12px] bg-accent px-6 text-[14px] font-semibold text-black transition-colors hover:bg-[#dbff47] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    data-motion="button"
+                    className="drx-button-motion flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[12px] bg-accent px-6 text-[14px] font-semibold text-black transition-colors hover:bg-[#dbff47] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
                     {marketingContent.hero.primaryCta.label}
                   </Link>
                   <Link
                     href="#workflows"
-                    className="flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[12px] border border-border bg-surface px-6 text-[14px] font-medium text-text-primary hover:bg-white/5 hover:border-accent/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    data-motion="button"
+                    className="drx-button-motion flex min-h-[48px] min-w-[44px] items-center justify-center rounded-[12px] border border-border bg-surface px-6 text-[14px] font-medium text-text-primary hover:bg-white/5 hover:border-accent/30 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
                     See how it works
                   </Link>
@@ -99,11 +103,14 @@ export function RebuiltMarketingSections() {
 
               {/* Product Proof Realistic Renders */}
               <div className="flex min-w-0 w-full justify-center lg:max-w-[520px] lg:justify-end">
-                <MarketingProductProof />
+                <div data-motion-entrance>
+                  <MarketingProductProof />
+                </div>
               </div>
             </div>
           </div>
-        </section>
+          </section>
+        </MarketingEntrance>
 
         {/* 03 Value Statement Section */}
         <section

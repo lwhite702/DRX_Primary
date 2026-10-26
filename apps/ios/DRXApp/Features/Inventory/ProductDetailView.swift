@@ -9,6 +9,7 @@ struct ProductDetailView: View {
     let onRefresh: () async -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var batches: [DRXInventoryBatch] = []
     @State private var isLoadingBatches = true
     @State private var showIntake = false
@@ -47,7 +48,14 @@ struct ProductDetailView: View {
                 // FIFO Batches
                 Section("Stock batches") {
                     if isLoadingBatches {
-                        ProgressView().frame(maxWidth: .infinity)
+                        HStack(spacing: DRXSpacing.md) {
+                            ProgressView().tint(DRXPalette.accent)
+                            Text("Loading stock history…")
+                                .font(.subheadline)
+                                .foregroundStyle(DRXPalette.muted)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .transition(.opacity)
                     } else if batches.isEmpty {
                         Text("No stock batches yet.")
                             .font(.subheadline)
@@ -71,6 +79,7 @@ struct ProductDetailView: View {
             .listStyle(.insetGrouped)
             .scrollContentBackground(.hidden)
             .background(DRXPalette.canvas)
+            .animation(DRXMotion.standard(reduceMotion: reduceMotion), value: isLoadingBatches)
             .navigationTitle(product.productName)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

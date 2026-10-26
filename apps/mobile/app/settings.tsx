@@ -1,12 +1,7 @@
+import MotionTouchableOpacity from "../src/components/MotionTouchableOpacity";
+import { SkeletonBlock } from "../src/components/LoadingSkeleton";
 import React, { useEffect, useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as Application from "expo-application";
@@ -43,14 +38,14 @@ export default function Settings() {
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <TouchableOpacity
+        <MotionTouchableOpacity
           style={styles.backBtn}
           onPress={() => router.back()}
           accessibilityLabel="Go back"
           accessibilityRole="button"
         >
           <Ionicons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
         <Text style={styles.title}>Settings</Text>
         <View style={{ width: 44 }} />
       </View>
@@ -80,7 +75,10 @@ export default function Settings() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Business Settings</Text>
           {loading ? (
-             <ActivityIndicator size="small" color={COLORS.accent} />
+             <View style={styles.settingsSkeleton} accessibilityRole="progressbar" accessibilityLabel="Loading business settings">
+               <SkeletonBlock style={styles.settingsSkeletonLine} />
+               <SkeletonBlock style={styles.settingsSkeletonLineShort} />
+             </View>
           ) : settings ? (
             <View style={styles.card}>
               <View style={styles.row}>
@@ -169,6 +167,9 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1,
   },
+  settingsSkeleton: { gap: SPACING.sm, padding: SPACING.md },
+  settingsSkeletonLine: { height: 14, width: "62%" },
+  settingsSkeletonLineShort: { height: 11, width: "42%" },
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,

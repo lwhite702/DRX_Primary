@@ -1,12 +1,6 @@
+import MotionTouchableOpacity from "../../src/components/MotionTouchableOpacity";
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -168,7 +162,7 @@ export default function More() {
             <Text style={styles.sectionTitle}>{section.title}</Text>
             <View style={styles.menuCard}>
               {section.items.map((item, itemIndex) => (
-                <TouchableOpacity
+                <MotionTouchableOpacity
                   key={itemIndex}
                   style={[
                     styles.menuItem,
@@ -207,17 +201,17 @@ export default function More() {
                       color={COLORS.textMuted}
                     />
                   )}
-                </TouchableOpacity>
+                </MotionTouchableOpacity>
               ))}
             </View>
           </View>
         ))}
 
         {/* Sign Out */}
-        <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut}>
+        <MotionTouchableOpacity style={styles.signOutBtn} onPress={handleSignOut}>
           <Ionicons name="log-out-outline" size={22} color={COLORS.error} />
           <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
+        </MotionTouchableOpacity>
 
         {/* Version */}
         <View style={styles.versionContainer}>

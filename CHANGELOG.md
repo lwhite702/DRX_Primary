@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Improved
+
+- **Cross-surface motion and tactile feedback (WRE-218)**: Establish shared motion timing, easing, and reduced-motion conventions across web, Android, and native iOS, adding restrained route transitions, tactile button feedback, and stable loading skeletons.
+
 ### Fixed
 
 - **Dashboard and report parity across platforms (WRE-220)**: Aligned dashboard, insights, and reporting figures to use business-local timezones and the tenant-scoped completed-sale aggregate across web, iOS, and Android; stabilized iOS reports date navigation and pull-to-refresh behavior; and avoided rendering fabricated zeroes when credit, cost, or inventory data is unavailable.

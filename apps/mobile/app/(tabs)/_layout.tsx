@@ -1,18 +1,28 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, View, useWindowDimensions } from "react-native";
-import { COLORS } from "../../src/constants/theme";
+import { Easing, StyleSheet, View, useWindowDimensions } from "react-native";
+import { COLORS, MOTION_DURATION, MOTION_EASING } from "../../src/constants/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { drxContent } from "@deelrx/content";
+import { useReducedMotion } from "react-native-reanimated";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const { fontScale } = useWindowDimensions();
+  const reduceMotion = useReducedMotion();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        animation: reduceMotion ? "none" : "fade",
+        transitionSpec: {
+          animation: "timing",
+          config: {
+            duration: MOTION_DURATION.standard,
+            easing: Easing.bezier(...MOTION_EASING.standard),
+          },
+        },
         tabBarStyle: [styles.tabBar, { height: 72 + Math.max(insets.bottom, 8) + Math.max(0, fontScale - 1) * 24, paddingBottom: Math.max(insets.bottom, 8) }],
         tabBarHideOnKeyboard: true,
         tabBarLabelPosition: "below-icon",

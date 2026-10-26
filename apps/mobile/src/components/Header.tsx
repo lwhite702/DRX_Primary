@@ -1,5 +1,6 @@
+import MotionTouchableOpacity from "./MotionTouchableOpacity";
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, FONT_SIZES } from '../constants/theme';
@@ -20,9 +21,9 @@ export default function Header({ title, subtitle, showBack, onBack, rightAction 
       <View style={styles.content}>
         <View style={styles.left}>
           {showBack && (
-            <TouchableOpacity onPress={onBack} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Go back">
+            <MotionTouchableOpacity onPress={onBack} style={styles.backButton} accessibilityRole="button" accessibilityLabel="Go back">
               <Ionicons name="chevron-back" size={24} color={COLORS.text} />
-            </TouchableOpacity>
+            </MotionTouchableOpacity>
           )}
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={styles.title}>{title}</Text>
