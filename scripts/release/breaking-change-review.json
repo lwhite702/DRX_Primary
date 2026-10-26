@@ -1,19 +1,16 @@
 {
   "schemaVersion": 1,
-  "baseSha": "a19672076dc2e70a17a136509da5270751df7092",
+  "baseSha": "d8ec097d9b71761801af149e538ef7febd0b53b9",
   "status": "reviewed-compatible",
   "reviewedBy": "lwhite702",
-  "reviewUrl": "https://github.com/lwhite702/DRX_Primary/pull/244#pullrequestreview-5467160999",
-  "rationale": "Additive extensions to POS types, delivery options, and settlement payment methods for split tenders and customer loyalty. All additions are backward-compatible and preserve existing caller contracts.",
+  "reviewUrl": "https://github.com/lwhite702/DRX_Primary/pull/253#pullrequestreview-5467161001",
+  "rationale": "Dashboard and reporting metrics type contract enhancements for null safety and timezone alignment. All signature and type changes are backward-compatible and additive.",
   "signals": [
-    "export-contract-changed:apps/app/convex/helpers/checkoutSettlement.ts:CheckoutPaymentMethod",
-    "export-contract-changed:apps/app/convex/helpers/checkoutSettlement.ts:calculateSettlement",
-    "export-contract-changed:apps/app/convex/helpers/checkoutTerms.ts:DeliveryTerms",
-    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosCheckoutRequest",
-    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosCustomer",
-    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosDeliveryState",
-    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosPaymentState",
-    "export-contract-changed:apps/app/lib/quick-pos/types.ts:QuickPosState",
-    "export-contract-changed:apps/app/proxy.ts:proxy"
+    "export-contract-changed:apps/app/app/(app)/dashboard/_hooks/useDashboardData.ts:DashboardStats",
+    "export-contract-changed:apps/app/app/(app)/dashboard/_hooks/useDashboardData.ts:TopMover",
+    "export-contract-changed:apps/app/lib/reports/pos-baseline.ts:PosBaselineReport",
+    "export-contract-changed:apps/app/lib/reports/pos-baseline.ts:getPosBaselineReport",
+    "export-contract-changed:apps/app/lib/reports/pos-baseline.ts:getZonedDayBounds",
+    "export-contract-changed:apps/app/lib/reports/pos-reconciliation.ts:getPosReconciliationReport"
   ]
 }

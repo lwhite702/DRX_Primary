@@ -87,7 +87,7 @@ export default function SalesHistory() {
   const canManageSaleCustomers =
     hasEffectivePermission(session, "sales.create") &&
     hasEffectivePermission(session, "customers.manage");
-  const sales = useQuery(api.checkout.getSalesHistory);
+  const sales = useQuery(api.checkout.getSalesHistory, {});
   const customers = useQuery(api.customers.listCustomers, canManageSaleCustomers ? {} : "skip");
   const updateSale = useMutation(api.checkout.updateSale);
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);

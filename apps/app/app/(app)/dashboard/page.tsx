@@ -62,7 +62,7 @@ export default function DashboardPage() {
   }
 
   const preset = preferences.preset;
-  const showAlerts = stats.lowStockCount > 0 || stats.overdueCount > 0;
+  const showAlerts = (stats.lowStockCount ?? 0) > 0 || (stats.outstandingAccounts ?? 0) > 0;
   const hasActivity = stats.recentActivity.length > 0;
   const hasMovers = stats.topMovers.length > 0;
 

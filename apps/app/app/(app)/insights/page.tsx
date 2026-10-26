@@ -3,37 +3,39 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useBusiness } from "@/lib/hooks/use-business";
+import { formatCurrency } from "@/lib/utils";
 
 import { AppPageSkeleton } from "@/components/skeletons/app-page-skeleton";
 
 interface EventDeskMetrics {
-  totalSales: number;
-  salesCount: number;
-  averageSale: number;
-  inventoryAlerts: number;
+  totalSales: number | null;
+  salesCount: number | null;
+  averageSale: number | null;
+  inventoryAlerts: number | null;
   pendingIntakes: number;
   activeCustomers: number;
   creditOutstanding: number;
   recentIntakes: any[];
-  lowStockItems: any[];
+  lowStockItems: any[] | null;
   expiringBatches: any[];
 }
 
 export default function EventDeskPage() {
   const { business, loading: businessLoading } = useBusiness();
   const [metrics, setMetrics] = useState<EventDeskMetrics>({
-    totalSales: 0,
-    salesCount: 0,
-    averageSale: 0,
-    inventoryAlerts: 0,
+    totalSales: null,
+    salesCount: null,
+    averageSale: null,
+    inventoryAlerts: null,
     pendingIntakes: 0,
     activeCustomers: 0,
     creditOutstanding: 0,
     recentIntakes: [],
-    lowStockItems: [],
+    lowStockItems: null,
     expiringBatches: [],
   });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (business?.id) {
@@ -46,6 +48,7 @@ export default function EventDeskPage() {
 
     try {
       setLoading(true);
+      setLoadError(null);
 
       // Fetch all event desk data concurrently
       const [
@@ -64,17 +67,22 @@ export default function EventDeskPage() {
         fetch("/api/inventory/batches/expiring?days=30", { credentials: "same-origin" }).catch(() => null),
       ]);
 
-      const baseline = baselineResponse?.ok ? await baselineResponse.json().catch(() => ({})) : {};
+      if (!baselineResponse || !baselineResponse.ok) {
+        throw new Error("Could not load current reporting metrics.");
+      }
+
+      const baseline = await baselineResponse.json().catch(() => ({}));
       const inventory = inventoryResponse?.ok ? await inventoryResponse.json().catch(() => ({})) : {};
       const customers = customerResponse?.ok ? await customerResponse.json().catch(() => ({})) : {};
       const pendingIntakesData = pendingIntakesResponse?.ok ? await pendingIntakesResponse.json().catch(() => ({})) : {};
       const approvedIntakesData = approvedIntakesResponse?.ok ? await approvedIntakesResponse.json().catch(() => ({})) : {};
       const expiringBatchesData = expiringBatchesResponse?.ok ? await expiringBatchesResponse.json().catch(() => ({})) : {};
 
-      const totalSales = Number(baseline.today?.salesTotal ?? 0);
-      const salesCount = Number(baseline.today?.salesCount ?? 0);
-      const averageSale = salesCount > 0 ? totalSales / salesCount : 0;
+      const totalSales = typeof baseline.today?.salesTotal === "number" ? baseline.today.salesTotal : null;
+      const salesCount = typeof baseline.today?.salesCount === "number" ? baseline.today.salesCount : null;
+      const averageSale = salesCount === 0 ? null : typeof baseline.today?.averageOrderValue === "number" ? baseline.today.averageOrderValue : null;
       const lowStockItems = Array.isArray(baseline.lowStock?.items) ? baseline.lowStock.items : [];
+      const inventoryAlerts = typeof baseline.lowStock?.count === "number" ? baseline.lowStock.count : null;
       const creditOutstanding = Number(baseline.credit?.outstandingBalance ?? 0);
 
       const pendingCount = Array.isArray(pendingIntakesData.items) ? pendingIntakesData.items.length : 0;
@@ -85,16 +93,17 @@ export default function EventDeskPage() {
         totalSales,
         salesCount,
         averageSale,
-        inventoryAlerts: lowStockItems.length,
+        inventoryAlerts,
         pendingIntakes: pendingCount,
         activeCustomers: Array.isArray(customers.data) ? customers.data.length : 0,
         creditOutstanding,
         recentIntakes,
-        lowStockItems,
+        lowStockItems: inventoryAlerts === null ? null : lowStockItems,
         expiringBatches,
       });
     } catch (error) {
       console.error("Failed to load insights data:", error);
+      setLoadError("Could not load current reporting metrics. Try again.");
     } finally {
       setLoading(false);
     }
@@ -117,9 +126,11 @@ export default function EventDeskPage() {
       <div>
         <h1 className="text-3xl font-bold">Operations Insights</h1>
         <p className="text-muted-foreground mt-2">
-          Real-time business metrics and alerts
+          Business-local sales totals and inventory alerts
         </p>
       </div>
+
+      {loadError ? <p role="alert" className="text-sm text-destructive">{loadError}</p> : null}
 
       {/* Key Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -128,10 +139,10 @@ export default function EventDeskPage() {
             Today's Sales
           </h3>
           <p className="text-3xl font-bold mt-2">
-            ${(metrics?.totalSales ?? 0).toFixed(2)}
+            {metrics.totalSales === null ? "—" : formatCurrency(metrics.totalSales)}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {metrics?.salesCount ?? 0} transactions
+            {metrics.salesCount === null ? "Transaction count unavailable" : `${metrics.salesCount} transactions`}
           </p>
         </Card>
         <Card className="p-6">
@@ -139,15 +150,15 @@ export default function EventDeskPage() {
             Average Sale
           </h3>
           <p className="text-3xl font-bold mt-2">
-            ${(metrics?.averageSale ?? 0).toFixed(2)}
+            {metrics.averageSale === null ? "—" : formatCurrency(metrics.averageSale)}
           </p>
         </Card>
         <Card className="p-6">
           <h3 className="text-sm font-medium text-muted-foreground">
             Inventory Alerts
           </h3>
-          <p className="text-3xl font-bold mt-2">{metrics.inventoryAlerts}</p>
-          {metrics.inventoryAlerts > 0 && (
+          <p className="text-3xl font-bold mt-2">{metrics.inventoryAlerts ?? "—"}</p>
+          {metrics.inventoryAlerts !== null && metrics.inventoryAlerts > 0 && (
             <p className="text-xs text-yellow-600 mt-1">
               Items need restocking
             </p>
@@ -158,9 +169,7 @@ export default function EventDeskPage() {
             Pending Intakes
           </h3>
           <p className="text-3xl font-bold mt-2">{metrics.pendingIntakes}</p>
-          {metrics.pendingIntakes > 0 && (
-            <p className="text-xs text-yellow-600 mt-1">Awaiting approval</p>
-          )}
+          <p className="text-xs text-muted-foreground mt-1">Awaiting approval</p>
         </Card>
       </div>
 
@@ -201,7 +210,9 @@ export default function EventDeskPage() {
 
         <Card className="p-6">
           <h2 className="text-xl font-bold">Low Stock Alerts</h2>
-          {metrics.lowStockItems.length === 0 ? (
+          {metrics.lowStockItems === null ? (
+            <p className="text-muted-foreground mt-4">Inventory count is unavailable.</p>
+          ) : metrics.lowStockItems.length === 0 ? (
             <p className="text-muted-foreground mt-4">No low stock items</p>
           ) : (
             <div className="mt-4 space-y-3">
@@ -211,17 +222,17 @@ export default function EventDeskPage() {
                   className="flex justify-between items-center p-3 border rounded"
                 >
                   <div>
-                    <p className="font-medium">{item.product_name}</p>
+                    <p className="font-medium">{item.name || item.product_name}</p>
                     <p className="text-sm text-muted-foreground">
                       SKU: {item.sku}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-red-600">
-                      {item.quantity_on_hand}{item.selling_unit || item.unit_of_measure || "g"}
+                      {item.quantityOnHand ?? item.quantity_on_hand}{item.selling_unit || item.unit_of_measure || "g"}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Reorder: {item.reorder_level}{item.selling_unit || item.unit_of_measure || "g"}
+                      Reorder: {item.lowStockThreshold ?? item.reorder_level}{item.selling_unit || item.unit_of_measure || "g"}
                     </p>
                   </div>
                 </div>
