@@ -62,7 +62,7 @@ interface SaleRecord {
   items?: any[];
 }
 
-type QuickFilter = "all" | "unattached" | "delivery" | "cash" | "card" | "p2p" | "credit";
+type QuickFilter = "all" | "unattached" | "delivery" | "cash" | "card" | "p2p" | "credit" | "returns";
 
 export default function SalesHistoryPage() {
   const router = useRouter();
@@ -193,6 +193,10 @@ export default function SalesHistoryPage() {
         return false;
       }
       if (activeFilter === "credit" && method !== "credit") return false;
+      if (activeFilter === "returns") {
+        const st = (sale.order_status || "").toLowerCase();
+        if (st !== "cancelled" && st !== "refunded") return false;
+      }
 
       if (!searchTerm.trim()) return true;
       const term = searchTerm.toLowerCase();
@@ -336,6 +340,7 @@ export default function SalesHistoryPage() {
                 { id: "card", label: "Card" },
                 { id: "p2p", label: "P2P" },
                 { id: "credit", label: "Credit" },
+                { id: "returns", label: "Voids & Refunds" },
               ] as Array<{ id: QuickFilter; label: string }>
             ).map((pill) => (
               <button
@@ -405,6 +410,21 @@ export default function SalesHistoryPage() {
                               >
                                 <Truck className="w-2.5 h-2.5 mr-1" />
                                 Delivery
+                              </Badge>
+                            )}
+                            {sale.order_status === "cancelled" && (
+                              <Badge
+                                variant="destructive"
+                                className="text-[10px] py-0 px-1.5 bg-rose-500/20 text-rose-300 border-rose-500/40"
+                              >
+                                Voided
+                              </Badge>
+                            )}
+                            {sale.order_status === "refunded" && (
+                              <Badge
+                                className="text-[10px] py-0 px-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                              >
+                                Refunded
                               </Badge>
                             )}
                           </div>
@@ -512,6 +532,21 @@ export default function SalesHistoryPage() {
                                   className="text-[10px] py-0 px-1.5"
                                 >
                                   Delivery
+                                </Badge>
+                              )}
+                              {sale.order_status === "cancelled" && (
+                                <Badge
+                                  variant="destructive"
+                                  className="text-[10px] py-0 px-1.5 bg-rose-500/20 text-rose-300 border-rose-500/40"
+                                >
+                                  Voided
+                                </Badge>
+                              )}
+                              {sale.order_status === "refunded" && (
+                                <Badge
+                                  className="text-[10px] py-0 px-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                                >
+                                  Refunded
                                 </Badge>
                               )}
                             </div>

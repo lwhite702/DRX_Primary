@@ -144,8 +144,8 @@
       "sourcePath": "app-docs/feature_overview/sales-history-and-receipts.md",
       "mintlifyPath": "mintlify/sales/sales-history-and-receipts.mdx",
       "route": "/sales/sales-history-and-receipts",
-      "sourceSha256": "648555e9180c45abeffc038f7c6566fca1eb5c8f0cb428fca92160f3a8471b7b",
-      "outputSha256": "78f81cc1422ad2810ef990fb1cce21c12269622ae33be14eaaba44512570d598"
+      "sourceSha256": "2d57b215ce55fa8e5a4765ae9c5ce3791a2615c9fb8e98d81d5b68cf704710e5",
+      "outputSha256": "a064dc8a5658e25c5312dce25f801ba98564fda692cd4de8003f03e67ebc8a87"
     },
     {
       "articleId": "3230948",

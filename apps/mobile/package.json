@@ -1,7 +1,7 @@
 {
   "name": "deelrxcrm-mobile",
   "main": "expo-router/entry",
-  "version": "0.13.4",
+  "version": "0.14.0",
   "engines": {
     "node": "22.x"
   },

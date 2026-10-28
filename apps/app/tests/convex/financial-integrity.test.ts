@@ -388,4 +388,158 @@ describe("financial and inventory integrity contracts", () => {
       records.audits.filter((audit) => audit.action === "POS_ORDER_VOIDED"),
     ).toHaveLength(1);
   });
+
+  it("handles split tenders, P2P methods, and active delivery cancellation on void and refund", async () => {
+    process.env.DRX_PII_KEY_CURRENT_B64 = Buffer.alloc(32, 7).toString("base64");
+    try {
+      const t = convexTest(schema, modules);
+      const owner = t.withIdentity({
+        subject: "owner_multi",
+        email: "multi@example.com",
+      });
+      await owner.mutation(api.onboarding.createBusinessOnboarding, {
+        businessName: "Multi Tender Store",
+        collectTax: false,
+      });
+
+      const productId = await owner.mutation(api.products.createProduct, {
+        sku: "MULTI-1",
+        productName: "Multi-Tender Flower 1g",
+        sellingPriceCents: 4000,
+        unitCostCents: 1500,
+      });
+      await owner.mutation(api.intake.recordIntake, {
+        productId,
+        totalWeightGrams: 50,
+        totalCostCents: 75000,
+      });
+
+      // 1. Split tender sale: Card + Cash
+      const splitSale = await owner.mutation(api.checkout.processCheckout, {
+        orderNumber: "SPLIT-CARD-CASH-01",
+        items: [{ productId, quantityGrams: 1 }],
+        paymentMethod: "split",
+        amountPaidCents: 4000,
+        paymentTenders: [
+          { method: "card", amountCents: 2500, reference: "card-txn-1" },
+          { method: "cash", amountCents: 1500 },
+        ],
+      });
+
+      // Confirmation required
+      await expect(
+        owner.mutation(api.refunds.refundOrder, {
+          saleId: splitSale.saleId,
+          reason: "Customer dissatisfaction",
+          disposition: "restock",
+        }),
+      ).rejects.toThrow("Confirm the tender reversal");
+
+      // External reference required because of card tender
+      await expect(
+        owner.mutation(api.refunds.refundOrder, {
+          saleId: splitSale.saleId,
+          reason: "Customer dissatisfaction",
+          disposition: "restock",
+          tenderRefundConfirmed: true,
+        }),
+      ).rejects.toThrow("Card reversals require an external reference");
+
+      // Successful split refund
+      const splitRefundResult = await owner.mutation(api.refunds.refundOrder, {
+        saleId: splitSale.saleId,
+        reason: "Customer dissatisfaction",
+        disposition: "restock",
+        tenderRefundConfirmed: true,
+        externalReference: "card-refund-auth-999",
+      });
+      expect(splitRefundResult).toMatchObject({
+        status: "REFUNDED",
+        disposition: "restock",
+        restoredAllocations: 1,
+      });
+
+      const refundedSaleRecord = await t.run(async (ctx) =>
+        ctx.db.get(splitSale.saleId),
+      );
+      expect(refundedSaleRecord?.orderStatus).toBe("refunded");
+      expect(refundedSaleRecord?.refundSettlementStatus).toBe("external_confirmed");
+      expect(refundedSaleRecord?.refundReference).toBe("card-refund-auth-999");
+
+      // 2. P2P sale: Cash App void
+      const p2pSale = await owner.mutation(api.checkout.processCheckout, {
+        orderNumber: "P2P-CASHAPP-01",
+        items: [{ productId, quantityGrams: 1 }],
+        paymentMethod: "p2p_cashapp",
+        paymentReference: "CASHAPP-$CASHTAG",
+        amountPaidCents: 4000,
+      });
+
+      await expect(
+        owner.mutation(api.refunds.voidOrder, {
+          saleId: p2pSale.saleId,
+          reason: "CashApp payment declined by bank",
+        }),
+      ).rejects.toThrow("Confirm the tender reversal");
+
+      const p2pVoidResult = await owner.mutation(api.refunds.voidOrder, {
+        saleId: p2pSale.saleId,
+        reason: "CashApp payment declined by bank",
+        tenderReversalConfirmed: true,
+        externalReference: "cashapp-reversal-ref-001",
+      });
+      expect(p2pVoidResult).toMatchObject({
+        status: "VOIDED",
+        restoredAllocations: 1,
+      });
+
+      const voidedSaleRecord = await t.run(async (ctx) =>
+        ctx.db.get(p2pSale.saleId),
+      );
+      expect(voidedSaleRecord?.orderStatus).toBe("cancelled");
+      expect(voidedSaleRecord?.voidSettlementStatus).toBe("external_confirmed");
+      expect(voidedSaleRecord?.voidReference).toBe("cashapp-reversal-ref-001");
+
+      // 3. Active delivery linked to a sale is automatically canceled on void
+      const deliverySale = await owner.mutation(api.checkout.processCheckout, {
+        orderNumber: "DELIVERY-VOID-01",
+        items: [{ productId, quantityGrams: 1 }],
+        paymentMethod: "cash",
+        amountPaidCents: 5000,
+        delivery: {
+          address: "123 Main St, Suite 4",
+          vendorFeeCents: 1000,
+          customerFeeCents: 1000,
+          chargeCustomer: true,
+        },
+      });
+
+      const deliveryBefore = await t.run(async (ctx) =>
+        ctx.db
+          .query("deliveries")
+          .withIndex("by_saleId", (q) => q.eq("saleId", deliverySale.saleId))
+          .unique(),
+      );
+      expect(deliveryBefore?.status).toBe("ready_for_dispatch");
+
+      await owner.mutation(api.refunds.voidOrder, {
+        saleId: deliverySale.saleId,
+        reason: "Customer cancelled before dispatch",
+        tenderReversalConfirmed: true,
+      });
+
+      const deliveryAfter = await t.run(async (ctx) =>
+        ctx.db
+          .query("deliveries")
+          .withIndex("by_saleId", (q) => q.eq("saleId", deliverySale.saleId))
+          .unique(),
+      );
+      expect(deliveryAfter?.status).toBe("canceled");
+      expect(deliveryAfter?.cancellationReason).toContain(
+        "Customer cancelled before dispatch",
+      );
+    } finally {
+      delete process.env.DRX_PII_KEY_CURRENT_B64;
+    }
+  });
 });

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Cross-surface voids and refunds with tender resolution and inventory disposition (WRE-236)**: Enabled order voiding and refunding across Desktop Web, Native iOS, Android/Expo Mobile, and REST APIs (`POST /api/sales/[id]/void` and `POST /api/sales/[id]/refund`). Enforces role authorization (`MANAGE_SALES_RETURNS` / `sales.void`), required operator audit reasons, tender settlement verification across all payment methods (card gateway authorization codes, split tenders, cash, comp, credit, and P2P variants), restock vs. damaged scrap disposition (recording shrink loss), customer purchase/loyalty total reversal, and automatic cancellation of linked active deliveries with audit logging.
+
 ### Improved
 
 - **Cross-surface motion and tactile feedback (WRE-218)**: Establish shared motion timing, easing, and reduced-motion conventions across web, Android, and native iOS, adding restrained route transitions, tactile button feedback, and stable loading skeletons.

@@ -14,6 +14,7 @@ struct DashboardView: View {
     @State private var isLoading = true
     @State private var error: String?
     @State private var showIdentitySheet = false
+    @State private var selectedSale: DRXSale?
 
     var body: some View {
         ScrollView {
@@ -46,6 +47,11 @@ struct DashboardView: View {
         }
         .sheet(isPresented: $showIdentitySheet) {
             UserIdentitySheet()
+        }
+        .sheet(item: $selectedSale) { sale in
+            SaleDetailSheet(sale: sale) {
+                await load()
+            }
         }
         .task { await load() }
         .onAppear { environment.telemetry.screen("Dashboard") }
@@ -86,8 +92,14 @@ struct DashboardView: View {
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(recentSales) { sale in
-                        SaleRowView(sale: sale)
-                            .background(DRXPalette.card)
+                        Button {
+                            selectedSale = sale
+                        } label: {
+                            SaleRowView(sale: sale)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .background(DRXPalette.card)
                         Divider().padding(.leading, 16)
                     }
                 }

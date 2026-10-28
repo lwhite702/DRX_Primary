@@ -22,8 +22,8 @@ settings:
     DEVELOPMENT_TEAM: L8R42BJ54K
     CODE_SIGN_STYLE: Automatic
     VERSIONING_SYSTEM: apple-generic
-    CURRENT_PROJECT_VERSION: 56
-    MARKETING_VERSION: 0.13.4
+    CURRENT_PROJECT_VERSION: 57
+    MARKETING_VERSION: 0.14.0
 targets:
   DRXApp:
     type: application

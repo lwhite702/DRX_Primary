@@ -25,8 +25,38 @@ function resolveSettlement(
   tenderReversalConfirmed: boolean | undefined,
   externalReference: string | undefined,
 ): Settlement {
-  if (sale.paymentMethod === "credit") return { status: "credit_reversed" };
   if (sale.paymentMethod === "comp") return { status: "no_tender" };
+  if (sale.paymentMethod === "credit") return { status: "credit_reversed" };
+
+  if (sale.paymentMethod === "split") {
+    const tenders = sale.paymentTenders ?? [];
+    const nonCreditNonCompTenders = tenders.filter(
+      (t) => t.method !== "credit" && t.method !== "comp",
+    );
+    if (nonCreditNonCompTenders.length === 0) {
+      return { status: "credit_reversed" };
+    }
+    if (!tenderReversalConfirmed) {
+      throw new Error(
+        "SETTLEMENT_REQUIRED: Confirm the tender reversal before completing this action",
+      );
+    }
+    const hasCardTender = tenders.some((t) => t.method === "card");
+    const reference = externalReference?.trim();
+    if (hasCardTender) {
+      if (!reference) {
+        throw new Error(
+          "SETTLEMENT_REQUIRED: Card reversals require an external reference",
+        );
+      }
+      return { status: "external_confirmed", reference };
+    }
+    if (reference) {
+      return { status: "external_confirmed", reference };
+    }
+    return { status: "manual_confirmed" };
+  }
+
   if (!tenderReversalConfirmed) {
     throw new Error(
       "SETTLEMENT_REQUIRED: Confirm the tender reversal before completing this action",
@@ -41,9 +71,12 @@ function resolveSettlement(
     }
     return { status: "external_confirmed", reference };
   }
+  const reference = externalReference?.trim();
+  if (reference) {
+    return { status: "external_confirmed", reference };
+  }
   return {
     status: "manual_confirmed",
-    reference: externalReference?.trim() || undefined,
   };
 }
 
@@ -139,6 +172,47 @@ async function reverseCustomerAccounting(
   });
 }
 
+async function cancelActiveDeliveryForSale(
+  ctx: MutationCtx,
+  sale: Doc<"sales">,
+  actorUserId: string,
+  now: number,
+  actionVerb: "voided" | "refunded",
+  reason: string,
+) {
+  const delivery = await ctx.db
+    .query("deliveries")
+    .withIndex("by_saleId", (q) => q.eq("saleId", sale._id))
+    .unique();
+
+  if (
+    delivery &&
+    delivery.status !== "delivered" &&
+    delivery.status !== "canceled"
+  ) {
+    const fromStatus = delivery.status;
+    const cancellationReason = `Sale ${sale.orderNumber} ${actionVerb}: ${reason}`;
+    await ctx.db.patch(delivery._id, {
+      status: "canceled",
+      canceledAt: now,
+      cancellationReason,
+      updatedAt: now,
+    });
+    await ctx.db.insert("deliveryEvents", {
+      businessId: delivery.businessId,
+      deliveryId: delivery._id,
+      actorUserId,
+      type: "status_changed",
+      fromStatus,
+      toStatus: "canceled",
+      metadata: JSON.stringify({
+        reason: cancellationReason,
+      }),
+      createdAt: now,
+    });
+  }
+}
+
 async function getManagedSale(ctx: MutationCtx, saleId: Doc<"sales">["_id"]) {
   const auth = await requireUserAndBusiness(ctx);
   requirePermission(auth.userRecord, "MANAGE_SALES_RETURNS");
@@ -176,6 +250,7 @@ export const voidOrder = mutation({
     const now = Date.now();
     const restoredAllocations = await restoreSaleInventory(ctx, sale, now);
     await reverseCustomerAccounting(ctx, sale, now, auth.userId);
+    await cancelActiveDeliveryForSale(ctx, sale, auth.userId, now, "voided", reason);
 
     await ctx.db.patch(sale._id, {
       orderStatus: "cancelled",
@@ -235,6 +310,7 @@ export const refundOrder = mutation({
         ? await restoreSaleInventory(ctx, sale, now)
         : 0;
     await reverseCustomerAccounting(ctx, sale, now, auth.userId);
+    await cancelActiveDeliveryForSale(ctx, sale, auth.userId, now, "refunded", reason);
 
     await ctx.db.patch(sale._id, {
       orderStatus: "refunded",
