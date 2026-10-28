@@ -7,8 +7,10 @@ import {
 } from "../lib/credit/intelligenceEngine";
 import {
   generatePricingRecommendation,
-  generatePricingRecommendationWithAI,
 } from "../lib/utils/pricing-recommendation";
+import {
+  generatePricingRecommendationWithAI,
+} from "../lib/ai/pricing-ai";
 
 describe("DRX Intelligence engine", () => {
   it("computes high trust for strong repayment behavior", () => {
