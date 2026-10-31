@@ -72,8 +72,8 @@
       "sourcePath": "app-docs/feature_overview/feature-overview-manage-customers-and-credit.md",
       "mintlifyPath": "mintlify/customers/customers-and-store-credit.mdx",
       "route": "/customers/customers-and-store-credit",
-      "sourceSha256": "d3238d70d89e6dfca7589352cb58bb10e2946854c1758be39137ef21282d8ed9",
-      "outputSha256": "656954d5fc0f0c1743ac0e29d4e96423c12c1715d739528bb7dd5e8ad6f520cb"
+      "sourceSha256": "21ce5fe40958d4bdcbfbe868c86ca55d7e4f78398dc88c8d02a31e43bc4173ea",
+      "outputSha256": "7f3ca0d2d89ae4b5121135733673c5ecebb5088ab903acb6955ed045bd6239cd"
     },
     {
       "articleId": "9156766",
