@@ -43,9 +43,13 @@ it("does not report balance totals while any loaded account allocation is pendin
   const activeBalanceCard = () => screen.getByText("Active outstanding balance").parentElement?.parentElement?.textContent ?? "";
   expect(activeBalanceCard()).toContain("Needs reconciliation");
   expect(activeBalanceCard()).not.toContain("$7.00");
+  expect(activeBalanceCard()).toContain("Account count needs reconciliation");
+  expect(screen.getByText(/Active finite-account utilization: Needs reconciliation/)).toBeTruthy();
+  expect(screen.getByText("Incomplete aging")).toBeTruthy();
   rerender(<CreditStats accounts={[{ ...account, allocationStatus: "unreconciled" }]} agingByCustomer={{ "account-a": ready() }} accountsComplete />);
   expect(activeBalanceCard()).toContain("Needs reconciliation");
   expect(activeBalanceCard()).not.toContain("$7.00");
+  expect(screen.getByText(/Active finite-account utilization: Needs reconciliation/)).toBeTruthy();
 });
 it("never substitutes zero for pending or unreconciled aging", () => {
   const { rerender } = render(<CreditStats accounts={[account]} agingByCustomer={{}} accountsComplete />);
