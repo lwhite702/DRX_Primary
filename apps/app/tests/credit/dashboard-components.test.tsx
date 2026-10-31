@@ -28,6 +28,16 @@ it("labels loaded totals, includes every overdue range and formats counts and mo
   expect(screen.getAllByText("$7.00")).toHaveLength(2);
   expect(screen.getByText(/70.0%/)).toBeTruthy();
 });
+it("matches the dashboard active-balance definition and reports inactive debt separately", () => {
+  const inactive = { ...account, customerId: "inactive-account", displayName: "Inactive account", isActive: false, balanceCents: 500 };
+  render(<CreditStats accounts={[account, inactive]} agingByCustomer={{ "account-a": ready(), "inactive-account": ready() }} accountsComplete />);
+  expect(screen.getByText("Active outstanding balance")).toBeTruthy();
+  expect(screen.getByText("Inactive outstanding balance")).toBeTruthy();
+  expect(screen.getAllByText("$7.00")).toHaveLength(2);
+  expect(screen.getByText("$5.00")).toBeTruthy();
+  expect(screen.getByText(/1.0 active account with a balance/)).toBeTruthy();
+  expect(screen.getByText(/1.0 inactive account with a balance; excluded from the dashboard total/)).toBeTruthy();
+});
 it("never substitutes zero for pending or unreconciled aging", () => {
   const { rerender } = render(<CreditStats accounts={[account]} agingByCustomer={{}} accountsComplete />);
   expect(screen.getByText("Aging pending")).toBeTruthy();
