@@ -48,7 +48,7 @@ If a completed cash or card sale was left anonymous, an authorized operator can 
 
 ## 3. Recording a payment when a customer settles their tab
 
-On desktop web, the Payments summary separates balances for active accounts from balances still on inactive accounts. The dashboard balance alert counts active accounts only. Inactive accounts remain visible in the account list, but their balances are shown separately and are not included in the dashboard total. When only some account pages are loaded, totals are labeled as loaded-account totals until the full list is loaded.
+On desktop web, the Payments summary separates balances for active accounts from balances still on inactive accounts. The dashboard balance alert counts active accounts only. Inactive accounts remain visible in the account list, but their balances are shown separately and are not included in the dashboard total. When only some account pages are loaded, totals are labeled as loaded-account totals until the full list is loaded. If a loaded account has a pending or unreconciled balance allocation, the balance totals show that reconciliation is needed instead of presenting a partial amount.
 
 When a customer comes in and says, "Hey, here's fifty bucks towards my tab!":
 

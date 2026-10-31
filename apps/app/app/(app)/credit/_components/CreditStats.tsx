@@ -7,8 +7,11 @@ function sumSafe(values: number[]) { let sum = 0; for (const value of values) { 
 export function CreditStats({ accounts, agingByCustomer, accountsComplete, unavailable = false }: { accounts: CreditAccount[]; agingByCustomer: Record<string, CreditAgingResult>; accountsComplete: boolean; unavailable?: boolean }) {
   const activeAccounts = accounts.filter(account => account.isActive);
   const inactiveAccounts = accounts.filter(account => !account.isActive);
-  const balance = sumSafe(activeAccounts.map(account => account.balanceCents));
-  const inactiveBalance = sumSafe(inactiveAccounts.map(account => account.balanceCents));
+  // Match the Dashboard's conservative balance rule: any pending or
+  // unreconciled allocation makes the tenant balance incomplete.
+  const balancesConsistent = accounts.every(account => account.allocationStatus !== "pending" && account.allocationStatus !== "unreconciled");
+  const balance = balancesConsistent ? sumSafe(activeAccounts.map(account => account.balanceCents)) : null;
+  const inactiveBalance = balancesConsistent ? sumSafe(inactiveAccounts.map(account => account.balanceCents)) : null;
   const activeBalanceCount = activeAccounts.filter(account => account.balanceCents > 0).length;
   const inactiveBalanceCount = inactiveAccounts.filter(account => account.balanceCents > 0).length;
   const finite = activeAccounts.filter(account => account.creditEnabled && !account.unlimited);

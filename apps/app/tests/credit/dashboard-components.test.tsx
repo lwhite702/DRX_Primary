@@ -38,6 +38,15 @@ it("matches the dashboard active-balance definition and reports inactive debt se
   expect(screen.getByText(/1.0 active account with a balance/)).toBeTruthy();
   expect(screen.getByText(/1.0 inactive account with a balance; excluded from the dashboard total/)).toBeTruthy();
 });
+it("does not report balance totals while any loaded account allocation is pending or unreconciled", () => {
+  const { rerender } = render(<CreditStats accounts={[{ ...account, allocationStatus: "pending" }]} agingByCustomer={{ "account-a": ready() }} accountsComplete />);
+  const activeBalanceCard = () => screen.getByText("Active outstanding balance").parentElement?.parentElement?.textContent ?? "";
+  expect(activeBalanceCard()).toContain("Needs reconciliation");
+  expect(activeBalanceCard()).not.toContain("$7.00");
+  rerender(<CreditStats accounts={[{ ...account, allocationStatus: "unreconciled" }]} agingByCustomer={{ "account-a": ready() }} accountsComplete />);
+  expect(activeBalanceCard()).toContain("Needs reconciliation");
+  expect(activeBalanceCard()).not.toContain("$7.00");
+});
 it("never substitutes zero for pending or unreconciled aging", () => {
   const { rerender } = render(<CreditStats accounts={[account]} agingByCustomer={{}} accountsComplete />);
   expect(screen.getByText("Aging pending")).toBeTruthy();
