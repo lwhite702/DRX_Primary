@@ -94,7 +94,7 @@
     "@radix-ui/react-toggle": "1.1.1",
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
-    "@sentry/nextjs": "^10.38.0",
+    "@sentry/nextjs": "^10.75.2",
     "@upstash/ratelimit": "^2.0.7",
     "@upstash/redis": "^1.35.8",
     "@wrelik/analytics": "file:../../packages/wrelik-analytics-0.2.2.tgz",
@@ -118,7 +118,7 @@
     "jsonwebtoken": "^9.0.3",
     "libsodium-wrappers-sumo": "^0.8.2",
     "lucide-react": "^0.454.0",
-    "next": "16.3.4",
+    "next": "16.4.1",
     "posthog-js": "^1.310.1",
     "react": "19.2.3",
     "react-day-picker": "9.8.0",
@@ -131,7 +131,7 @@
     "svix": "^1.21.0",
     "tailwind-merge": "^2.5.5",
     "vaul": "^0.9.9",
-    "zod": "3.25.76"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.1",
