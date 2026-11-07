@@ -4,6 +4,8 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Now
 
+- **Clear active and inactive balance totals** (`in progress`)
+  Dashboard and Payments figures use the same active-account definition, while balances on inactive accounts remain visible in a separate total.
 - **Create or attach customers during checkout** (`in progress`)
   Create an allowed minimal customer profile from the payment step without losing the current sale, or link an active customer to a completed anonymous sale from transaction review.
 - **Accurate first-run setup progress** (`in progress`)
@@ -46,9 +48,6 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 - **Loyalty points and redemption** (`planned`)
   Point accrual and redemption beyond the spend-based tier benefits planned for 0.6.0.
-
-- **Credit / balance workflow polish** (`planned`)  
-  Better visibility for overdue tracking and cleaner payment posting confidence.
 
 - **Role and permission consistency** (`planned`)  
   Ongoing cleanup so role behavior is predictable across all routes.
