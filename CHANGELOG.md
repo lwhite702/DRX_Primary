@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Improved
 
+- **Payments and customer credit screens (GH-262)**: Make customer balances easier to find and understand with full-list name or alias search, due-age details, plain-language payment history and actions, and clear labels when balances or totals need review.
 - **Cross-surface motion and tactile feedback (WRE-218)**: Establish shared motion timing, easing, and reduced-motion conventions across web, Android, and native iOS, adding restrained route transitions, tactile button feedback, and stable loading skeletons.
 
 ### Fixed

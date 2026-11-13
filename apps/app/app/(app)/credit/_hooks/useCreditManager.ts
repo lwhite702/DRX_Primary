@@ -3,7 +3,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { formatCount } from "@/lib/number-format";
 import { useAuth } from "@/lib/adapters/auth/ui";
-import { aggregateCreditAging, fetchCreditAccountsPage, refreshCreditAllocation, type CreditAccount, type CreditAgingResult } from "@/lib/credit/dashboard-client";
+import { maskAlias } from "@/lib/privacy/masking";
+import { aggregateCreditAging, fetchCreditAccountsPage, refreshCreditAllocation, searchCreditAccounts, type CreditAccount, type CreditAgingResult } from "@/lib/credit/dashboard-client";
 import { CreditPendingQueue, syncCreditRequests, resolveCreditRequests, type CreditQueueScope, type CreditRequestInput } from "@/lib/credit/pending-queue";
 
 const transactionSchema = z.object({ id: z.string().min(1), customerId: z.string().min(1), amountCents: z.number().int().positive().max(Number.MAX_SAFE_INTEGER).or(z.literal(0)), transactionType: z.enum(["extension", "payment", "purchase", "opening"]), createdAt: z.string().datetime(), status: z.enum(["completed", "unreconciled"]), dueDate: z.string().datetime().optional(), paymentMethod: z.string().max(100).optional() });
@@ -25,6 +26,11 @@ export function useCreditManager(businessId: string | undefined) {
   const queue = useRef<CreditPendingQueue | null>(null);
   if (!queue.current) queue.current = new CreditPendingQueue();
   const [state, setState] = useState(() => empty(key));
+  const [searchState, setSearchState] = useState<{ key: string; query: string; results: CreditAccount[]; aging: Record<string, CreditAgingResult>; loading: boolean; error: string | null }>({ key, query: "", results: [], aging: {}, loading: false, error: null });
+  const [historyState, setHistoryState] = useState<{ key: string; customerId?: string; customerLabel?: string; transactions: CreditDashboardTransaction[]; loading: boolean; error: string | null }>({ key, transactions: [], loading: false, error: null });
+  const searchVersion = useRef(0);
+  const searchController = useRef<AbortController | null>(null);
+  const historyController = useRef<AbortController | null>(null);
   const stateRef = useRef(state); stateRef.current = state;
   const active = useCallback(() => current.current === context && context.mounted, [context]);
   const patch = useCallback((value: Partial<State>) => {
@@ -91,6 +97,50 @@ export function useCreditManager(businessId: string | undefined) {
   }, [active, context, key, patch, scopedFetch]);
   const refreshData = useCallback(() => read(false), [read]);
   const loadMoreAccounts = useCallback(() => read(true), [read]);
+  const searchAccounts = useCallback(async (rawQuery: string, maskNames = false) => {
+    const query = rawQuery.trim();
+    const version = ++searchVersion.current;
+    searchController.current?.abort();
+    if (!query) { setSearchState({ key, query: "", results: [], aging: {}, loading: false, error: null }); return; }
+    if (!context.scope.businessId || !context.scope.operatorId) return;
+    const controller = new AbortController(); searchController.current = controller;
+    setSearchState({ key, query, results: [], aging: {}, loading: true, error: null });
+    const valid = () => active() && searchVersion.current === version && !controller.signal.aborted;
+    try {
+      const accounts = await searchCreditAccounts({ businessId: context.scope.businessId, query, displayNameForSearch: maskNames ? maskAlias : undefined, signal: controller.signal }, scopedFetch);
+      if (!valid()) return;
+      const asOfDate = Math.floor(Date.now() / 86400000) * 86400000;
+      const aging: Record<string, CreditAgingResult> = {};
+      let agingFailed = false;
+      for (let i = 0; i < accounts.length; i += 10) {
+        const rows = await Promise.allSettled(accounts.slice(i, i + 10).map(async account => {
+          const result = await aggregateCreditAging({ businessId: context.scope.businessId, customerId: account.customerId, asOfDate, maxPages: 100, signal: controller.signal }, scopedFetch);
+          if (result.balanceCents !== account.balanceCents) throw new Error("Balance changed during search");
+          return [account.customerId, result] as const;
+        }));
+        if (!valid()) return;
+        for (const row of rows) { if (row.status === "fulfilled") aging[row.value[0]] = row.value[1]; else agingFailed = true; }
+      }
+      if (valid()) setSearchState({ key, query, results: accounts, aging, loading: false, error: agingFailed ? "Some due-date details could not be loaded. Refresh to try again." : null });
+    } catch {
+      if (valid()) setSearchState({ key, query, results: [], aging: {}, loading: false, error: "Customer search could not be completed. Check your connection and try again." });
+    }
+  }, [active, context, key, scopedFetch]);
+  const loadCustomerHistory = useCallback(async (customerId: string, customerLabel: string) => {
+    historyController.current?.abort();
+    const controller = new AbortController(); historyController.current = controller;
+    setHistoryState({ key, customerId, customerLabel, transactions: [], loading: true, error: null });
+    try {
+      const params = new URLSearchParams({ business_id: context.scope.businessId, customerId });
+      const response = await scopedFetch(`/api/credit/transactions?${params}`, { signal: controller.signal, cache: "no-store" });
+      if (!active() || controller.signal.aborted) return;
+      if (!response.ok) throw new Error("History unavailable");
+      const transactions = z.array(transactionSchema).max(5000).parse(await response.json()).map(row => ({ ...row, customerLabel }));
+      if (active() && !controller.signal.aborted) setHistoryState({ key, customerId, customerLabel, transactions, loading: false, error: null });
+    } catch {
+      if (active() && !controller.signal.aborted) setHistoryState({ key, customerId, customerLabel, transactions: [], loading: false, error: "Payment history could not be loaded. Try again." });
+    }
+  }, [active, context.scope.businessId, key, scopedFetch]);
   const syncPending = useCallback(async () => {
     if (context.writing || !active() || !context.scope.operatorId || !context.scope.businessId) return;
     context.writing = true; patch({ mutating: true });
@@ -185,8 +235,10 @@ export function useCreditManager(businessId: string | undefined) {
     if (context.scope.operatorId && context.scope.businessId) void pending().catch(() => patch({ error: "Pending credit storage is unavailable. New requests cannot be safely submitted." }));
     const online = () => { void syncPending(); };
     window.addEventListener("online", online);
-    return () => { context.mounted = false; for (const controller of context.controllers) controller.abort(); window.removeEventListener("online", online); };
+    return () => { context.mounted = false; for (const controller of context.controllers) controller.abort(); searchController.current?.abort(); historyController.current?.abort(); window.removeEventListener("online", online); };
   }, [context, patch, pending, refreshData, syncPending]);
   const visible = state.key === key ? state : empty(key);
-  return { ...visible, hasMoreAccounts: !visible.accountsComplete && Boolean(visible.cursor), refreshData, loadMoreAccounts, refreshAllocation, syncPending, resolvePending, handleExtension, handlePayment, setShowExtensionDialog: (open: boolean) => patch({ showExtensionDialog: open }), setShowPaymentDialog: (open: boolean) => patch({ showPaymentDialog: open }) };
+  const visibleSearch = searchState.key === key ? searchState : { key, query: "", results: [], aging: {}, loading: false, error: null };
+  const visibleHistory = historyState.key === key ? historyState : { key, customerId: undefined, customerLabel: undefined, transactions: [], loading: false, error: null };
+  return { ...visible, searchQuery: visibleSearch.query, searchResults: visibleSearch.results, searchAging: visibleSearch.aging, searchLoading: visibleSearch.loading, searchError: visibleSearch.error, historyTransactions: visibleHistory.transactions, historyLoading: visibleHistory.loading, historyError: visibleHistory.error, historyCustomerId: visibleHistory.customerId, historyCustomerLabel: visibleHistory.customerLabel, hasMoreAccounts: !visible.accountsComplete && Boolean(visible.cursor), refreshData, loadMoreAccounts, searchAccounts, loadCustomerHistory, clearCustomerHistory: () => { historyController.current?.abort(); setHistoryState({ key, transactions: [], loading: false, error: null }); }, refreshAllocation, syncPending, resolvePending, handleExtension, handlePayment, setShowExtensionDialog: (open: boolean) => patch({ showExtensionDialog: open }), setShowPaymentDialog: (open: boolean) => patch({ showPaymentDialog: open }) };
 }

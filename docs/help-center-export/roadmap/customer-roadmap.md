@@ -4,6 +4,8 @@ This roadmap is directional. It shows what we’re actively shaping based on pro
 
 ## Now
 
+- **Clearer customer balances and payment history** (`in progress`)
+  Find customers across the full list by name or alias, see how much is owed and how long it has been due, and review balances that still need checking before acting.
 - **Clear active and inactive balance totals** (`in progress`)
   Dashboard and Payments figures use the same active-account definition, while balances on inactive accounts remain visible in a separate total.
 - **Create or attach customers during checkout** (`in progress`)

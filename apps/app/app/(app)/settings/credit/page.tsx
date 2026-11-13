@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { useAuth } from "@/lib/adapters/auth/ui";
-import { formatAmount, formatCount, formatPercentage } from "@/lib/number-format";
+import { formatAmount, formatPercentage } from "@/lib/number-format";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +30,7 @@ function displayMoneyCents(value: number) {
   return exactHundredths(formatted) === value ? formatted : hundredthsInput(value);
 }
 function failure(status?: number) {
-  return status === 403 ? "You do not have permission to manage credit recommendation settings." : status === 401 ? "Sign in again to manage credit recommendation settings." : status === 409 ? "Settings changed or require reconciliation. Refresh the saved settings before continuing." : "Credit recommendation settings are temporarily unavailable.";
+  return status === 403 ? "You do not have permission to manage suggested credit settings." : status === 401 ? "Sign in again to manage suggested credit settings." : status === 409 ? "These settings changed. Reload them before continuing." : "Suggested credit settings are temporarily unavailable.";
 }
 export default function CreditRecommendationSettingsPage() {
   const { business, loading } = useBusiness();
@@ -118,26 +118,34 @@ function SettingsEditor({ businessId, userId }: { businessId: string; userId: st
       const result = parsed.success ? parsed.data.settings : null;
       if (!result || result.businessId !== businessId || result.revision !== (request.expectedRevision ?? 0) + 1 || result.enabled !== request.enabled || result.maxCustomerCents !== request.maxCustomerCents || result.newCustomerCents !== request.newCustomerCents || result.inventoryCapBps !== request.inventoryCapBps || result.autoRefreshDays !== request.autoRefreshDays) { setError("The save receipt could not be verified. Retry the same request to confirm its status."); return; }
       const latest = saved && saved.revision > result.revision ? saved : result;
-      setSaved(latest); populate(latest); setDenied(false); attempt.current = null; setUncertain(false); setNotice("Recommendation settings save confirmed.");
+      setSaved(latest); populate(latest); setDenied(false); attempt.current = null; setUncertain(false); setNotice("Suggested credit settings saved.");
     } catch { if (mounted.current && !controller.signal.aborted) setError("The save is unconfirmed. Retry the same request before changing these settings."); }
     finally { controllers.current.delete(controller); if (mounted.current && !controller.signal.aborted) { busy.current = false; setSaving(false); } }
   };
   const locked = loading || saving || uncertain || denied || !loaded;
-  return <main className="mx-auto max-w-3xl space-y-6 p-4 md:p-8">
-    <header><h1 className="text-2xl font-semibold">Credit recommendation settings</h1><p className="mt-2 text-sm text-muted-foreground">Control recommendation limits and review timing. Enabling recommendations does not automatically apply a credit policy. The review interval saves the desired cadence; scheduled refresh is not active yet.</p></header>
+  return <main className="mx-auto max-w-4xl space-y-6 p-4 md:p-8">
+    <header><h1 className="text-2xl font-semibold">Suggested credit settings</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground">Set the amounts DRX can suggest and how often your team should review them. Suggestions never change a customer's credit automatically. The review interval is saved here; automatic reminders are not active.</p></header>
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
     {notice && <p role="status">{notice}</p>}
     {loading && <p role="status">Loading saved settings…</p>}
-    {loaded && !saved && <p>No recommendation configuration has been saved. Enter each setting explicitly.</p>}
+    {loaded && !saved && <p>No settings have been saved yet. Enter each value before saving.</p>}
     {uncertain && <section aria-label="Unconfirmed settings request" className="space-y-2 rounded-lg border p-4"><p>The last save is unconfirmed. Its original values are retained while this page remains open.</p><p className="text-sm text-muted-foreground">Refreshing saved settings does not discard this attempt. Retry it to obtain confirmation before editing.</p><Button disabled={loading || saving} onClick={() => void save()}>Retry same save</Button></section>}
-    <form onSubmit={save} className="space-y-4">
-      <div className="flex items-center gap-2"><input id="recommendations-enabled" type="checkbox" checked={enabled} onChange={event => setEnabled(event.target.checked)} disabled={locked} /><Label htmlFor="recommendations-enabled">Enable credit recommendations</Label></div>
-      <div className="space-y-2"><Label htmlFor="recommendation-maximum">Maximum recommended credit per account ($)</Label><Input id="recommendation-maximum" inputMode="decimal" value={maximum} onChange={event => setMaximum(event.target.value)} disabled={locked} required /></div>
-      <div className="space-y-2"><Label htmlFor="recommendation-cap">Inventory value cap (%)</Label><Input id="recommendation-cap" inputMode="decimal" value={cap} onChange={event => setCap(event.target.value)} disabled={locked} required /></div>
-      <div className="space-y-2"><Label htmlFor="recommendation-new">New account recommendation ($)</Label><Input id="recommendation-new" inputMode="decimal" value={newCustomer} onChange={event => setNewCustomer(event.target.value)} disabled={locked} required /></div>
-      <div className="space-y-2"><Label htmlFor="recommendation-days">Review interval (days)</Label><Input id="recommendation-days" inputMode="numeric" value={days} onChange={event => setDays(event.target.value)} disabled={locked} required /></div>
-      <div className="flex flex-wrap gap-2"><Button type="submit" disabled={locked}>{saving ? "Saving…" : "Save settings"}</Button><Button type="button" variant="outline" disabled={loading || saving} onClick={() => void load()}>Refresh saved settings</Button></div>
+    <form onSubmit={save} className="space-y-6">
+      <section aria-labelledby="suggestions-heading" className="space-y-4 rounded-xl border p-5">
+        <div><h2 id="suggestions-heading" className="font-semibold">Use suggested amounts</h2><p className="mt-1 text-sm text-muted-foreground">Suggestions help a team member decide. They do not change the customer's account.</p></div>
+        <div className="flex items-center gap-2"><input id="recommendations-enabled" type="checkbox" checked={enabled} onChange={event => setEnabled(event.target.checked)} disabled={locked} /><Label htmlFor="recommendations-enabled">Show suggested credit amounts</Label></div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2"><Label htmlFor="recommendation-maximum">Highest suggested amount per customer ($)</Label><Input id="recommendation-maximum" inputMode="decimal" value={maximum} onChange={event => setMaximum(event.target.value)} disabled={locked} required /></div>
+          <div className="space-y-2"><Label htmlFor="recommendation-new">Suggested amount for a new customer ($)</Label><Input id="recommendation-new" inputMode="decimal" value={newCustomer} onChange={event => setNewCustomer(event.target.value)} disabled={locked} required /></div>
+        </div>
+        <div className="space-y-2"><Label htmlFor="recommendation-cap">Maximum share of inventory value (%)</Label><Input id="recommendation-cap" inputMode="decimal" value={cap} onChange={event => setCap(event.target.value)} disabled={locked} required /></div>
+      </section>
+      <section aria-labelledby="review-heading" className="space-y-4 rounded-xl border p-5">
+        <div><h2 id="review-heading" className="font-semibold">Review suggestions</h2><p className="mt-1 text-sm text-muted-foreground">Choose how often your team should review them. DRX does not send automatic reminders.</p></div>
+        <div className="space-y-2"><Label htmlFor="recommendation-days">Review every (days)</Label><Input id="recommendation-days" inputMode="numeric" value={days} onChange={event => setDays(event.target.value)} disabled={locked} required /></div>
+      </section>
+      <div className="flex flex-wrap gap-2"><Button type="submit" disabled={locked}>{saving ? "Saving…" : "Save suggested credit settings"}</Button><Button type="button" variant="outline" disabled={loading || saving} onClick={() => void load()}>Reload saved settings</Button></div>
     </form>
-    {saved && <section aria-label="Saved recommendation settings" className="space-y-2 rounded-lg border p-4"><h2 className="font-semibold">Last confirmed configuration</h2><p>{saved.enabled ? "Recommendations enabled" : "Recommendations disabled"}</p><dl className="grid gap-3 sm:grid-cols-2"><div><dt>Maximum per account</dt><dd>${displayMoneyCents(saved.maxCustomerCents)}</dd></div><div><dt>Inventory cap</dt><dd>{formatPercentage(saved.inventoryCapBps / 100)}%</dd></div><div><dt>New account recommendation</dt><dd>${displayMoneyCents(saved.newCustomerCents)}</dd></div><div><dt>Review interval</dt><dd>{formatCount(saved.autoRefreshDays)} days</dd></div></dl></section>}
+    {saved && <section aria-label="Saved suggested credit settings" className="space-y-2 rounded-lg border p-4"><h2 className="font-semibold">Last saved settings</h2><p>{saved.enabled ? "Suggestions are on" : "Suggestions are off"}</p><dl className="grid gap-3 sm:grid-cols-2"><div><dt>Highest suggested amount per customer</dt><dd>${displayMoneyCents(saved.maxCustomerCents)}</dd></div><div><dt>Maximum share of inventory value</dt><dd>{formatPercentage(saved.inventoryCapBps / 100)}%</dd></div><div><dt>Suggested amount for a new customer</dt><dd>${displayMoneyCents(saved.newCustomerCents)}</dd></div><div><dt>Review interval</dt><dd>{saved.autoRefreshDays} days</dd></div></dl></section>}
   </main>;
 }
