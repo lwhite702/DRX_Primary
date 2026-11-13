@@ -1,8 +1,8 @@
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ userId: "operator-a", accounts: vi.fn(), aging: vi.fn(), refresh: vi.fn(), pending: vi.fn(), create: vi.fn(), sync: vi.fn(), resolve: vi.fn(), success: vi.fn(), error: vi.fn(), info: vi.fn() }));
+const mocks = vi.hoisted(() => ({ userId: "operator-a", accounts: vi.fn(), search: vi.fn(), aging: vi.fn(), refresh: vi.fn(), pending: vi.fn(), create: vi.fn(), sync: vi.fn(), resolve: vi.fn(), success: vi.fn(), error: vi.fn(), info: vi.fn() }));
 vi.mock("@/lib/adapters/auth/ui", () => ({ useAuth: () => ({ userId: mocks.userId }) }));
-vi.mock("@/lib/credit/dashboard-client", () => ({ fetchCreditAccountsPage: mocks.accounts, aggregateCreditAging: mocks.aging, refreshCreditAllocation: mocks.refresh }));
+vi.mock("@/lib/credit/dashboard-client", () => ({ fetchCreditAccountsPage: mocks.accounts, searchCreditAccounts: mocks.search, aggregateCreditAging: mocks.aging, refreshCreditAllocation: mocks.refresh }));
 vi.mock("@/lib/credit/pending-queue", () => ({ CreditPendingQueue: class { pending = mocks.pending; create = mocks.create; }, syncCreditRequests: mocks.sync, resolveCreditRequests: mocks.resolve }));
 vi.mock("sonner", () => ({ toast: { success: mocks.success, error: mocks.error, info: mocks.info } }));
 import { useCreditManager } from "../../app/(app)/credit/_hooks/useCreditManager";
@@ -11,6 +11,7 @@ beforeEach(() => {
   vi.clearAllMocks(); vi.stubEnv("NEXT_PUBLIC_CONVEX_URL", "https://synthetic.convex.cloud"); mocks.userId = "operator-a";
   vi.spyOn(navigator, "onLine", "get").mockReturnValue(true);
   mocks.accounts.mockReset().mockResolvedValue({ page: [account], isDone: true, continueCursor: "" });
+  mocks.search.mockReset().mockResolvedValue([account]);
   mocks.aging.mockReset().mockResolvedValue({ status: "pending", balanceCents: 125, asOfDate: 0 });
   mocks.pending.mockReset().mockResolvedValue({ entries: [], hasMore: false });
   mocks.create.mockReset().mockResolvedValue({ requestKey: "saved-key" });
@@ -27,6 +28,15 @@ it("loads canonical accounts without substituting zero aging for pending project
   expect(result.current.accountsComplete).toBe(true);
   expect(fetch).toHaveBeenCalledWith(expect.stringContaining("business_id=business-a"), expect.objectContaining({ headers: expect.any(Headers) }));
   expect(String(vi.mocked(fetch).mock.calls[0][0])).toContain("expectedUserId=operator-a");
+});
+it("searches the complete account set and loads due-date details for matching customers", async () => {
+  mocks.aging.mockResolvedValue({ status: "ready", balanceCents: 125, asOfDate: 0, oldestDueAt: 0, bucketsCents: { current: 125, "1_7": 0, "8_14": 0, "15_30": 0, "31_plus": 0, undated: 0, unreconciled: 0 }, entryCount: 1, pagesRead: 1 });
+  const { result } = await mounted();
+  await act(async () => { await result.current.searchAccounts("customer"); });
+  expect(mocks.search).toHaveBeenCalledWith(expect.objectContaining({ businessId: "business-a", query: "customer" }), expect.any(Function));
+  expect(result.current.searchResults).toEqual([account]);
+  expect(result.current.searchAging[account.customerId].status).toBe("ready");
+  expect(result.current.searchLoading).toBe(false);
 });
 it("persists before sending and retains cents, optional calendar date and payment method", async () => {
   const { result } = await mounted();

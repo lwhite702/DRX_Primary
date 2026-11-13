@@ -1,8 +1,8 @@
 import { expect, it, vi } from "vitest";
-import { aggregateCreditAging, fetchCreditAccountsPage, refreshCreditAllocation, CREDIT_AGING_BUCKETS } from "../../lib/credit/dashboard-client";
+import { aggregateCreditAging, fetchCreditAccountById, fetchCreditAccountsPage, refreshCreditAllocation, searchCreditAccounts, CREDIT_AGING_BUCKETS } from "../../lib/credit/dashboard-client";
 const scope = { businessId: "tenant /+&", customerId: "customer ?&", asOfDate: Date.UTC(2026, 8, 6) };
 const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { "Content-Type": "application/json" } });
-const row = (entryId = "entry", remainingCents = 100, bucket: string = "current") => ({ entryId, remainingCents, bucket });
+const row = (entryId = "entry", remainingCents = 100, bucket: string = "current", dueAt?: number) => ({ entryId, remainingCents, bucket, ...(dueAt === undefined ? {} : { dueAt }) });
 const page = (patch: Record<string, unknown> = {}) => ({ status: "ready", balanceCents: 100, revision: "revision", lastPaymentAt: 123, page: [row()], isDone: true, continueCursor: "", ...patch });
 const account = { customerId: "customer", displayName: "Synthetic", isActive: true, creditEnabled: true, limitCents: 500, unlimited: false, balanceCents: 100, allocationStatus: "ready" };
 it("fetches typed account pages with exact encoded scope, cursor and no caching", async () => {
@@ -11,6 +11,25 @@ it("fetches typed account pages with exact encoded scope, cursor and no caching"
   expect(result.page[0]).toEqual(account);
   expect(send.mock.calls[0][0]).toBe("/api/credit/dashboard?business_id=tenant+%2F%2B%26&limit=50&cursor=opaque+%2F%2B%3D%26%3F");
   expect(send.mock.calls[0][1]).toMatchObject({ method: "GET", cache: "no-store", credentials: "same-origin" });
+});
+it("searches names across every tenant-scoped customer page, including later pages", async () => {
+  const send = vi.fn().mockResolvedValueOnce(json({ page: [{ ...account, displayName: "North Shop" }], isDone: false, continueCursor: "next" })).mockResolvedValueOnce(json({ page: [{ ...account, customerId: "later", displayName: "Olive Market" }], isDone: true, continueCursor: "" }));
+  const result = await searchCreditAccounts({ businessId: "tenant", query: "olive" }, send);
+  expect(result).toHaveLength(1);
+  expect(result[0].displayName).toBe("Olive Market");
+  expect(send).toHaveBeenCalledTimes(2);
+  expect(new URL(send.mock.calls[1][0], "http://localhost").searchParams.get("cursor")).toBe("next");
+});
+it("finds the profile account on a later Payments page and returns null only at the end", async () => {
+  const send = vi.fn().mockResolvedValueOnce(json({ page: [account], isDone: false, continueCursor: "next" })).mockResolvedValueOnce(json({ page: [{ ...account, customerId: "target", balanceCents: 250 }], isDone: true, continueCursor: "" }));
+  await expect(fetchCreditAccountById({ businessId: "tenant", customerId: "target" }, send)).resolves.toMatchObject({ customerId: "target", balanceCents: 250 });
+  expect(send).toHaveBeenCalledTimes(2);
+  const empty = vi.fn().mockResolvedValue(json({ page: [account], isDone: true, continueCursor: "" }));
+  await expect(fetchCreditAccountById({ businessId: "tenant", customerId: "missing" }, empty)).resolves.toBeNull();
+});
+it("rejects repeated account IDs rather than showing stale duplicate search results", async () => {
+  const send = vi.fn().mockResolvedValueOnce(json({ page: [account], isDone: false, continueCursor: "next" })).mockResolvedValueOnce(json({ page: [account], isDone: true, continueCursor: "" }));
+  await expect(searchCreditAccounts({ businessId: "tenant", query: "synthetic" }, send)).rejects.toMatchObject({ code: "STALE" });
 });
 it("aggregates every integer-cent bucket across fixed-date revision pages", async () => {
   const rows = CREDIT_AGING_BUCKETS.map((bucket, index) => row(String(index), index + 1, bucket));
@@ -23,6 +42,13 @@ it("aggregates every integer-cent bucket across fixed-date revision pages", asyn
     expect(params.get("as_of_date")).toBe(String(scope.asOfDate)); expect(init.method).toBe("GET");
   }
   expect(send.mock.calls[1][0]).toContain("cursor=next+%2F%2B");
+});
+it("reports the oldest known due date for an unpaid amount", async () => {
+  const dueAt = scope.asOfDate - 12 * 86_400_000;
+  const send = vi.fn().mockResolvedValue(json(page({ page: [row("old", 60, "8_14", dueAt), row("new", 40, "current", scope.asOfDate - 2 * 86_400_000)] })));
+  const result = await aggregateCreditAging(scope, send);
+  expect(result.status).toBe("ready");
+  if (result.status === "ready") expect(result.oldestDueAt).toBe(dueAt);
 });
 it("distinguishes empty ready zero from pending without scheduling writes", async () => {
   const send = vi.fn().mockResolvedValueOnce(json(page({ balanceCents: 0, page: [], revision: undefined, lastPaymentAt: undefined }))).mockResolvedValueOnce(json({ status: "pending", balanceCents: 0, page: [], isDone: false, continueCursor: "" }));

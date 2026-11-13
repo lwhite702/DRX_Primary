@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useBusiness } from "@/lib/hooks/use-business";
 import { usePermission } from "@/lib/hooks/use-permission";
+import { useAuth } from "@/lib/adapters/auth/ui";
+import { fetchCreditAccountById, type CreditAccount } from "@/lib/credit/dashboard-client";
 import {
   Archive,
   ArrowDownLeft,
@@ -101,6 +103,7 @@ export default function CustomerDetailPage() {
   const customerId = params.id as string;
 
   const { business, loading: businessLoading } = useBusiness();
+  const { userId } = useAuth();
   const { hasPermission, loading: permissionLoading } = usePermission(
     business?.id,
   );
@@ -108,6 +111,7 @@ export default function CustomerDetailPage() {
   const [customerScope, setCustomerScope] = useState<string | null>(null);
   const scope = JSON.stringify([business?.id, customerId]);
   const [metrics, setMetrics] = useState<CreditMetrics | null>(null);
+  const [creditAccountState, setCreditAccountState] = useState<{ status: "loading" | "missing" | "error" } | { status: "ready"; account: CreditAccount }>({ status: "loading" });
   const [creditHistory, setCreditHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const privacy = usePrivacyContext();
@@ -181,6 +185,24 @@ export default function CustomerDetailPage() {
     return () => { cancelled = true; };
   }, [business?.id, customerId, scope, refreshCount]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    setCreditAccountState({ status: "loading" });
+    if (!business?.id || !userId) return () => controller.abort();
+    const scopedFetch: typeof fetch = async (input, init) => {
+      const url = new URL(String(input), window.location.origin);
+      url.searchParams.set("expectedUserId", userId);
+      const headers = new Headers(init?.headers);
+      headers.set("X-Business-Id", business.id);
+      return fetch(url.pathname + url.search, { ...init, headers });
+    };
+    void fetchCreditAccountById({ businessId: business.id, customerId, signal: controller.signal }, scopedFetch)
+      .then(account => { if (!cancelled) setCreditAccountState(account ? { status: "ready", account } : { status: "missing" }); })
+      .catch(() => { if (!cancelled) setCreditAccountState({ status: "error" }); });
+    return () => { cancelled = true; controller.abort(); };
+  }, [business?.id, customerId, userId, refreshCount]);
+
   const can_apply_changes =
     !permissionLoading && hasPermission("customers.manage");
 
@@ -232,6 +254,16 @@ export default function CustomerDetailPage() {
   if (!privacy.protocol) return <div className="p-4 md:p-8" role="status"><p>{privacy.error ?? "Loading customer privacy settings…"}</p>{privacy.error && <Button onClick={privacy.retry}>Retry privacy settings</Button>}</div>;
   const privacyProtocol = privacy.protocol;
   const shouldMask = shouldMaskFromProtocol(privacyProtocol, privacy.manualEnabled, false);
+  const creditAccount = creditAccountState.status === "ready" ? creditAccountState.account : null;
+  const creditBalanceConfirmed = creditAccount?.allocationStatus === "ready" || (creditAccount?.allocationStatus === "missing" && creditAccount.balanceCents === 0);
+  const confirmedBalanceCents = creditBalanceConfirmed && creditAccount ? creditAccount.balanceCents : null;
+  const creditLimitDescription = !creditAccount
+    ? "Account details need review."
+    : !creditAccount.creditEnabled
+      ? "Credit is off for this customer."
+      : creditAccount.unlimited
+        ? "There is no set credit limit for this customer."
+        : `Credit limit: $${(creditAccount.limitCents / 100).toFixed(2)}`;
 
   const displayName =
     customer.alias ||
@@ -385,10 +417,10 @@ export default function CustomerDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Sales & Credit Metrics */}
+          {/* Sales and account activity */}
           <Card>
             <CardHeader>
-              <CardTitle>Sales & Credit Metrics</CardTitle>
+              <CardTitle>Sales and account activity</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -423,28 +455,15 @@ export default function CustomerDetailPage() {
                 </div>
                 <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Total Credit Used
+                    Late payments
                   </p>
                   <p className="text-xl font-bold font-mono text-white mt-1">
-                    $
-                    {(
-                      customer.totalCreditUsed ||
-                      customer.total_credit_used ||
-                      0
-                    ).toFixed(2)}
+                    {Number(metrics?.late_payment_count ?? 0).toFixed(0)}
                   </p>
                 </div>
                 <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Current Balance
-                  </p>
-                  <p className="text-xl font-bold font-mono text-white mt-1">
-                    ${(metrics?.current_credit_balance || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    On-Time Ratio
+                    Paid on time
                   </p>
                   <p className="text-xl font-bold font-mono text-[#4ADE80] mt-1">
                     {((metrics?.on_time_repayment_ratio || 0) * 100).toFixed(0)}
@@ -461,14 +480,10 @@ export default function CustomerDetailPage() {
               <div className="space-y-1">
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-emerald-400" />
-                  Store Credit Account
+                  Balance and credit limit
                 </CardTitle>
                 <CardDescription>
-                  {customer.creditEnabled === false || customer.credit_enabled === false
-                    ? "Store credit is currently disabled for this customer."
-                    : (customer.creditLimit === 0 || customer.credit_limit === 0)
-                      ? "Unlimited store credit account."
-                      : `Configured credit limit: $${Number(customer.creditLimit || customer.credit_limit || 0).toFixed(2)}`}
+                  {creditLimitDescription}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -479,16 +494,16 @@ export default function CustomerDetailPage() {
                   className="border-white/10 hover:bg-white/5"
                 >
                   <PlusCircle className="h-4 w-4 mr-1.5 text-blue-400" />
-                  Adjust Limit
+                  Change credit limit
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => setShowRecordPaymentModal(true)}
-                  disabled={Number(customer.total_credit_used || customer.totalCreditUsed || 0) <= 0}
+                  disabled={confirmedBalanceCents === null || confirmedBalanceCents <= 0 || !creditAccount?.isActive}
                   className="bg-emerald-600 hover:bg-emerald-500 text-white"
                 >
                   <DollarSign className="h-4 w-4 mr-1.5" />
-                  Record Payment
+                  Record a payment
                 </Button>
               </div>
             </CardHeader>
@@ -496,7 +511,7 @@ export default function CustomerDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Account Status
+                    Credit access
                   </p>
                   <div className="mt-1 flex items-center gap-2">
                     <span
@@ -508,34 +523,38 @@ export default function CustomerDetailPage() {
                             : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                       }`}
                     >
-                      {customer.creditEnabled === false || customer.credit_enabled === false
+                      {!creditAccount || !creditBalanceConfirmed
+                        ? "Needs review"
+                        : !creditAccount.creditEnabled
                         ? "Disabled"
-                        : (customer.creditLimit === 0 || customer.credit_limit === 0)
-                          ? "Unlimited"
-                          : "Active"}
+                        : creditAccount.unlimited
+                          ? "No set limit"
+                          : "Available"}
                     </span>
                   </div>
                 </div>
 
                 <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Outstanding Balance
+                    Amount owed
                   </p>
                   <p className="text-xl font-bold font-mono text-amber-400 mt-1">
-                    ${Number(customer.total_credit_used || customer.totalCreditUsed || 0).toFixed(2)}
+                    {confirmedBalanceCents === null ? "Needs review" : `$${(confirmedBalanceCents / 100).toFixed(2)}`}
                   </p>
                 </div>
 
                 <div className="bg-[#161616] border border-white/10 p-4 rounded-xl">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Available Credit
+                    Credit available
                   </p>
                   <p className="text-xl font-bold font-mono text-white mt-1">
-                    {customer.creditEnabled === false || customer.credit_enabled === false
+                    {!creditAccount || !creditBalanceConfirmed
+                      ? "Needs review"
+                      : !creditAccount.creditEnabled
                       ? "$0.00"
-                      : (customer.creditLimit === 0 || customer.credit_limit === 0)
+                      : creditAccount.unlimited
                         ? "Unlimited"
-                        : `$${Math.max(0, Number(customer.creditLimit || customer.credit_limit || 0) - Number(customer.total_credit_used || customer.totalCreditUsed || 0)).toFixed(2)}`}
+                        : `$${Math.max(0, (creditAccount.limitCents - confirmedBalanceCents!) / 100).toFixed(2)}`}
                   </p>
                 </div>
               </div>
@@ -547,16 +566,16 @@ export default function CustomerDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-zinc-400" />
-                Store Credit Ledger
+                Payment and balance history
               </CardTitle>
               <CardDescription>
-                Audited ledger entries recording credit issues, repayments, and balance adjustments.
+                Payments received, new amounts added to the balance, and corrections.
               </CardDescription>
             </CardHeader>
             <CardContent>
               {creditHistory.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  No store credit ledger entries recorded for this customer.
+                  No payments or balance changes have been recorded for this customer.
                 </p>
               ) : (
                 <div className="divide-y divide-white/5">
@@ -588,11 +607,11 @@ export default function CustomerDetailPage() {
                             <div className="flex items-center gap-2">
                               <span className="font-medium text-sm text-white">
                                 {isPayment
-                                  ? "Payment Received"
+                                  ? "Payment received"
                                   : isIssue
-                                    ? "Credit Issued"
+                                    ? "Added to balance"
                                     : entry.kind === "void"
-                                      ? "Adjustment / Void"
+                                      ? "Correction or reversal"
                                       : entry.kind}
                               </span>
                               {entry.payment_method && (
@@ -620,7 +639,7 @@ export default function CustomerDetailPage() {
                             {isPayment ? "-" : "+"}${Number(entry.delta_amount || 0).toFixed(2)}
                           </p>
                           <p className="text-xs font-mono text-muted-foreground">
-                            Bal: ${Number(entry.balance_after || 0).toFixed(2)}
+                            Balance after this change: ${Number(entry.balance_after || 0).toFixed(2)}
                           </p>
                         </div>
                       </div>

@@ -22,7 +22,7 @@ export type CreditAccount = z.infer<typeof accountSchema>;
 export type CreditAccountsPage = z.infer<typeof accountsPageSchema>;
 export type CreditAgingResult =
   | { status: "pending"; balanceCents: number; asOfDate: number }
-  | { status: "ready"; balanceCents: number; asOfDate: number; revision?: string; lastPaymentAt?: number; bucketsCents: CreditAgingBuckets; entryCount: number; pagesRead: number };
+  | { status: "ready"; balanceCents: number; asOfDate: number; revision?: string; lastPaymentAt?: number; oldestDueAt?: number; bucketsCents: CreditAgingBuckets; entryCount: number; pagesRead: number };
 
 type FailureCode = "INVALID_ARGUMENT" | "INVALID_RESPONSE" | "UNAVAILABLE" | "ACCESS_DENIED" | "STALE" | "CAPACITY_EXCEEDED" | "ABORTED";
 const messages: Record<FailureCode, string> = {
@@ -73,6 +73,51 @@ export async function fetchCreditAccountsPage(request: CreditAccountsPageRequest
   return page;
 }
 
+/** Finds one customer in the same tenant-scoped pages used by Payments. */
+export async function fetchCreditAccountById(request: CreditDashboardScope & { customerId: string; maxPages?: number }, fetcher: Fetcher = fetch): Promise<CreditAccount | null> {
+  validId(request.businessId); validId(request.customerId);
+  const maxPages = request.maxPages ?? 1000;
+  if (!Number.isSafeInteger(maxPages) || maxPages < 1 || maxPages > 1000) throw new CreditDashboardError("INVALID_ARGUMENT");
+  const seenIds = new Set<string>(), seenCursors = new Set<string>();
+  let cursor: string | undefined;
+  for (let pageNumber = 0; pageNumber < maxPages; pageNumber++) {
+    const page = await fetchCreditAccountsPage({ businessId: request.businessId, cursor, limit: 100, signal: request.signal }, fetcher);
+    for (const account of page.page) {
+      if (seenIds.has(account.customerId)) throw new CreditDashboardError("STALE");
+      seenIds.add(account.customerId);
+      if (account.customerId === request.customerId) return account;
+    }
+    if (page.isDone) return null;
+    if (!page.continueCursor || seenCursors.has(page.continueCursor)) throw new CreditDashboardError("STALE");
+    seenCursors.add(page.continueCursor);
+    cursor = page.continueCursor;
+  }
+  throw new CreditDashboardError("CAPACITY_EXCEEDED");
+}
+
+/** Search every tenant-scoped account page by the name the operator sees. */
+export async function searchCreditAccounts(request: CreditDashboardScope & { query: string; displayNameForSearch?: (displayName: string) => string }, fetcher: Fetcher = fetch): Promise<CreditAccount[]> {
+  const query = request.query.trim().toLocaleLowerCase();
+  validId(request.businessId);
+  if (!query || query.length > 100) throw new CreditDashboardError("INVALID_ARGUMENT");
+  const matches: CreditAccount[] = [];
+  const seenIds = new Set<string>(), seenCursors = new Set<string>();
+  let cursor: string | undefined;
+  for (let pageNumber = 0; pageNumber < 1000; pageNumber++) {
+    const page = await fetchCreditAccountsPage({ businessId: request.businessId, cursor, limit: 100, signal: request.signal }, fetcher);
+    for (const account of page.page) {
+      if (seenIds.has(account.customerId)) throw new CreditDashboardError("STALE");
+      seenIds.add(account.customerId);
+      if ((request.displayNameForSearch?.(account.displayName) ?? account.displayName).toLocaleLowerCase().includes(query)) matches.push(account);
+    }
+    if (page.isDone) return matches;
+    if (!page.continueCursor || seenCursors.has(page.continueCursor)) throw new CreditDashboardError("STALE");
+    seenCursors.add(page.continueCursor);
+    cursor = page.continueCursor;
+  }
+  throw new CreditDashboardError("CAPACITY_EXCEEDED");
+}
+
 /** Reads all aging pages without scheduling allocation or substituting partial/zero totals. */
 export async function aggregateCreditAging(request: CreditAgingRequest, fetcher: Fetcher = fetch): Promise<CreditAgingResult> {
   const { businessId, customerId, asOfDate, signal } = request;
@@ -82,7 +127,7 @@ export async function aggregateCreditAging(request: CreditAgingRequest, fetcher:
   const params = new URLSearchParams({ business_id: businessId, customer_id: customerId, as_of_date: String(asOfDate), limit: String(limit) });
   const bucketsCents: CreditAgingBuckets = { current: 0, "1_7": 0, "8_14": 0, "15_30": 0, "31_plus": 0, undated: 0, unreconciled: 0 };
   let baseline: z.infer<typeof agingPageSchema> | undefined;
-  let total = 0;
+  let total = 0, oldestDueAt: number | undefined;
   const entryIds = new Set<string>(), cursors = new Set<string>();
   for (let pagesRead = 1; pagesRead <= maxPages; pagesRead++) {
     const raw = await readJson(`${endpoint}?${params}`, { method: "GET", signal }, fetcher);
@@ -99,6 +144,7 @@ export async function aggregateCreditAging(request: CreditAgingRequest, fetcher:
     for (const row of page.page) {
       if (entryIds.has(row.entryId)) throw new CreditDashboardError("STALE");
       entryIds.add(row.entryId);
+      if (row.bucket !== "unreconciled" && row.dueAt !== undefined) oldestDueAt = oldestDueAt === undefined ? row.dueAt : Math.min(oldestDueAt, row.dueAt);
       if (row.remainingCents > Number.MAX_SAFE_INTEGER - total) throw new CreditDashboardError("INVALID_RESPONSE");
       total += row.remainingCents;
       bucketsCents[row.bucket] += row.remainingCents;
@@ -107,7 +153,7 @@ export async function aggregateCreditAging(request: CreditAgingRequest, fetcher:
     if (page.isDone) {
       if (total !== page.balanceCents) throw new CreditDashboardError("INVALID_RESPONSE");
       aborted(signal);
-      return { status: "ready", balanceCents: page.balanceCents, asOfDate, revision: page.revision, lastPaymentAt: page.lastPaymentAt, bucketsCents, entryCount: entryIds.size, pagesRead };
+      return { status: "ready", balanceCents: page.balanceCents, asOfDate, revision: page.revision, lastPaymentAt: page.lastPaymentAt, oldestDueAt, bucketsCents, entryCount: entryIds.size, pagesRead };
     }
     if (!page.continueCursor || cursors.has(page.continueCursor)) throw new CreditDashboardError("STALE");
     cursors.add(page.continueCursor);
